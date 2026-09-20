@@ -1,0 +1,234 @@
+---
+/**
+ * Mobile navigation - a CURTAIN that drops down from under the nav bar and
+ * rolls back up, rather than a side drawer.
+ *
+ * It lives inside <header> so it is positioned directly below the nav bar.
+ * Opened by the burger button in Header.astro (data-menu-toggle).
+ *
+ * The animation is a grid-template-rows 0fr -> 1fr transition, so the panel
+ * expands to exactly the height of its content at any screen size - no magic
+ * max-height number that clips a long menu.
+ *
+ * Uses the same mainNav data as the desktop menu: one menu to maintain.
+ */
+import { site, mainNav, telHref, mailHref, whatsappHref } from '../data/site';
+import SocialLinks from './SocialLinks.astro';
+
+const path = Astro.url.pathname;
+---
+
+<div id="mobile-menu" class="curtain" data-menu aria-hidden="true">
+  <div class="curtain__inner">
+    <nav class="curtain__nav" aria-label="Mobile navigation">
+      <ul>
+        {
+          mainNav.map((item) =>
+            item.children ? (
+              <li>
+                <details open={item.children.some((child) => child.href === path)}>
+                  <summary>
+                    {item.label}
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                      <path d="M7 10l5 5 5-5z" />
+                    </svg>
+                  </summary>
+                  <ul class="curtain__sub">
+                    {item.children.map((child) => (
+                      <li>
+                        <a href={child.href} aria-current={path === child.href ? 'page' : undefined}>
+                          {child.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </li>
+            ) : (
+              <li>
+                <a href={item.href} aria-current={path === item.href ? 'page' : undefined}>
+                  {item.label}
+                </a>
+              </li>
+            )
+          )
+        }
+      </ul>
+    </nav>
+
+    <div class="curtain__foot">
+      <a
+        class="btn btn--whatsapp btn--block"
+        href={whatsappHref('Hi, I would like to book a massage appointment.')}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Chat on WhatsApp
+      </a>
+      <div class="curtain__contact">
+        <a href={telHref}>{site.phone}</a>
+        <a href={mailHref}>{site.email}</a>
+      </div>
+      <SocialLinks class="curtain__socials" size={17} />
+    </div>
+  </div>
+</div>
+
+<style>
+  .curtain {
+    /* Hangs below the nav bar and overlays the page instead of pushing it
+       down, so the hero stays put while the curtain rolls over it. */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    /* The grid row collapses to 0fr when closed and 1fr when open, which
+       animates to the content's natural height. */
+    display: grid;
+    grid-template-rows: 0fr;
+    background: linear-gradient(180deg, var(--green-800), var(--green-900));
+    color: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 18px 30px rgba(11, 43, 36, 0.28);
+    transition: grid-template-rows 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .curtain.is-open {
+    grid-template-rows: 1fr;
+  }
+
+  .curtain__inner {
+    overflow: hidden;
+    /* Content slides up slightly as the curtain rolls away. */
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+    max-height: calc(100dvh - 130px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .curtain.is-open .curtain__inner {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* --------------------------------------------------------------- nav */
+  .curtain__nav {
+    padding: 0.6rem 0.75rem 0;
+  }
+
+  .curtain__nav a,
+  .curtain__nav summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+    transition: background-color 0.18s ease, color 0.18s ease;
+  }
+
+  .curtain__nav summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .curtain__nav a:hover,
+  .curtain__nav summary:hover,
+  .curtain__nav a[aria-current='page'] {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+  }
+
+  .curtain__sub {
+    margin: 0 0 0.5rem 1.1rem;
+    padding-left: 0.6rem;
+    border-left: 2px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .curtain__sub a {
+    font-family: var(--font-body);
+    font-size: 0.86rem;
+    padding-block: 0.6rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  details[open] > summary svg {
+    transform: rotate(180deg);
+  }
+
+  summary svg {
+    transition: transform 0.22s ease;
+  }
+
+  /* -------------------------------------------------------------- foot */
+  .curtain__foot {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: center;
+    padding: 1rem 1.25rem 1.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .curtain__contact {
+    display: grid;
+    gap: 0.2rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* The curtain only exists on the screens where the desktop nav is hidden. */
+  @media (min-width: 1101px) {
+    .curtain {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Curtain menu controller: open / close, Escape to close, close after a
+   * link is followed, and close again if the window grows to desktop width.
+   */
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+
+  function setMenu(open: boolean) {
+    if (!menu || !toggle) return;
+    menu.classList.toggle('is-open', open);
+    menu.setAttribute('aria-hidden', String(!open));
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+
+  toggle?.addEventListener('click', () => {
+    setMenu(!menu?.classList.contains('is-open'));
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && menu?.classList.contains('is-open')) {
+      setMenu(false);
+      toggle?.focus();
+    }
+  });
+
+  menu?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => setMenu(false));
+  });
+
+  // Tapping anywhere outside the header closes the curtain.
+  document.addEventListener('click', (event) => {
+    if (!menu?.classList.contains('is-open')) return;
+    const target = event.target as Node;
+    if (!menu.contains(target) && !toggle?.contains(target)) setMenu(false);
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1100 && menu?.classList.contains('is-open')) setMenu(false);
+  });
+</script>

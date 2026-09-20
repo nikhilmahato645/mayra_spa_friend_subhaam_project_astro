@@ -1,0 +1,45 @@
+---
+/**
+ * Reusable "Chat on WhatsApp" call to action button.
+ *
+ * Always goes through whatsappHref() so the number lives in exactly one place.
+ */
+import { whatsappHref } from '../data/site';
+
+interface Props {
+  /** Button label. */
+  label?: string;
+  /** Pre-filled WhatsApp message. */
+  message?: string;
+  /** Visual variant. */
+  variant?: 'whatsapp' | 'outline' | 'light';
+  /** Smaller button. */
+  small?: boolean;
+  /** Full width button. */
+  block?: boolean;
+  class?: string;
+}
+
+const {
+  label = 'Chat on WhatsApp',
+  message = 'Hi, I would like to book a massage appointment.',
+  variant = 'whatsapp',
+  small = false,
+  block = false,
+  class: className = '',
+} = Astro.props;
+
+const classes = [
+  'btn',
+  `btn--${variant}`,
+  small ? 'btn--sm' : '',
+  block ? 'btn--block' : '',
+  className,
+]
+  .filter(Boolean)
+  .join(' ');
+---
+
+<a class={classes} href={whatsappHref(message)} target="_blank" rel="noopener noreferrer">
+  {label}
+</a>

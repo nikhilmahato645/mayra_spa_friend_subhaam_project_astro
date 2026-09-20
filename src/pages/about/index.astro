@@ -1,0 +1,625 @@
+---
+/**
+ * ABOUT PAGE - /about/
+ *
+ * Written to complement the home page, not repeat it. The home page carries
+ * the treatment menu with prices, the ₹1499 first-visit offer, the packages,
+ * the locations grid and the booking steps; this page covers how the spa
+ * works and what a visit is like, and links out for the detail.
+ *
+ * Every factual statement here traces to project data:
+ *   address / hours / phone  -> src/data/site.ts
+ *   treatment names          -> src/data/treatments.ts
+ *   facilities               -> src/data/services.ts (facilities)
+ *   private rooms            -> src/data/services.ts (promises, packages)
+ *
+ * Deliberately NOT claimed here: years in business, branch count, client
+ * numbers (src/data/reviews.ts counters are unverified), therapist
+ * nationality or certifications, and anything about competitors.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import { site, telHref } from '../../data/site';
+import { treatments } from '../../data/treatments';
+import { facilities } from '../../data/services';
+import { aboutImages } from '../../data/page-images';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema } from '../../utils/schema';
+
+const title = 'About Russian Spa Mahipalpur | Massage & Wellness';
+const description =
+  'Russian Spa Mahipalpur is a massage and wellness spa minutes from Delhi Airport. Learn how we work, what a session involves and how to plan your visit.';
+
+const crumbs = breadcrumbTrail([{ name: 'About Us', href: '/about/' }]);
+
+/* BaseLayout already emits DaySpa + WebSite + WebPage for every page, so this
+   page adds only the breadcrumb trail - no second LocalBusiness block. */
+const schemas = [breadcrumbSchema(crumbs)];
+
+/** How a session is put together. Describes process, not outcomes. */
+const approach = [
+  {
+    step: '01',
+    title: 'We ask before we start',
+    body: 'Every session begins with a short conversation: what you would like worked on, anything you would rather we avoided, and whether you are here to switch off or to deal with a specific tight area.',
+  },
+  {
+    step: '02',
+    title: 'Pressure is set by you',
+    body: 'Light, medium and firm mean different things to different people. Your therapist starts within your stated range and checks in as the session goes on, so the pressure can move up or down at any point.',
+  },
+  {
+    step: '03',
+    title: 'The technique follows the choice',
+    body: 'An oil-based Swedish session and a clothed, mat-based Thai session are worked very differently. Once you have picked a treatment, the room, the setup and the pace are arranged around it.',
+  },
+  {
+    step: '04',
+    title: 'You are not rushed out',
+    body: 'Sessions run for the full listed time, and there is a few minutes afterwards to sit, have some water and come round before you head back out.',
+  },
+];
+
+/** Short, factual reasons - no superlatives, no competitor comparisons. */
+const reasons = [
+  'Ten treatments to choose from, each with its price and session length listed before you book',
+  'Every treatment in a private room',
+  'Shower, steam, jacuzzi, hammam and sauna on site',
+  'A few minutes from the airport and the Aerocity hotels',
+  'Booking by WhatsApp or a phone call, with no app or account needed',
+];
+---
+
+<!-- bareTitle: the title already contains the brand name, so BaseLayout must
+     not append its "| Russian Spa Mahipalpur" suffix on top of it. -->
+<BaseLayout title={title} description={description} bareTitle schemas={schemas}>
+  <!-- ==================================================== 1. HERO ======= -->
+  <!-- Split hero rather than the centred photo-overlay used on the other
+       pages: same colours and type scale, different composition. -->
+  <section class="about-hero">
+    <div class="container about-hero__inner">
+      <div class="about-hero__text">
+        <span class="eyebrow eyebrow--light">About Us</span>
+        <h1>About Russian Spa Mahipalpur</h1>
+        <p class="about-hero__lead">
+          Russian Spa Mahipalpur is a massage and wellness spa on Northern Access Road in
+          Aerocity, a few minutes from Delhi Airport. We offer ten treatments, from a traditional
+          Russian banya to Thai, Swedish and deep tissue massage, each in a private room with a
+          therapist who sets the session around what you have asked for. Most of our guests are
+          travellers between flights, people working nearby, and regulars from around South Delhi.
+        </p>
+        <div class="about-hero__actions">
+          <CTA label="Ask About a Treatment" message="Hi, I would like to know more about your treatments." />
+          <a class="btn btn--light" href={telHref}>Call {site.phone}</a>
+        </div>
+      </div>
+
+      <img
+        class="about-hero__img"
+        src={aboutImages.hero.src}
+        alt={aboutImages.hero.alt}
+        width={aboutImages.hero.width}
+        height={aboutImages.hero.height}
+        fetchpriority="high"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ================================================= 2. THE LOCATION == -->
+  <section class="section">
+    <div class="container split">
+      <div>
+        <h2>A Comfortable Place to Unwind Near Delhi Airport</h2>
+        <p>
+          The spa sits on Northern Access Road, close enough to the terminals that a long layover
+          is enough time for a treatment and a shower, and close enough to the hotel cluster that
+          you can walk over from most of them. For anyone living around Mahipalpur, Vasant Kunj or
+          Dwarka, it is a short drive off the highway rather than a trip into central Delhi.
+        </p>
+        <p>
+          Inside, it is quieter than the road outside suggests. Treatment rooms are set back from
+          reception and lighting is kept low, and if you arrive early there is somewhere to sit
+          and wait without being hurried through.
+        </p>
+
+        <dl class="facts">
+          <div>
+            <dt>Where</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>When</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <img
+        class="about-img about-img--arch"
+        src={aboutImages.reception.src}
+        alt={aboutImages.reception.alt}
+        width={aboutImages.reception.width}
+        height={aboutImages.reception.height}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- =================================================== 3. APPROACH ==== -->
+  <section class="section section--cream">
+    <div class="container">
+      <div class="section__head">
+        <h2>Our Approach to Massage &amp; Wellness</h2>
+        <p>
+          A massage is a personal thing, and the same treatment suits two people differently. Four
+          things shape how we run a session.
+        </p>
+      </div>
+
+      <ol class="approach">
+        {
+          approach.map((item) => (
+            <li class="approach__item">
+              <span class="approach__num" aria-hidden="true">
+                {item.step}
+              </span>
+              <div>
+                <h3 class="approach__title">{item.title}</h3>
+                <p class="approach__body">{item.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- =================================================== 4. THERAPIES === -->
+  <section class="section">
+    <div class="container split split--flip">
+      <img
+        class="about-img about-img--arch-left"
+        src={aboutImages.session.src}
+        alt={aboutImages.session.alt}
+        width={aboutImages.session.width}
+        height={aboutImages.session.height}
+        loading="lazy"
+        decoding="async"
+      />
+
+      <div>
+        <h2>Our Massage Therapies</h2>
+        <p>
+          Guests usually arrive with one of three things in mind: to be left alone to relax, to
+          have a specific area worked on, or to try a style they have not had before. That is a
+          useful way to narrow the list down.
+        </p>
+        <p>
+          For switching off, Swedish, aromatherapy and hot stone are the gentlest of the group. For
+          a tight back, shoulders or legs, deep tissue and sports massage are the ones to ask
+          about. Thai and shiatsu are done clothed and involve stretching rather than oil.
+          Reflexology stays with the feet. The banya is a steam ritual rather than a massage, and
+          the couple's package puts two treatments in one room.
+        </p>
+
+        <ul class="chips">
+          {treatments.map((treatment) => <li>{treatment.name}</li>)}
+        </ul>
+
+        <p class="note">
+          Each treatment has its own write-up, session length and price.
+          <a href="/services/">Explore our massage services</a> for the full detail, or
+          <a href="/pricing/">view massage pricing</a> if you already know what you are after.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 5. THERAPISTS === -->
+  <section class="section section--dark">
+    <div class="container">
+      <div class="section__head">
+        <h2>Experienced Therapists</h2>
+      </div>
+      <div class="two-col">
+        <p>
+          The techniques on our menu are genuinely different from one another - the forearm work
+          in a deep tissue session has little in common with the assisted stretching in Thai
+          massage, or the thumb pressure used in reflexology. Therapists are assigned to
+          treatments they are trained in rather than whoever happens to be free.
+        </p>
+        <p>
+          Before starting, your therapist confirms the treatment, asks about pressure and checks
+          whether there is anywhere to work around, such as a recent injury or a sore spot. During
+          the session you can speak up at any point - asking for more or less pressure partway
+          through is expected, not an inconvenience.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================ 6. THE ROOMS ====== -->
+  <section class="section">
+    <div class="container split">
+      <div>
+        <h2>A Private and Comfortable Environment</h2>
+        <p>
+          Every treatment takes place in a private room with the door closed, whether you are here
+          on your own or booking the couple's package, which uses one room set up for two. You are
+          shown to the room, given time to get ready, and the therapist comes in once you are
+          settled.
+        </p>
+        <p>These facilities are on site and can be used alongside your treatment:</p>
+        <ul class="chips chips--outline">
+          {facilities.map((facility) => <li>{facility.title}</li>)}
+        </ul>
+        <p class="note">
+          <a href="/gallery/">See our spa gallery</a> for a closer look at the rooms.
+        </p>
+      </div>
+
+      <img
+        class="about-img about-img--arch"
+        src={aboutImages.room.src}
+        alt={aboutImages.room.alt}
+        width={aboutImages.room.width}
+        height={aboutImages.room.height}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- ============================================== 7. CLEANLINESS ====== -->
+  <section class="section section--mint">
+    <div class="container split split--flip">
+      <img
+        class="about-img about-img--arch-left"
+        src={aboutImages.facilities.src}
+        alt={aboutImages.facilities.alt}
+        width={aboutImages.facilities.width}
+        height={aboutImages.facilities.height}
+        loading="lazy"
+        decoding="async"
+      />
+
+      <div>
+        <h2>Cleanliness &amp; Guest Comfort</h2>
+        <p>
+          Rooms are reset between guests: linen and towels changed, surfaces wiped down, and the
+          room aired and re-made before the next session. The wet areas are cleaned through the
+          day rather than only at opening and closing.
+        </p>
+        <p>
+          Privacy is part of the same job: rooms are single-occupancy unless you have booked
+          together, therapists knock before entering, and what you discuss stays between you and
+          your therapist. If the room, the temperature or the music is not right, say so and it
+          will be sorted out.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================ 8. SERVICE AREA === -->
+  <section class="section">
+    <div class="container narrow">
+      <h2>Serving Mahipalpur, Aerocity and Delhi NCR</h2>
+      <p>
+        Most guests reach us from Mahipalpur and the Aerocity hotels, or directly from the airport
+        between flights. The location also works well for Vasant Kunj, Dwarka and the wider
+        south-west of the city, since you can come off NH-48 without driving into central Delhi.
+      </p>
+      <p>
+        We also run outlets in other parts of Delhi NCR. If another one is closer to you,
+        <a href="/contact/">get in touch</a> and we will point you to the right branch and check
+        what times it has free.
+      </p>
+    </div>
+  </section>
+
+  <!-- =============================================== 9. WHY GUESTS ====== -->
+  <section class="section section--cream">
+    <div class="container narrow">
+      <h2>Why Guests Choose Russian Spa Mahipalpur</h2>
+      <ul class="reasons">
+        {
+          reasons.map((reason) => (
+            <li>
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+                <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+              </svg>
+              <span>{reason}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- =============================================== 10. PLAN A VISIT === -->
+  <section class="section section--dark">
+    <div class="container plan">
+      <div class="plan__text">
+        <h2>Plan Your Visit</h2>
+        <p>
+          Message us on WhatsApp or call {site.phone} to ask about a treatment, check what is free
+          today, or book ahead. Longer sessions such as the banya and the couple's package are
+          worth reserving in advance. We are {site.openingHoursLabel.toLowerCase()}.
+        </p>
+        <div class="plan__actions">
+          <CTA label="Book on WhatsApp" />
+          <a class="btn btn--light" href="/contact/">Contact Russian Spa Mahipalpur</a>
+        </div>
+      </div>
+
+      <img
+        class="about-img plan__img"
+        src={aboutImages.detail.src}
+        alt={aboutImages.detail.alt}
+        width={aboutImages.detail.width}
+        height={aboutImages.detail.height}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Same tokens as the rest of the site; the composition is what differs -
+     a split hero, a numbered approach list and pill lists instead of the
+     home page's photo-overlay hero and card grids. */
+
+  /* ------------------------------------------------------------- 1. hero */
+  .about-hero {
+    background: linear-gradient(160deg, var(--green-800), var(--green-900));
+    color: rgba(255, 255, 255, 0.88);
+    padding-block: clamp(2.25rem, 1.6rem + 3vw, 4rem);
+  }
+
+  .about-hero__inner {
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2.5vw, 3.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .about-hero__inner {
+      grid-template-columns: 1.15fr 1fr;
+    }
+  }
+
+  .about-hero h1 {
+    color: var(--white);
+    margin-bottom: 1rem;
+  }
+
+  .about-hero__lead {
+    max-width: 58ch;
+  }
+
+  .about-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  .about-hero__img {
+    width: 100%;
+    aspect-ratio: 9 / 10;
+    object-fit: cover;
+    /* Mirrored arch - the home page arches curve the other way. */
+    border-radius: 16px 200px 16px 200px;
+    box-shadow: var(--shadow);
+  }
+
+  /* --------------------------------------------------------- 2-7. blocks */
+  .about-img {
+    width: 100%;
+    aspect-ratio: 9 / 6.5;
+    object-fit: cover;
+    box-shadow: var(--shadow);
+  }
+
+  .about-img--arch {
+    border-radius: 16px 180px 16px 180px;
+  }
+
+  .about-img--arch-left {
+    border-radius: 180px 16px 180px 16px;
+  }
+
+  /* Image first on mobile for the flipped rows, text first from 900px. */
+  @media (min-width: 900px) {
+    .split--flip > *:first-child {
+      order: 0;
+    }
+  }
+
+  .narrow {
+    max-width: 780px;
+  }
+
+  .narrow h2,
+  .split h2 {
+    margin-bottom: 1rem;
+  }
+
+  /* Address / hours pair under the location copy. */
+  .facts {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  @media (min-width: 560px) {
+    .facts {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .facts dt {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--green-600);
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .facts dd {
+    margin: 0;
+    font-size: 0.88rem;
+  }
+
+  /* ---------------------------------------------------------- 3. approach */
+  .approach {
+    display: grid;
+    gap: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
+    margin: 0;
+    counter-reset: none;
+  }
+
+  @media (min-width: 760px) {
+    .approach {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .approach__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: 1.4rem 1.5rem;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .approach__num {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--green-100);
+  }
+
+  .approach__title {
+    font-size: 1.02rem;
+    color: var(--green-700);
+    margin-bottom: 0.45rem;
+  }
+
+  .approach__body {
+    font-size: 0.86rem;
+    color: var(--muted);
+  }
+
+  /* ------------------------------------------------------- 4 + 6. chips */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 1.25rem 0 0;
+  }
+
+  .chips li {
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    background: var(--green-050);
+    border: 1px solid var(--green-100);
+    color: var(--green-700);
+    font-size: 0.78rem;
+  }
+
+  .chips--outline li {
+    background: transparent;
+    border-color: var(--line);
+    color: var(--ink-soft);
+  }
+
+  .note {
+    margin-top: 1.25rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .note a {
+    color: var(--green-700);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .note a:hover {
+    color: var(--green-600);
+  }
+
+  /* -------------------------------------------------------- 5. therapists */
+  .two-col {
+    display: grid;
+    gap: clamp(1.25rem, 1rem + 1.5vw, 2.5rem);
+  }
+
+  @media (min-width: 800px) {
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* ---------------------------------------------------------- 9. reasons */
+  .reasons {
+    display: grid;
+    gap: 0.8rem;
+    margin: 1.5rem 0 0;
+  }
+
+  .reasons li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.7rem;
+    align-items: start;
+    font-size: 0.92rem;
+  }
+
+  .reasons svg {
+    color: var(--green-600);
+    margin-top: 0.28rem;
+  }
+
+  /* ------------------------------------------------------------- 10. plan */
+  .plan {
+    display: grid;
+    gap: clamp(1.5rem, 1.2rem + 2vw, 3rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .plan {
+      grid-template-columns: 1.3fr 1fr;
+    }
+  }
+
+  .plan h2 {
+    margin-bottom: 1rem;
+  }
+
+  .plan__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  .plan__img {
+    border-radius: var(--radius);
+    aspect-ratio: 9 / 7;
+  }
+</style>

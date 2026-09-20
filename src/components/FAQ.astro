@@ -1,0 +1,109 @@
+---
+/**
+ * FAQ accordion built on native <details> - works without JavaScript, which
+ * keeps the answers crawlable and keyboard accessible.
+ *
+ * Only answered questions are rendered. Feed the same list to `faqSchema()`
+ * so the markup and the visible text stay in sync.
+ */
+import { answeredFaqs } from '../data/faqs';
+import type { Faq } from '../data/faqs';
+
+interface Props {
+  faqs: Faq[];
+  /** Open the first item by default. */
+  openFirst?: boolean;
+  /**
+   * Element used for the question text inside <summary>.
+   *
+   * Defaults to a plain <span>: the home page carries fifteen questions and
+   * turning them all into headings would bury its real section headings. Pass
+   * 'h3' on a page whose FAQ block is a proper H2 section with a handful of
+   * questions under it (the contact page does).
+   */
+  questionTag?: 'span' | 'h3';
+}
+
+const { faqs, openFirst = true, questionTag = 'span' } = Astro.props;
+const Question = questionTag;
+const items = answeredFaqs(faqs);
+---
+
+{
+  items.length > 0 && (
+    <div class="faq">
+      {items.map((faq, index) => (
+        <details class="faq__item" open={openFirst && index === 0}>
+          <summary class="faq__q">
+            <Question class="faq__text">{faq.question}</Question>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M19 13H5v-2h14z" class="faq__minus" />
+              <path d="M11 5h2v14h-2z" class="faq__plus" />
+            </svg>
+          </summary>
+          <div class="faq__a">
+            <p>{faq.answer}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .faq {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .faq__item {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .faq__q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--green-800);
+  }
+
+  .faq__q::-webkit-details-marker {
+    display: none;
+  }
+
+  /* An h3 question must not look different from a span one. */
+  .faq__text {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+  }
+
+  .faq__q svg {
+    flex: none;
+    color: var(--green-600);
+    transition: transform 0.2s ease;
+  }
+
+  .faq__item[open] .faq__plus {
+    display: none;
+  }
+
+  .faq__item[open] .faq__q {
+    color: var(--green-700);
+  }
+
+  .faq__a {
+    padding: 0 1.25rem 1.25rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+</style>

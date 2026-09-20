@@ -1,0 +1,76 @@
+---
+/**
+ * 404 page. Kept noindex and out of the sitemap; most static hosts serve this
+ * file automatically for unknown URLs.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CTA from '../components/CTA.astro';
+import { site, mainNav } from '../data/site';
+---
+
+<BaseLayout
+  title="Page Not Found"
+  description="The page you were looking for is not available. Browse our massage services or contact Russian Spa Mahipalpur."
+  noindex
+>
+  <section class="section notfound">
+    <div class="container text-center">
+      <p class="notfound__code">404</p>
+      <h1>This Page Could Not Be Found</h1>
+      <p class="notfound__text">
+        The page you were looking for may have been moved or removed. Use the links below, or
+        message us on WhatsApp and we will help you book a session.
+      </p>
+
+      <ul class="notfound__links">
+        {mainNav.filter((item) => !item.children).map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+
+      <div class="cta-row">
+        <CTA label="Chat on WhatsApp" />
+        <a class="btn btn--outline" href={`tel:${site.phoneE164}`}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound {
+    padding-block: clamp(3rem, 2rem + 5vw, 6rem);
+  }
+
+  .notfound__code {
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 2rem + 8vw, 7rem);
+    color: var(--green-100);
+    line-height: 1;
+  }
+
+  .notfound__text {
+    max-width: 55ch;
+    margin: 1rem auto 0;
+    color: var(--muted);
+  }
+
+  .notfound__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+    margin-top: 2rem;
+    font-size: 0.92rem;
+  }
+
+  .notfound__links a:hover {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+/**
+ * Service card - photo, title, description and a WhatsApp CTA.
+ * The photo is passed in by the page, so each page controls its own artwork.
+ */
+import CTA from './CTA.astro';
+import type { SiteImage } from '../data/home-images';
+
+interface Props {
+  title: string;
+  description: string;
+  image: SiteImage;
+  /** Heading level, so the page keeps a correct h2 -> h3 outline. */
+  headingLevel?: 'h3' | 'h4';
+  /** Eager-load the first cards that sit above the fold. */
+  eager?: boolean;
+}
+
+const { title, description, image, headingLevel = 'h3', eager = false } = Astro.props;
+const Heading = headingLevel;
+---
+
+<article class="card service-card">
+  <img
+    src={image.src}
+    alt={image.alt || title}
+    width={image.width}
+    height={image.height}
+    loading={eager ? 'eager' : 'lazy'}
+    decoding="async"
+    class="service-card__img"
+  />
+  <div class="card__body">
+    <Heading class="card__title">{title}</Heading>
+    <p class="card__text">{description}</p>
+    <CTA message={`Hi, I would like to know more about your ${title}.`} small class="service-card__cta" />
+  </div>
+</article>
+
+<style>
+  .service-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .service-card__img {
+    width: 100%;
+    aspect-ratio: 7 / 5;
+    object-fit: cover;
+  }
+
+  .service-card .card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    text-align: center;
+  }
+
+  .service-card__cta {
+    margin-top: auto;
+    align-self: center;
+  }
+
+  .service-card .card__text {
+    margin-bottom: 1.2rem;
+  }
+</style>

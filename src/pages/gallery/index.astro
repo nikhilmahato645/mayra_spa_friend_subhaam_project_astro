@@ -1,0 +1,78 @@
+---
+/**
+ * GALLERY PAGE - /gallery/
+ *
+ * STATUS: structure ready, waiting for real photos.
+ *
+ * HOW TO FINISH THIS PAGE
+ *   1. put your photos in public/images/gallery/;
+ *   2. replace the entries in `galleryImages` (src/data/page-images.ts) with
+ *      localImage('/images/gallery/<file>.webp', '<alt text>', w, h);
+ *   3. remove '/gallery/' from src/data/drafts.mjs.
+ *
+ * Alt text matters here: it is what puts these photos into Google Images.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import GalleryGrid from '../../components/GalleryGrid.astro';
+import CTA from '../../components/CTA.astro';
+import { site } from '../../data/site';
+import { pageHeroes, galleryImages } from '../../data/page-images';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const title = 'Spa Gallery in Delhi';
+const description = `Photos of the treatment rooms, facilities and interiors at Russian Spa Mahipalpur near Delhi Aerocity. Call ${site.phone} to book a session.`;
+
+const crumbs = breadcrumbTrail([{ name: 'Gallery', href: '/gallery/' }]);
+const schemas = [breadcrumbSchema(crumbs)];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+>
+  <PageHero
+    title="Our Spa Gallery"
+    subtitle="A look inside our treatment rooms, relaxation areas and facilities near Mahipalpur and Aerocity."
+    image={pageHeroes.gallery}
+    breadcrumbs={crumbs}
+  />
+
+  <section class="section">
+    <div class="container">
+      <GalleryGrid images={galleryImages} minColumn="260px" eagerCount={3} />
+    </div>
+  </section>
+
+  <section class="section section--cream">
+    <div class="container text-center">
+      <h2>Visit Us for a Relaxing Session</h2>
+      <p class="muted lead">
+        Message us on WhatsApp to check availability at the outlet closest to you.
+      </p>
+      <div class="cta-row">
+        <CTA label="Chat on WhatsApp" />
+        <a class="btn btn--outline" href="/pricing/">See Pricing</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    max-width: 60ch;
+    margin: 1rem auto 0;
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+</style>

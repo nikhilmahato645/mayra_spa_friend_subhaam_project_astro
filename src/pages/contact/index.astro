@@ -1,0 +1,706 @@
+---
+/**
+ * CONTACT PAGE - /contact/
+ *
+ * Contact -> booking request -> WhatsApp. The booking form has no server
+ * behind it on purpose: it validates in the browser, composes a WhatsApp
+ * message and opens the chat. Nothing is posted anywhere, nothing is stored
+ * (no localStorage, no cookies), nothing is logged and no key is involved.
+ *
+ * Every phone number, address and opening hour comes from src/data/site.ts.
+ * The treatment list comes from src/data/treatments.ts, so the dropdown can
+ * never drift out of sync with the prices on /pricing/.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import FAQ from '../../components/FAQ.astro';
+import { site, telHref, mailHref, whatsappHref } from '../../data/site';
+import { treatments } from '../../data/treatments';
+import { contactFaqs } from '../../data/faqs';
+import { contactImages } from '../../data/page-images';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema } from '../../utils/schema';
+
+const title = 'Contact Russian Spa Mahipalpur';
+const description =
+  'Contact Russian Spa Mahipalpur in Aerocity near Delhi Airport. Send a booking request on WhatsApp, call +91 9599547138 or use the appointment form.';
+
+const crumbs = breadcrumbTrail([{ name: 'Contact Us', href: '/contact/' }]);
+
+/**
+ * Breadcrumbs + the six questions printed further down. The LocalBusiness
+ * (DaySpa) entity is already emitted site-wide by BaseLayout from the same
+ * src/data/site.ts values, so it is NOT repeated here - a second, slightly
+ * different copy of the business would be a conflicting duplicate.
+ */
+const schemas = [breadcrumbSchema(crumbs), faqSchema(contactFaqs)];
+
+/** Dropdown options: the ten priced treatments, plus the first visit offer. */
+const treatmentOptions = [
+  ...treatments.map((treatment) => treatment.name),
+  'First Visit Full Body Massage',
+  'Other / Not Sure',
+];
+
+/**
+ * Google Maps embed, addressed by the business CID rather than by an address
+ * string. A `?q=<address>` embed just drops a generic pin on the road; the CID
+ * is the Google Business Profile itself, so the map opens on the red place
+ * marker with the listing's own info card ("Open in Maps" / directions) beside
+ * it. No API key and no hand-written coordinates are involved.
+ */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+---
+
+<BaseLayout title={title} description={description} schemas={schemas}>
+  <PageHero
+    title="Contact Russian Spa Mahipalpur"
+    subtitle="Get in touch and our team will confirm your appointment."
+    image={contactImages.hero}
+    breadcrumbs={crumbs}
+  />
+
+  <!-- ------------------------------------------------------------- intro -->
+  <section class="section section--tight">
+    <div class="container">
+      <p class="intro">
+        Get in touch whenever you have a question about our treatments. Our team can tell you which
+        massage suits the time you have, confirm the current price and session length, check what is
+        free on the day you want, and hold an appointment for you. We are in Aerocity, minutes from
+        Mahipalpur and Delhi Airport, and open every day. WhatsApp is usually the quickest way to
+        reach us, but a call or an email works just as well.
+      </p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------- contact info cards -->
+  <section class="section section--tight">
+    <div class="container">
+      <ul class="info">
+        <li class="info__card">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"
+            ></path>
+          </svg>
+          <p class="info__title h-script">Address</p>
+          <address>{site.addressLine}</address>
+        </li>
+
+        <li class="info__card">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11.4 11.4 0 0 0 3.6.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .58 3.6 1 1 0 0 1-.25 1z"
+            ></path>
+          </svg>
+          <p class="info__title h-script">Phone</p>
+          <a href={telHref}>{site.phone}</a>
+        </li>
+
+        <li class="info__card">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"
+            ></path>
+          </svg>
+          <p class="info__title h-script">Email</p>
+          <a href={mailHref}>{site.email}</a>
+        </li>
+
+        <li class="info__card">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.6V7h-2v6.4l4.7 2.8 1-1.7z"
+            ></path>
+          </svg>
+          <p class="info__title h-script">Opening Hours</p>
+          <p>{site.openingHoursLabel}</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- booking form -->
+  <section class="section">
+    <div class="container booking">
+      <img
+        class="booking__shot"
+        src={contactImages.form.src}
+        alt={contactImages.form.alt}
+        width={contactImages.form.width}
+        height={contactImages.form.height}
+        loading="lazy"
+        decoding="async"
+      />
+
+      <div class="panel">
+        <h2>Book an Appointment</h2>
+        <p class="panel__lead">
+          Tell us what you would like and when. Sending the form opens WhatsApp with the details
+          filled in - you still tap send, and we reply to confirm.
+        </p>
+
+        <form id="booking-form" novalidate>
+          <div class="row">
+            <div class="field">
+              <label for="name">Full name <span aria-hidden="true">*</span></label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                autocomplete="name"
+                required
+                aria-required="true"
+              />
+            </div>
+
+            <div class="field">
+              <label for="phone">Phone number <span aria-hidden="true">*</span></label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                autocomplete="tel"
+                inputmode="tel"
+                placeholder="+91 98765 43210"
+                required
+                aria-required="true"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="treatment">Preferred treatment <span aria-hidden="true">*</span></label>
+            <select id="treatment" name="treatment" required aria-required="true">
+              <option value="">Please choose</option>
+              {treatmentOptions.map((option) => <option value={option}>{option}</option>)}
+            </select>
+          </div>
+
+          <!-- Three short controls share one row so the whole form stays
+               inside a single screen on a laptop. -->
+          <div class="row row--three">
+            <div class="field">
+              <label for="date">Date <span class="opt">(optional)</span></label>
+              <input type="date" id="date" name="date" />
+            </div>
+
+            <div class="field">
+              <label for="time">Time <span class="opt">(optional)</span></label>
+              <input type="time" id="time" name="time" />
+            </div>
+
+            <div class="field">
+              <label for="guests">Guests <span aria-hidden="true">*</span></label>
+              <select id="guests" name="guests" required aria-required="true">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="message">Message <span class="opt">(optional)</span></label>
+            <textarea
+              id="message"
+              name="message"
+              rows="3"
+              placeholder="Tell us anything we should know about your preferred treatment or appointment."
+            ></textarea>
+          </div>
+
+          <p class="form__error" id="form-error" role="alert" hidden></p>
+
+          <button class="btn btn--whatsapp btn--block" type="submit">
+            Send Booking Request on WhatsApp
+          </button>
+
+          <p class="form__status" id="form-status" role="status" hidden>
+            Your booking details are ready in WhatsApp. Please send the message to complete your
+            request - we will reply to confirm availability.
+          </p>
+
+          <p class="form__note">
+            Your details are only used to write the WhatsApp message. Nothing is saved on this
+            website.
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------ visit us -->
+  <section class="section section--cream">
+    <div class="container split">
+      <div>
+        <h2>Visit Our Spa</h2>
+        <p>
+          You will find us on Northern Access Road in Aerocity, New Delhi - close to the hotels
+          around Delhi Airport and a few minutes from Mahipalpur, which makes it easy to fit a
+          session around a flight or a work day.
+        </p>
+        <address class="visit__address">{site.addressLine}</address>
+        <p class="visit__hours">{site.openingHoursLabel}</p>
+        <a
+          class="btn btn--outline"
+          href={site.mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer">Get Directions</a
+        >
+        <p class="visit__links">
+          Before you come, you can <a href="/pricing/">view massage pricing</a>,
+          <a href="/services/">explore our massage services</a> or
+          <a href="/about/">learn about our spa</a>.
+        </p>
+      </div>
+      <img
+        class="shot"
+        src={contactImages.lounge.src}
+        alt={contactImages.lounge.alt}
+        width={contactImages.lounge.width}
+        height={contactImages.lounge.height}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- -------------------------------------------------- other ways to talk -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <h2>Other Ways to Contact Us</h2>
+      </div>
+
+      <div class="grid ways">
+        <article class="way">
+          <h3>WhatsApp</h3>
+          <p>For appointment requests and questions about a treatment.</p>
+          <a
+            class="btn btn--whatsapp btn--sm btn--block"
+            href={whatsappHref('Hi, I would like to ask about a massage appointment.')}
+            target="_blank"
+            rel="noopener noreferrer">Chat on WhatsApp</a
+          >
+        </article>
+
+        <article class="way">
+          <h3>Call Us</h3>
+          <p>Speak to the team directly during our opening hours.</p>
+          <a class="btn btn--outline btn--sm btn--block" href={telHref}>Call {site.phone}</a>
+        </article>
+
+        <article class="way">
+          <h3>Email</h3>
+          <p>Best for longer questions or a booking you are planning ahead.</p>
+          <a class="btn btn--outline btn--sm btn--block" href={mailHref}>Email Us</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ----------------------------------------------------- before you visit -->
+  <section class="section section--mint">
+    <div class="container">
+      <div class="section__head">
+        <h2>Before You Visit</h2>
+        <p>A quick message ahead of your appointment saves a wasted trip. Feel free to ask us to:</p>
+      </div>
+      <ul class="checks">
+        <li>Confirm that the treatment you want is available on your date.</li>
+        <li>Confirm the current price for that session.</li>
+        <li>Check how long the session runs, so you can plan the rest of your day.</li>
+        <li>Hold a particular appointment time for you.</li>
+        <li>Tell you which facilities are included with the treatment or package you have chosen.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- FAQ -->
+  <section class="section">
+    <div class="container faq-wrap">
+      <div class="section__head">
+        <h2>Frequently Asked Questions</h2>
+      </div>
+      <FAQ faqs={contactFaqs} questionTag="h3" />
+    </div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- map -->
+  <section class="section section--tight" aria-label="Our location on the map">
+    <div class="container">
+      <iframe
+        class="map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1200"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+</BaseLayout>
+
+<script define:vars={{ whatsappNumber: site.whatsappNumber }}>
+  /**
+   * Turn the booking form into a WhatsApp message.
+   *
+   * Nothing leaves the browser until the visitor's own WhatsApp opens: no
+   * fetch, no storage, no logging. Every value goes through
+   * encodeURIComponent() as part of the query string, so a stray '&' or '#'
+   * in a message cannot break or extend the URL.
+   */
+  const form = document.getElementById('booking-form');
+  const errorBox = document.getElementById('form-error');
+  const statusBox = document.getElementById('form-status');
+
+  /** Accepts +, spaces, dashes and brackets, but needs 7-15 real digits. */
+  const isPhone = (value) => {
+    if (!/^\+?[\d\s()-]+$/.test(value)) return false;
+    const digits = value.replace(/\D/g, '');
+    return digits.length >= 7 && digits.length <= 15;
+  };
+
+  const showError = (message, field) => {
+    if (errorBox) {
+      errorBox.textContent = message;
+      errorBox.hidden = false;
+    }
+    if (statusBox) statusBox.hidden = true;
+    if (field) {
+      field.setAttribute('aria-invalid', 'true');
+      field.focus();
+    }
+  };
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const read = (id) => String(form.elements[id]?.value ?? '').trim();
+    for (const id of ['name', 'phone', 'treatment', 'guests']) {
+      form.elements[id]?.removeAttribute('aria-invalid');
+    }
+
+    const name = read('name');
+    const phone = read('phone');
+    const treatment = read('treatment');
+    const guests = read('guests');
+    const date = read('date');
+    const time = read('time');
+    const message = read('message');
+
+    if (!name || !phone) {
+      showError('Please enter your name and phone number.', form.elements[name ? 'phone' : 'name']);
+      return;
+    }
+    if (!isPhone(phone)) {
+      showError('Please enter a valid phone number we can reach you on.', form.elements.phone);
+      return;
+    }
+    if (!treatment) {
+      showError('Please choose a preferred treatment.', form.elements.treatment);
+      return;
+    }
+    if (!guests) {
+      showError('Please choose the number of guests.', form.elements.guests);
+      return;
+    }
+
+    if (errorBox) errorBox.hidden = true;
+
+    const lines = [
+      'Hello, I would like to book a massage appointment.',
+      '',
+      `Name: ${name}`,
+      `Phone: ${phone}`,
+      `Treatment: ${treatment}`,
+      date ? `Preferred Date: ${date}` : '',
+      time ? `Preferred Time: ${time}` : '',
+      `Guests: ${guests}`,
+      message ? `Message: ${message}` : '',
+      '',
+      'Please confirm availability and booking details.',
+    ].filter((line, index, all) => line !== '' || (index > 0 && all[index - 1] !== ''));
+
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
+
+    /* Works on both: the app on a phone, WhatsApp Web on a desktop. If the
+       browser blocks the popup, navigate the current tab instead. */
+    const opened = window.open(url, '_blank', 'noopener');
+    if (!opened) window.location.href = url;
+
+    if (statusBox) statusBox.hidden = false;
+  });
+</script>
+
+<style>
+  .intro {
+    max-width: 78ch;
+    margin-inline: auto;
+    text-align: center;
+    color: var(--ink-soft);
+  }
+
+  /* -------------------------------------------------- contact info cards */
+
+  .info {
+    display: grid;
+    gap: clamp(1rem, 0.75rem + 1vw, 1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+
+  .info__card {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.6rem 1.4rem;
+    text-align: center;
+  }
+
+  .info__card svg {
+    width: 34px;
+    height: 34px;
+    fill: var(--green-600);
+  }
+
+  /* One of four equal cards - a heading in name only, so it is sized like a
+     card title rather than like a section heading. */
+  .info__title {
+    font-size: 1.45rem;
+    color: var(--green-700);
+    margin: 0.35rem 0 0.6rem;
+  }
+
+  .info__card address {
+    font-style: normal;
+  }
+
+  .info__card address,
+  .info__card p,
+  .info__card a {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .info__card a:hover {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------- booking block */
+
+  .booking {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+    align-items: stretch;
+  }
+
+  @media (min-width: 900px) {
+    .booking {
+      grid-template-columns: 0.85fr 1.15fr;
+    }
+  }
+
+  .booking__shot {
+    width: 100%;
+    height: 100%;
+    max-height: 640px;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+
+  .panel {
+    background: var(--green-800);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.5rem, 1.1rem + 1.8vw, 2.75rem);
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  .panel h2 {
+    color: var(--white);
+  }
+
+  .panel__lead {
+    margin: 0.6rem 0 1.35rem;
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .row {
+    display: grid;
+    gap: 0 0.85rem;
+  }
+
+  @media (min-width: 560px) {
+    .row {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .row--three {
+      grid-template-columns: 1fr 1fr 0.7fr;
+    }
+  }
+
+  .field {
+    display: grid;
+    gap: 0.3rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .field label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .field .opt {
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 400;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+
+  /* A visible, high contrast focus ring on a dark panel. */
+  .field input:focus-visible,
+  .field select:focus-visible,
+  .field textarea:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .field [aria-invalid='true'] {
+    border-color: #ffb4ab;
+    box-shadow: 0 0 0 2px rgba(255, 180, 171, 0.5);
+  }
+
+  .form__error {
+    margin-bottom: 1rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 180, 171, 0.16);
+    color: #ffd7d2;
+    font-size: 0.85rem;
+  }
+
+  .form__status {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #bdf0d8;
+  }
+
+  .form__note {
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  /* --------------------------------------------------------- visit / ways */
+
+  .shot {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .visit__address {
+    font-style: normal;
+    margin: 1rem 0 0.25rem;
+    color: var(--green-800);
+    font-weight: 500;
+  }
+
+  .visit__hours {
+    margin-bottom: 1.25rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .visit__links {
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .visit__links a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .ways {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .way {
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.6rem 1.4rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .way h3 {
+    color: var(--green-800);
+  }
+
+  .way p {
+    flex: 1;
+    margin: 0.5rem 0 1.25rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .checks {
+    display: grid;
+    gap: 0.7rem;
+    max-width: 70ch;
+    margin-inline: auto;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  .checks li {
+    position: relative;
+    padding-left: 1.5rem;
+  }
+
+  .checks li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--green-500);
+  }
+
+  .faq-wrap {
+    max-width: 860px;
+  }
+
+  /* Boxed inside the container, not a full-bleed strip, so the place marker
+     and its info card stay in the middle of the page. */
+  .map {
+    display: block;
+    width: 100%;
+    height: clamp(300px, 26vw, 420px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+</style>

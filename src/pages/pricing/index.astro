@@ -1,0 +1,531 @@
+---
+/**
+ * PRICING PAGE - /pricing/
+ *
+ * This page is transactional: prices, durations, packages and how to book.
+ * It deliberately does NOT repeat the long treatment write-ups from
+ * /services/ or the marketing paragraphs from the home page - each treatment
+ * gets one line (`priceNote` in src/data/treatments.ts) and a link out.
+ *
+ * Every figure on this page comes from project data, never from this file:
+ *   - the ten treatment prices / durations  ->  src/data/treatments.ts
+ *   - the two spa packages                  ->  src/data/services.ts
+ *   - the 1st visit (₹1499) and B2B (₹2999) offers, client supplied copy
+ * Edit a price in the data file and this page and its JSON-LD both follow.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import CTA from '../../components/CTA.astro';
+import { site } from '../../data/site';
+import { packages } from '../../data/services';
+import { treatments } from '../../data/treatments';
+import { pageHeroes, pricingImages } from '../../data/page-images';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, offerCatalogSchema } from '../../utils/schema';
+
+const title = 'Spa & Massage Price in Mahipalpur';
+const description =
+  'Spa and massage prices in Mahipalpur near Delhi Airport: treatment rates with session times, the ₹1499 first visit offer and our two spa packages.';
+
+const crumbs = breadcrumbTrail([{ name: 'Pricings', href: '/pricing/' }]);
+
+/** Introductory offers, exactly as advertised by the client. */
+const offers = [
+  {
+    name: '1st Visit Full Body Massage',
+    price: '₹1499',
+    priceValue: 1499,
+    note: 'First visit offer. Full body massage with shower.',
+  },
+  {
+    name: 'B2B Massage',
+    price: '₹2999',
+    priceValue: 2999,
+    note: 'Body to body massage session in a private room.',
+  },
+];
+
+/**
+ * ONE OfferCatalog for the whole page. Everything listed in it is also
+ * printed on the page above - no hidden prices, no invented discounts, and no
+ * ratings or reviews (see the rules at the top of src/utils/schema.ts).
+ */
+const schemas = [
+  breadcrumbSchema(crumbs),
+  offerCatalogSchema([
+    ...offers.map((offer) => ({
+      name: offer.name,
+      price: offer.priceValue,
+      description: offer.note,
+    })),
+    ...treatments.map((treatment) => ({
+      name: treatment.name,
+      price: treatment.priceValue,
+      description: `${treatment.duration} session. ${treatment.priceNote}`,
+    })),
+    ...packages.map((pack) => ({
+      name: pack.name,
+      price: pack.priceValue,
+      description: pack.features.join(', '),
+    })),
+  ]),
+];
+---
+
+<BaseLayout title={title} description={description} schemas={schemas}>
+  <PageHero
+    title="Spa & Massage Price in Mahipalpur"
+    subtitle="Treatment rates, session times and package details - so you know the price before you book."
+    image={pageHeroes.pricing}
+    breadcrumbs={crumbs}
+  />
+
+  <!-- ------------------------------------------------------------- intro -->
+  <section class="section section--tight">
+    <div class="container">
+      <p class="intro">
+        This page lists what each treatment at Russian Spa Mahipalpur costs and how long the
+        session runs, along with our first-visit offer and the two spa packages. Prices are shown
+        per session, so you can weigh a 45-minute foot treatment against a 90-minute massage before
+        deciding. We are a short drive from Delhi Airport and Aerocity, and guests travelling from
+        elsewhere in Delhi NCR are welcome. If you already know which treatment you want, message
+        us on WhatsApp and the team will confirm a slot and the price for you.
+      </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------- treatment prices -->
+  <section class="section section--cream">
+    <div class="container">
+      <div class="section__head">
+        <h2>Massage Treatment Prices</h2>
+        <p>
+          Each price covers the session length shown on the card. Every treatment takes place in a
+          private room.
+        </p>
+      </div>
+
+      <div class="grid menu">
+        {
+          treatments.map((treatment) => (
+            <article class="item">
+              <h3 class="item__name">{treatment.name}</h3>
+              <p class="item__note">{treatment.priceNote}</p>
+              <p class="item__meta">
+                <span class="item__duration">{treatment.duration}</span>
+                <span class="item__price">{treatment.price}</span>
+              </p>
+              <CTA
+                label="Book on WhatsApp"
+                message={`Hi, I would like to book the ${treatment.name} (${treatment.duration}, ${treatment.price}). Could you confirm availability?`}
+                small
+                block
+              />
+            </article>
+          ))
+        }
+      </div>
+
+      <p class="after-grid">
+        Want the full explanation of how each therapy is performed and who it suits?
+        <a href="/services/">View All Massage Services</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- -------------------------------------------------------- first visit -->
+  <section class="section">
+    <div class="container split">
+      <div>
+        <h2>First Visit Massage Offer</h2>
+        <p class="price">₹1,499</p>
+        <p>
+          If this is your first appointment with us, you can book a full body massage at ₹1,499
+          instead of the standard menu rate. A shower is included with the session, and the
+          treatment takes place in a private room like any other booking.
+        </p>
+        <p>
+          The offer covers the first visit full body massage only - the ten treatments listed above
+          are charged at their own prices. Mention it when you message us so the team can set the
+          booking up correctly.
+        </p>
+        <p class="offer-extra">
+          We also list a <strong>B2B massage at ₹2,999</strong>, a body to body session in a private
+          room. Ask the team for the session details before you book.
+        </p>
+        <CTA
+          label="Book the ₹1,499 First Visit"
+          message="Hi, I am a first-time guest and would like to book the 1st visit full body massage at ₹1499."
+        />
+      </div>
+      <img
+        class="shot"
+        src={pricingImages.firstVisit.src}
+        alt={pricingImages.firstVisit.alt}
+        width={pricingImages.firstVisit.width}
+        height={pricingImages.firstVisit.height}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- ----------------------------------------------------------- packages -->
+  <section class="section section--cream">
+    <div class="container">
+      <div class="section__head">
+        <h2>Spa Packages</h2>
+        <p>
+          Packages are priced per session and include more than a standard treatment. Check the
+          list under each one before booking.
+        </p>
+      </div>
+
+      <div class="split split--reverse">
+        <div class="grid packs">
+          {
+            packages.map((pack) => (
+              <article class={`pack ${pack.featured ? 'pack--featured' : ''}`}>
+                <h3 class="pack__name">{pack.name}</h3>
+                <p class="price">
+                  {pack.price}
+                  <span class="pack__unit">{pack.unit}</span>
+                </p>
+                <ul class="pack__features">
+                  {pack.features.map((feature) => (
+                    <li>{feature}</li>
+                  ))}
+                </ul>
+                <CTA
+                  label="Enquire on WhatsApp"
+                  message={`Hi, I am interested in the ${pack.name} package (${pack.price} ${pack.unit}). Is it available?`}
+                  small
+                  block
+                />
+              </article>
+            ))
+          }
+        </div>
+        <img
+          class="shot"
+          src={pricingImages.packages.src}
+          alt={pricingImages.packages.alt}
+          width={pricingImages.packages.width}
+          height={pricingImages.packages.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      <p class="after-grid">
+        The 5 Star Hotels outlets package is arranged in a hotel room rather than at our own outlet,
+        so availability is confirmed booking by booking. For home and hotel visits, share your
+        location on WhatsApp and the team will confirm what is possible before your appointment.
+      </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- inclusions -->
+  <section class="section">
+    <div class="container split">
+      <img
+        class="shot"
+        src={pricingImages.included.src}
+        alt={pricingImages.included.alt}
+        width={pricingImages.included.width}
+        height={pricingImages.included.height}
+        loading="lazy"
+        decoding="async"
+      />
+      <div>
+        <h2>What&rsquo;s Included in Your Treatment?</h2>
+        <p>Every treatment booked from the price list above includes:</p>
+        <ul class="ticks">
+          <li>The full session time shown on the card, from 45 to 120 minutes.</li>
+          <li>A private treatment room.</li>
+          <li>
+            A short chat with your therapist beforehand about the areas you want worked on and
+            anything to avoid.
+          </li>
+          <li>Pressure adjusted during the session - say the word and it is changed.</li>
+          <li>Fresh linen and towels prepared for your appointment.</li>
+        </ul>
+        <p>
+          A <strong>shower</strong> is included with the ₹1,499 first visit full body massage.
+          <strong>Steam with a jacuzzi bath</strong> is part of the 5 Star Hotels outlets package
+          only. Neither is part of every treatment, so please ask before booking if a particular
+          facility matters to you. You can see the rooms and facilities in our
+          <a href="/gallery/">spa gallery</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------ how to choose -->
+  <section class="section section--mint">
+    <div class="container">
+      <div class="section__head">
+        <h2>How to Choose a Treatment</h2>
+      </div>
+      <div class="split">
+        <div class="choose">
+          <p>
+            Your choice comes down to the pressure, style and session length you prefer. For gentle,
+            flowing relaxation, look at Swedish or aromatherapy. If you want firmer pressure on
+            specific muscles, deep tissue and sports massage work slowly through the tighter areas.
+            Thai and shiatsu are done clothed on a mat and are built around assisted stretching and
+            pressure points rather than oil work. For warmth, hot stone therapy and the Russian
+            banya are the two heat-based options. Reflexology is the shortest session and stays with
+            the feet and lower legs, and the couple&rsquo;s package puts two guests in one room at
+            the same time.
+          </p>
+          <p>
+            None of them is better than the others - it depends on what you are in the mood for. If
+            you are unsure, tell the team how much time you have and how firm you like the pressure,
+            and they will talk it through with you.
+            <a href="/services/">Explore Our Massage Services</a> for a longer description of each
+            one.
+          </p>
+        </div>
+        <img
+          class="shot"
+          src={pricingImages.choosing.src}
+          alt={pricingImages.choosing.alt}
+          width={pricingImages.choosing.width}
+          height={pricingImages.choosing.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------ pricing notes -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <h2>Important Pricing Information</h2>
+      </div>
+      <ul class="notes">
+        <li>Each price shown is for the session length listed beside it.</li>
+        <li>
+          Package prices are separate from the treatment menu and the inclusions differ - compare
+          the two lists rather than assuming they match.
+        </li>
+        <li>
+          The ₹1,499 rate is a first visit offer for the full body massage, not a reduction on every
+          treatment.
+        </li>
+        <li>
+          Availability depends on the appointment slots free on the day, so please confirm with the
+          team before travelling to us.
+        </li>
+        <li>We are open every day, {site.openingHoursLabel.replace('Open all days, ', '')}.</li>
+        <li>
+          For anything not covered here, ask us before booking and we will tell you what your
+          session includes. You can also read more <a href="/about/">about our spa</a> first.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- CTA -->
+  <section class="section section--dark">
+    <div class="container text-center">
+      <h2>Book Your Massage</h2>
+      <p>
+        Pick the treatment you want from the list above, check the session time and price, then
+        confirm availability with our team on WhatsApp or by phone.
+      </p>
+      <div class="cta-row">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I would like to check availability and book a massage appointment."
+        />
+        <a class="btn btn--light" href={`tel:${site.phoneE164}`}>Call {site.phone}</a>
+      </div>
+      <p class="cta-note">
+        Prefer to write to us or check the address first? <a href="/contact/">Contact Us to Book</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro {
+    max-width: 78ch;
+    margin-inline: auto;
+    text-align: center;
+    color: var(--ink-soft);
+  }
+
+  /* --------------------------------------------------------- price menu */
+
+  .menu {
+    grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  }
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.35rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .item__name {
+    font-size: 1.05rem;
+    color: var(--green-800);
+  }
+
+  .item__note {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0.5rem 0 1rem;
+    flex: 1;
+  }
+
+  /* Duration left, price right - the two numbers a visitor is scanning for. */
+  .item__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    margin-bottom: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .item__duration {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .item__price {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--green-700);
+  }
+
+  .after-grid {
+    max-width: 70ch;
+    margin: 2.25rem auto 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  /* ----------------------------------------------------------- packages */
+
+  .packs {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .pack {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.5rem;
+    text-align: center;
+  }
+
+  .pack--featured {
+    border-color: var(--green-500);
+    box-shadow: var(--shadow);
+  }
+
+  .pack__name {
+    font-size: 1.15rem;
+    color: var(--green-800);
+  }
+
+  .pack__unit {
+    font-size: 0.85rem;
+    font-family: var(--font-body);
+    color: var(--muted);
+  }
+
+  .pack__features {
+    display: grid;
+    gap: 0.55rem;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  /* ------------------------------------------------------------- shared */
+
+  .shot {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .offer-extra {
+    padding: 0.9rem 1.1rem;
+    margin-block: 1.25rem;
+    border-left: 3px solid var(--green-500);
+    background: var(--green-050);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+  }
+
+  .ticks,
+  .notes {
+    display: grid;
+    gap: 0.7rem;
+    margin-block: 1.1rem;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  .ticks li,
+  .notes li {
+    position: relative;
+    padding-left: 1.5rem;
+  }
+
+  .ticks li::before,
+  .notes li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--green-500);
+  }
+
+  .notes {
+    max-width: 80ch;
+    margin-inline: auto;
+  }
+
+  .choose p + p {
+    margin-top: 1rem;
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .cta-note {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .section--dark .cta-note a,
+  .section--dark p a {
+    color: var(--white);
+    text-decoration: underline;
+  }
+</style>

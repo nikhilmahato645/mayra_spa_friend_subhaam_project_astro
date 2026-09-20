@@ -1,0 +1,466 @@
+---
+/**
+ * Site header: utility bar (phone / e-mail / socials / Book Now) above the
+ * sticky main navigation with the "Outlet" dropdown.
+ *
+ * On scroll the header adds `.is-scrolled`, which slides the utility bar away
+ * and shrinks the nav bar so more of the page stays visible.
+ *
+ * On mobile (<=1100px) the nav collapses into the curtain menu in
+ * MobileMenu.astro, and the utility bar shows the phone number and e-mail
+ * centred on two lines, as in the design.
+ *
+ * All contact details and menu items come from src/data/site.ts.
+ */
+import { site, mainNav, telHref, mailHref, whatsappHref } from '../data/site';
+import SocialLinks from './SocialLinks.astro';
+import MobileMenu from './MobileMenu.astro';
+
+/** Current path, used to mark the active menu item (aria-current). */
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? path === '/' : path.startsWith(href.replace(/\/$/, ''));
+---
+
+<header class="site-header" data-header>
+  <!-- ------------------------------------------------------- utility bar -->
+  <div class="topbar">
+    <div class="container topbar__inner">
+      <div class="topbar__contact">
+        <a href={telHref} class="topbar__link">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+            <path
+              d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .7-.2 1z"
+            ></path>
+          </svg>
+          <span>{site.phone}</span>
+        </a>
+        <a href={mailHref} class="topbar__link">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+            <path
+              d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m0 4-8 5-8-5V6l8 5 8-5z"
+            ></path>
+          </svg>
+          <span>{site.email}</span>
+        </a>
+      </div>
+
+      <div class="topbar__actions">
+        <SocialLinks class="topbar__socials" size={15} />
+        <a
+          class="topbar__book"
+          href={whatsappHref('Hi, I would like to book a massage appointment.')}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Book Now
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- --------------------------------------------------- main navigation -->
+  <div class="navbar">
+    <div class="container navbar__inner">
+      <a class="logo" href="/" aria-label={`${site.name} home`}>
+        <picture>
+          <source srcset={site.logo.markWebp} type="image/webp" />
+          <img
+            class="logo__mark"
+            src={site.logo.markPng}
+            alt=""
+            width={site.logo.markSize}
+            height={site.logo.markSize}
+            fetchpriority="high"
+            decoding="async"
+          />
+        </picture>
+        <span class="logo__text">
+          <span class="logo__line1">{site.logo.line1}</span>
+          <span class="logo__line2">{site.logo.line2}</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="Main navigation">
+        <ul class="nav__list">
+          {
+            mainNav.map((item) =>
+              item.children ? (
+                <li class="nav__item nav__item--has-children">
+                  <a
+                    href={item.href}
+                    class="nav__link"
+                    aria-current={isActive(item.href) ? 'page' : undefined}
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    {item.label}
+                    <svg
+                      class="nav__chevron"
+                      viewBox="0 0 24 24"
+                      width="13"
+                      height="13"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M7 10l5 5 5-5z" />
+                    </svg>
+                  </a>
+                  <ul class="dropdown">
+                    {item.children.map((child) => (
+                      <li>
+                        <a href={child.href} aria-current={path === child.href ? 'page' : undefined}>
+                          {child.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ) : (
+                <li class="nav__item">
+                  <a
+                    href={item.href}
+                    class="nav__link"
+                    aria-current={isActive(item.href) ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              )
+            )
+          }
+        </ul>
+      </nav>
+
+      <button
+        class="burger"
+        type="button"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-menu-toggle
+      >
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- The curtain menu drops down from directly below the nav bar. -->
+  <MobileMenu />
+</header>
+
+<script>
+  /**
+   * Add `.is-scrolled` to the header once the page has moved a little.
+   * Uses a passive listener plus requestAnimationFrame so it never blocks
+   * scrolling on a phone.
+   */
+  const header = document.querySelector('[data-header]');
+  let ticking = false;
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      header?.classList.toggle('is-scrolled', window.scrollY > 60);
+      ticking = false;
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+  }
+
+  /* ------------------------------------------------------------ top bar */
+  .topbar {
+    background: var(--green-600);
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.72rem;
+    line-height: 1.35;
+    /* Animated away on scroll - max-height keeps the nav bar sticky at top. */
+    max-height: 48px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.25s ease;
+  }
+
+  .site-header.is-scrolled .topbar {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .topbar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 30px;
+    padding-block: 0.15rem;
+  }
+
+  .topbar__contact {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .topbar__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+  }
+
+  .topbar__link:hover {
+    text-decoration: underline;
+  }
+
+  .topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .topbar__book {
+    background: var(--white);
+    color: var(--green-800);
+    padding: 0.25rem 1.05rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    white-space: nowrap;
+    transition: background-color 0.18s ease, color 0.18s ease;
+  }
+
+  .topbar__book:hover {
+    background: var(--green-100);
+  }
+
+  /* ------------------------------------------------------------- navbar */
+  .navbar {
+    background: var(--green-800);
+    color: var(--white);
+    transition: box-shadow 0.25s ease;
+  }
+
+  .site-header.is-scrolled .navbar {
+    box-shadow: 0 6px 22px rgba(11, 43, 36, 0.28);
+  }
+
+  .navbar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    min-height: 60px;
+    transition: min-height 0.25s ease;
+  }
+
+  .site-header.is-scrolled .navbar__inner {
+    min-height: 54px;
+  }
+
+  /* --------------------------------------------------------------- logo */
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--white);
+  }
+
+  /* The logo artwork is square-ish, so width and height stay equal. */
+  .logo__mark {
+    width: 38px;
+    height: 38px;
+    flex: none;
+    object-fit: contain;
+    transition: width 0.25s ease, height 0.25s ease;
+  }
+
+  .site-header.is-scrolled .logo__mark {
+    width: 33px;
+    height: 33px;
+  }
+
+  .logo__text {
+    display: grid;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.05;
+    font-size: clamp(0.85rem, 0.78rem + 0.3vw, 1.02rem);
+  }
+
+  /* ---------------------------------------------------------------- nav */
+  .nav__list {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.5rem, 0.15rem + 0.9vw, 1.35rem);
+    margin: 0;
+  }
+
+  .nav__item {
+    position: relative;
+  }
+
+  .nav__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.45rem 0.2rem;
+    font-weight: 500;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.92);
+    transition: color 0.18s ease;
+  }
+
+  /* Underline that grows out from the middle on hover. */
+  .nav__link::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0.1rem;
+    width: 0;
+    height: 2px;
+    background: var(--whatsapp);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    transition: width 0.22s ease;
+  }
+
+  .nav__link:hover::after,
+  .nav__link[aria-current='page']::after {
+    width: calc(100% - 0.4rem);
+  }
+
+  .nav__link:hover,
+  .nav__link[aria-current='page'] {
+    color: var(--white);
+  }
+
+  .nav__link[aria-current='page'] {
+    font-weight: 600;
+  }
+
+  /* ----------------------------------------------------------- dropdown */
+  .dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 10px);
+    min-width: 250px;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    padding: 0.4rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  }
+
+  .nav__item--has-children:hover .dropdown,
+  .nav__item--has-children:focus-within .dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+  }
+
+  .dropdown a {
+    display: block;
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--radius-sm);
+    color: var(--ink-soft);
+    font-size: 0.82rem;
+    transition: background-color 0.16s ease, color 0.16s ease, padding-left 0.16s ease;
+  }
+
+  .dropdown a:hover,
+  .dropdown a[aria-current='page'] {
+    background: var(--green-050);
+    color: var(--green-700);
+    padding-left: 1.05rem;
+  }
+
+  /* ------------------------------------------------------------- burger */
+  .burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 42px;
+    height: 42px;
+    padding: 0 9px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .burger span {
+    display: block;
+    height: 2px;
+    background: var(--white);
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  /* Burger morphs into a cross while the curtain is open. */
+  .burger[aria-expanded='true'] span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .burger[aria-expanded='true'] span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .burger[aria-expanded='true'] span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* --------------------------------------------------------- responsive */
+  @media (max-width: 1100px) {
+    .nav {
+      display: none;
+    }
+    .burger {
+      display: flex;
+    }
+  }
+
+  /* Phones and small tablets: phone + e-mail centred on two lines, and the
+     socials / Book Now move into the curtain menu (as in the design). */
+  @media (max-width: 720px) {
+    .topbar {
+      font-size: 0.7rem;
+      line-height: 1.3;
+      max-height: 52px;
+    }
+    .topbar__inner {
+      justify-content: center;
+      min-height: 0;
+      padding-block: 0.22rem;
+    }
+    .topbar__contact {
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      text-align: center;
+    }
+    .topbar__actions {
+      display: none; /* socials + Book Now live in the curtain menu instead */
+    }
+    .navbar__inner {
+      min-height: 52px;
+    }
+    .logo__mark {
+      width: 32px;
+      height: 32px;
+    }
+  }
+</style>

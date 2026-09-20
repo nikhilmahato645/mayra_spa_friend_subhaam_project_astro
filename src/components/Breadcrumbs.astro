@@ -1,0 +1,93 @@
+---
+/**
+ * Visible breadcrumb trail.
+ *
+ * Pair it with `breadcrumbSchema()` in the page's `schemas` prop so the visible
+ * trail and the structured data always say the same thing - Google requires
+ * the markup to match what the user sees.
+ */
+import type { BreadcrumbItem } from '../utils/seo';
+
+interface Props {
+  items: BreadcrumbItem[];
+  /** Use the light variant on top of a dark hero. */
+  light?: boolean;
+}
+
+const { items, light = false } = Astro.props;
+---
+
+<nav class={`crumbs ${light ? 'crumbs--light' : ''}`} aria-label="Breadcrumb">
+  <div class="container">
+    <ol>
+      {
+        items.map((item, index) => {
+          const last = index === items.length - 1;
+          return (
+            <li>
+              {last ? (
+                <span aria-current="page">{item.name}</span>
+              ) : (
+                <>
+                  <a href={item.href}>{item.name}</a>
+                  <span class="crumbs__sep" aria-hidden="true">
+                    /
+                  </span>
+                </>
+              )}
+            </li>
+          );
+        })
+      }
+    </ol>
+  </div>
+</nav>
+
+<style>
+  .crumbs {
+    background: var(--green-050);
+    border-bottom: 1px solid var(--line);
+    padding-block: 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+  }
+
+  .crumbs li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--muted);
+  }
+
+  .crumbs a:hover {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .crumbs__sep {
+    color: var(--line);
+  }
+
+  .crumbs [aria-current='page'] {
+    color: var(--green-700);
+    font-weight: 500;
+  }
+
+  .crumbs--light {
+    background: transparent;
+    border-bottom: 0;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .crumbs--light li,
+  .crumbs--light [aria-current='page'] {
+    color: rgba(255, 255, 255, 0.85);
+  }
+</style>

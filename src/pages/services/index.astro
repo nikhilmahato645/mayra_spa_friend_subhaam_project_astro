@@ -1,0 +1,410 @@
+---
+/**
+ * SERVICES PAGE - /services/
+ *
+ * The main detailed service resource on the site: one long-form write-up per
+ * treatment, pulled together from two data files that are each edited for a
+ * different reason -
+ *   - name / price / duration / photo  ->  src/data/treatments.ts (the one
+ *     place these figures are edited, also used by the home page)
+ *   - the longer paragraph + schema summary + photo alt text for this page
+ *     only  ->  src/data/service-details.ts
+ *
+ * The home page prints a short `cardText` excerpt per treatment and links
+ * here for the rest - see the "Read About Each Massage in Detail" link on
+ * index.astro. Do not copy that excerpt (or the home page intro) onto this
+ * page; this page explains each treatment from a different angle instead.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import CTA from '../../components/CTA.astro';
+import { site, telHref } from '../../data/site';
+import { treatments } from '../../data/treatments';
+import { serviceDetail } from '../../data/service-details';
+import { pageHeroes } from '../../data/page-images';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, serviceSchema } from '../../utils/schema';
+
+const title = 'Massage & Spa Services in Mahipalpur | Russian Spa';
+const description =
+  'Explore ten massage and spa treatments at Russian Spa Mahipalpur, near Aerocity and Delhi Airport - from Russian Banya to deep tissue, Thai and reflexology.';
+
+const crumbs = breadcrumbTrail([{ name: 'Services', href: '/services/' }]);
+
+/** Each treatment paired with its long-form write-up, keyed by slug. */
+const menu = treatments.map((treatment) => ({
+  treatment,
+  detail: serviceDetail(treatment.slug),
+}));
+
+/*
+ * Service schema for this page only, with a summary written specifically for
+ * this page's schema (not `treatment.summary`, which is already published in
+ * the home page's Service schema at a different URL) and an anchor url so
+ * each entry points at its own card on this page.
+ */
+const schemas = [
+  breadcrumbSchema(crumbs),
+  ...menu.map(({ treatment, detail }) =>
+    serviceSchema({
+      name: treatment.name,
+      description: detail.schemaSummary,
+      url: `${site.url}/services/#${treatment.slug}`,
+    })
+  ),
+];
+
+/** "What to Expect During Your Visit" - the on-site experience, not booking. */
+const visitSteps = [
+  {
+    title: 'Choose your treatment',
+    body: 'Pick a treatment from the menu above, or message us on WhatsApp first if you would like help deciding.',
+  },
+  {
+    title: 'Discuss preferences',
+    body: 'Your therapist asks about problem areas, pressure preference and anything you would like the session to focus on.',
+  },
+  {
+    title: 'Confirm pressure and details',
+    body: 'Before starting, you agree on pressure level, focus areas and the overall plan for the session together.',
+  },
+  {
+    title: 'Prepare for the session',
+    body: 'Change into the provided clothing, or stay dressed for a treatment such as Thai or Shiatsu, and settle into the room.',
+  },
+  {
+    title: 'Enjoy the treatment',
+    body: 'Your therapist works through the session at the agreed pace and pressure, for the full duration you have booked.',
+  },
+  {
+    title: 'Communicate if needed',
+    body: 'If the pressure feels too light, too firm, or you would like a change in focus, say so at any point - it is easy to adjust mid-session.',
+  },
+];
+---
+
+<BaseLayout title={title} description={description} bareTitle schemas={schemas}>
+  <PageHero
+    title="Massage & Spa Services in Mahipalpur"
+    subtitle="Ten treatments, each with its own pace, pressure and technique - detailed below so you can pick the one that actually suits you."
+    image={pageHeroes.services}
+    breadcrumbs={crumbs}
+  />
+
+  <!-- ---------------------------------------------------------- 1. INTRO -->
+  <section class="section section--tight">
+    <div class="container">
+      <p class="lead">
+        Russian Spa Mahipalpur offers ten different massage and spa treatments, ranging from a
+        heat-based Russian Banya to foot-focused Reflexology, so you can choose a session based on
+        the pace, pressure and technique that actually suits you rather than a single one-size-fits-all
+        massage. Some guests prefer long, flowing strokes; others want firmer, targeted pressure, an
+        assisted stretch, or simply an hour focused on tired feet after a long day. This page covers
+        each treatment in more detail than the home page - what the session involves, who it tends to
+        suit and what to expect once you are in the room. Every treatment is available at our
+        Mahipalpur location, a short drive from Delhi Airport and Aerocity, which makes it a
+        convenient stop for travellers as well as guests from across Delhi NCR. Duration and pricing
+        are listed with every treatment below.
+      </p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------- 2. TREATMENT MENU -->
+  <section class="section section--cream" id="treatments">
+    <div class="container">
+      <div class="section__head">
+        <h2>Explore Our Massage &amp; Spa Treatments</h2>
+        <p>
+          Each treatment below uses a different technique, pace and pressure level. Duration and
+          price are listed with every entry - ask your therapist beforehand if you would like more
+          detail before booking.
+        </p>
+      </div>
+
+      <div class="service-list">
+        {
+          menu.map(({ treatment, detail }) => (
+            <article class="service-detail" id={treatment.slug}>
+              {treatment.remoteImage ? (
+                <img
+                  class="service-detail__img"
+                  src={treatment.remoteImage.src}
+                  alt={detail.imageAlt}
+                  width={treatment.remoteImage.width}
+                  height={treatment.remoteImage.height}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <picture>
+                  <source srcset={`/images/home_page/${treatment.image}.webp`} type="image/webp" />
+                  <img
+                    class="service-detail__img"
+                    src={`/images/home_page/${treatment.image}.jpg`}
+                    alt={detail.imageAlt}
+                    width="760"
+                    height="507"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </picture>
+              )}
+
+              <div class="service-detail__body">
+                <h3>{treatment.name}</h3>
+                <p>{detail.body}</p>
+                <p class="service-detail__meta">
+                  <span class="service-detail__price">{treatment.price}</span>
+                  <span class="service-detail__duration">{treatment.duration}</span>
+                </p>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------- 3. HOW TO CHOOSE ====== -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <h2>How to Choose the Right Massage</h2>
+        <p>
+          If you are not sure which treatment to book, think in terms of pace and pressure rather
+          than treatment names. Swedish and Aromatherapy Massage lean toward lighter, flowing
+          strokes for a relaxing session. Deep Tissue and Sports Massage use firmer, more targeted
+          pressure. Thai Massage and Shiatsu bring in assisted stretching and rhythmic pressure
+          rather than oil-based strokes, while Reflexology keeps the focus on the feet for a
+          shorter session. Russian Banya and Hot Stone Therapy both work with heat rather than
+          pressure alone, at a slower, unhurried pace. The Couple's Spa Package is built around two
+          guests sharing the appointment together, whichever individual treatments you each choose.
+          There is no single right answer - it comes down to how much pressure you are comfortable
+          with and the kind of session you are in the mood for. Feel free to ask your therapist for
+          guidance when you arrive.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------- 4. WHAT TO EXPECT ======= -->
+  <section class="section section--mint">
+    <div class="container">
+      <div class="section__head">
+        <h2>What to Expect During Your Visit</h2>
+        <p>Every session follows roughly the same shape, whichever treatment you choose.</p>
+      </div>
+
+      <ol class="visit-steps">
+        {
+          visitSteps.map((step, index) => (
+            <li class="visit-step">
+              <span class="visit-step__num" aria-hidden="true">
+                {index + 1}
+              </span>
+              <div>
+                <h3 class="visit-step__title">{step.title}</h3>
+                <p class="visit-step__body">{step.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="text-center visit-steps__more">
+        You can read more about our therapists and how sessions are run on our <a href="/about/">About page</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------- 5. NEAR DELHI AIRPORT === -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <h2>Massage Services Near Delhi Airport</h2>
+        <p>
+          Our spa is located in Mahipalpur, a short drive from Delhi Airport and neighbouring
+          Aerocity, which makes it a practical stop for travellers with a layover, an early flight
+          the next morning, or simply some time to spare between terminals. The location also suits
+          hotel guests staying nearby and residents across Delhi NCR - Vasant Kunj, Dwarka and
+          Gurgaon are all within reasonable reach. Every treatment is offered from the same
+          Mahipalpur location, so there is no need to track down a specific branch for a specific
+          therapy; the full menu, from the Russian Banya to Reflexology, is available at one address.
+          You can see photos of the treatment rooms and facilities in our <a href="/gallery/">gallery</a> before you
+          visit, or get in touch directly to check availability for a specific time.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------ 6. BOOK A TREATMENT -->
+  <section class="section section--dark">
+    <div class="container text-center">
+      <h2>Book a Massage Treatment</h2>
+      <p class="book-cta__text">
+        Ready to book, or still deciding which treatment suits you? Message us on WhatsApp or call
+        the number below and our team will confirm availability, talk you through the treatments and
+        help you pick a time that works.
+      </p>
+      <div class="cta-row">
+        <CTA label="Book on WhatsApp" variant="whatsapp" />
+        <a class="btn btn--light" href="/contact/">Contact Us to Book</a>
+        <a class="btn btn--outline btn--outline-light" href="/pricing/">View Massage Pricing</a>
+        <a class="btn btn--outline btn--outline-light" href={telHref}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    max-width: 74ch;
+    margin-inline: auto;
+    text-align: center;
+    color: var(--ink-soft);
+  }
+
+  /* -------------------------------------------------------- treatment list */
+  .service-list {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  .service-detail {
+    display: grid;
+    gap: 0;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    scroll-margin-top: 100px;
+  }
+
+  @media (min-width: 800px) {
+    .service-detail {
+      grid-template-columns: 340px 1fr;
+      align-items: stretch;
+    }
+
+    .service-detail:nth-child(even) {
+      grid-template-columns: 1fr 340px;
+    }
+
+    .service-detail:nth-child(even) .service-detail__img {
+      order: 2;
+    }
+  }
+
+  .service-detail__img {
+    width: 100%;
+    height: 100%;
+    min-height: 220px;
+    object-fit: cover;
+  }
+
+  .service-detail__body {
+    padding: clamp(1.25rem, 1rem + 1vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .service-detail__body h3 {
+    color: var(--green-700);
+    margin-bottom: 0.75rem;
+  }
+
+  .service-detail__meta {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    font-family: var(--font-display);
+  }
+
+  .service-detail__price {
+    color: var(--green-700);
+    font-weight: 600;
+  }
+
+  .service-detail__duration {
+    color: var(--muted);
+  }
+
+  /* ------------------------------------------------------------ how-to-expect */
+  .visit-steps {
+    display: grid;
+    gap: 1.1rem;
+    max-width: 760px;
+    margin-inline: auto;
+  }
+
+  .visit-step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+  }
+
+  .visit-step__num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--green-700);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+
+  .visit-step__title {
+    font-size: 1rem;
+    color: var(--green-700);
+    margin-bottom: 0.3rem;
+  }
+
+  .visit-step__body {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .visit-steps__more {
+    margin-top: 1.75rem;
+    font-size: 0.9rem;
+  }
+
+  .visit-steps__more a {
+    color: var(--green-700);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  /* ---------------------------------------------------------------- book cta */
+  .book-cta__text {
+    max-width: 62ch;
+    margin: 1rem auto 0;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .btn--outline-light {
+    --btn-fg: var(--white);
+    border-color: rgba(255, 255, 255, 0.55);
+  }
+
+  .btn--outline-light:hover {
+    --btn-bg: var(--white);
+    --btn-fg: var(--green-800);
+  }
+</style>

@@ -1,0 +1,15 @@
+{
+  "name": "Russian Spa Mahipalpur",
+  "short_name": "Russian Spa",
+  "description": "Massage and wellness services in Mahipalpur and Delhi Aerocity.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a5043",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

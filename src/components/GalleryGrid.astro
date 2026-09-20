@@ -1,0 +1,63 @@
+---
+/**
+ * Responsive gallery grid.
+ *
+ * Images are passed in by the page so the gallery page, the home page and a
+ * location page can each show a different set without sharing state.
+ */
+import type { SiteImage } from '../data/home-images';
+
+interface Props {
+  images: SiteImage[];
+  /** Minimum column width; drives how many columns fit. */
+  minColumn?: string;
+  /** First N images load eagerly (they sit above the fold). */
+  eagerCount?: number;
+}
+
+const { images, minColumn = '240px', eagerCount = 3 } = Astro.props;
+---
+
+<ul class="gallery" style={`--min-col:${minColumn}`}>
+  {
+    images.map((image, index) => (
+      <li class="gallery__item">
+        <img
+          src={image.src}
+          alt={image.alt}
+          width={image.width}
+          height={image.height}
+          loading={index < eagerCount ? 'eager' : 'lazy'}
+          decoding="async"
+        />
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--min-col), 1fr));
+    gap: clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
+    margin: 0;
+  }
+
+  .gallery__item {
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--green-050);
+  }
+
+  .gallery__item img {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .gallery__item:hover img {
+    transform: scale(1.06);
+  }
+</style>

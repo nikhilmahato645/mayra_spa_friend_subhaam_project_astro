@@ -1,0 +1,1107 @@
+---
+/**
+ * HOME PAGE - / (complete, production ready).
+ *
+ * All copy on this page was supplied by the client. All photos come from
+ * src/data/home-images.ts, which is used by this page only.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CTA from '../components/CTA.astro';
+import LocationCard from '../components/LocationCard.astro';
+import FAQ from '../components/FAQ.astro';
+import { site } from '../data/site';
+import { homeImages, homeImage } from '../data/home-images';
+import { therapyHighlights, facilities, packages } from '../data/services';
+import { primeLocations } from '../data/locations';
+import { counters, therapists, bookingSteps } from '../data/reviews';
+import { homeFaqs } from '../data/faqs';
+import { treatments } from '../data/treatments';
+import { faqSchema, offerCatalogSchema, serviceSchema } from '../utils/schema';
+
+const title = 'Russian Spa in Mahipalpur & Delhi Aerocity | Book Now';
+const description =
+  'Book a relaxing massage at Russian Spa Mahipalpur near Delhi Aerocity. Full body, Thai, deep tissue, B2B and couples massage. 1st visit ₹1499.';
+
+/* Structured data specific to the home page. */
+const schemas = [
+  faqSchema(homeFaqs),
+  offerCatalogSchema(
+    packages.map((pack) => ({ name: pack.name, price: pack.priceValue }))
+  ),
+  // Treatment menu prices - real figures from src/data/treatments.ts, kept in
+  // their own catalog rather than merged into the packages one above so a
+  // change to either list can never silently affect the other's schema.
+  offerCatalogSchema(
+    treatments.map((treatment) => ({
+      name: treatment.name,
+      price: treatment.priceValue,
+      description: `${treatment.summary} (${treatment.duration})`,
+    }))
+  ),
+  // Service schema covers the treatment menu only - the one service list this
+  // page actually shows. The six /services/ entries were dropped from here
+  // when their duplicate card grid came off the home page: schema should
+  // describe what is visible on the page it sits on.
+  ...treatments.map((treatment) =>
+    serviceSchema({
+      name: treatment.name,
+      description: treatment.summary,
+      url: `${site.url}/#treatments`,
+    })
+  ),
+];
+
+/**
+ * Why-choose cards.
+ *
+ * Claims here are kept to what the project data actually supports:
+ *  - "12 Spa Outlets" matches the Branches counter in src/data/reviews.ts (12).
+ *    The original copy said "12+", which claims more outlets than we have data
+ *    for, so the "+" was dropped.
+ *  - The original "24/7 Service Available" card contradicted the opening hours
+ *    in src/data/site.ts (09:00-23:00, all days). It now states the real hours.
+ *  - Filler adjectives ("luxury", "premium", "best") were removed: nothing in
+ *    the project data backs them up.
+ */
+const whyChoose = [
+  {
+    title: '12 Spa Outlets',
+    body: 'Twelve outlets across Delhi and the wider NCR, so there is usually one near you.',
+  },
+  {
+    title: 'Open Every Day',
+    body: `${site.openingHoursLabel}, weekends included. Message us on WhatsApp or call to hold a slot.`,
+  },
+  {
+    title: 'Ten Treatments',
+    body: 'From a 45-minute reflexology session to a two-hour couples package, with prices listed up front.',
+  },
+  {
+    title: 'Trained Therapists',
+    body: 'Pressure and problem areas are agreed before the session, not assumed.',
+  },
+];
+
+/** Simple line icons for the facilities strip. */
+const facilityIcons: Record<string, string> = {
+  shower: 'M12 2a5 5 0 0 0-5 5v2H5v2h14V9h-2V7a5 5 0 0 0-5-5m-3 5a3 3 0 0 1 6 0v2H9zM7 14h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zM7 18h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z',
+  hammam: 'M4 12a8 8 0 0 1 16 0v1H4zm-1 3h18v2H3zm2 4h14v2H5zM11 3h2v3h-2z',
+  jacuzzi: 'M5 11V6a2 2 0 0 1 4 0v1H7v2h4V6a4 4 0 0 0-8 0v5H2v2h20v-2zM3 15h18v3a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z',
+  steam: 'M8 3c1.5 1.5 1.5 3 0 4.5S6.5 10 8 11.5M12 3c1.5 1.5 1.5 3 0 4.5s-1.5 2.5 0 4M16 3c1.5 1.5 1.5 3 0 4.5s-1.5 2.5 0 4M4 15h16v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z',
+  sauna: 'M3 4h18v2H3zm0 4h18v2H3zm0 4h18v2H3zm2 4h14v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z',
+};
+---
+
+<BaseLayout title={title} description={description} bareTitle schemas={schemas}>
+  <!-- ==================================================== 1. HERO ======= -->
+  <section class="hero overlay">
+    <picture class="overlay__bg">
+      <source srcset="/images/home_page/baneer_images/banner1.webp" type="image/webp" />
+      <img
+        src={homeImages.hero.src}
+        alt={homeImages.hero.alt}
+        width={homeImages.hero.width}
+        height={homeImages.hero.height}
+        fetchpriority="high"
+        decoding="async"
+      />
+    </picture>
+    <div class="container hero__inner">
+      <!--
+        One H1 per page, describing what this page is about. The old headline
+        carried "| Book Appointment - 7999/-": that price appears nowhere in
+        the project data and contradicts the real prices (₹1499 / ₹2999 /
+        ₹4999 / ₹15999), so it was removed rather than invented into the data.
+      -->
+      <h1 class="hero__title">Russian Spa in Mahipalpur & Delhi Aerocity</h1>
+      <p class="hero__sub">
+        Full body, Thai, deep tissue and couples massage by trained therapists.
+        First visit ₹1499.
+      </p>
+      <CTA />
+    </div>
+  </section>
+
+  <!-- ============================================ 2. INTRO + HIGHLIGHTS == -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <h2>Massage &amp; Spa Services in Mahipalpur and Aerocity</h2>
+        <p>
+          Looking for a spa in Mahipalpur or a spa in Aerocity? Russian Spa Mahipalpur offers body
+          massage near Delhi Airport in a calm, clean setting, with trained therapists and private
+          rooms. Choose from full body, oil and cream massage treatments, starting at ₹1499 on
+          your first visit.
+        </p>
+      </div>
+
+      <ul class="highlights">
+        {
+          therapyHighlights.map((item) => {
+            const photo = homeImage(item.image);
+            return (
+              <li class="highlight">
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  width={photo.width}
+                  height={photo.height}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="highlight__label">{item.title}</span>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- =========================================== 2b. SPA TREATMENTS ===== -->
+  <section class="section section--cream" id="treatments">
+    <div class="container">
+      <div class="section__head">
+        <h2>Explore Our Spa Treatments</h2>
+        <p>
+          From a traditional Russian banya to Thai bodywork, each treatment is built around a
+          specific technique. Prices include the full session length shown on the card.
+        </p>
+      </div>
+
+      <div class="treatments-grid">
+        {
+          treatments.map((treatment) =>
+            // Two image sources: most treatments have a client-supplied local
+            // photo (webp + jpg); Thai Massage has none yet and falls back to
+            // an existing stock photo already used elsewhere on this page.
+            treatment.remoteImage ? (
+              <article class="card treatment-card">
+                <img
+                  class="treatment-card__img"
+                  src={treatment.remoteImage.src}
+                  alt={treatment.name}
+                  width={treatment.remoteImage.width}
+                  height={treatment.remoteImage.height}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div class="card__body">
+                  <h3 class="card__title">{treatment.name}</h3>
+                  <p class="card__text">{treatment.cardText}</p>
+                  <p class="treatment-card__meta">
+                    <span class="treatment-card__price">{treatment.price}</span>
+                    <span class="treatment-card__duration">{treatment.duration}</span>
+                  </p>
+                  <CTA
+                    message={`Hi, I would like to book the ${treatment.name} (${treatment.price}, ${treatment.duration}).`}
+                    small
+                  />
+                </div>
+              </article>
+            ) : (
+              <article class="card treatment-card">
+                <picture>
+                  <source srcset={`/images/home_page/${treatment.image}.webp`} type="image/webp" />
+                  <img
+                    class="treatment-card__img"
+                    src={`/images/home_page/${treatment.image}.jpg`}
+                    alt={treatment.name}
+                    width="760"
+                    height="507"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </picture>
+                <div class="card__body">
+                  <h3 class="card__title">{treatment.name}</h3>
+                  <p class="card__text">{treatment.cardText}</p>
+                  <p class="treatment-card__meta">
+                    <span class="treatment-card__price">{treatment.price}</span>
+                    <span class="treatment-card__duration">{treatment.duration}</span>
+                  </p>
+                  <CTA
+                    message={`Hi, I would like to book the ${treatment.name} (${treatment.price}, ${treatment.duration}).`}
+                    small
+                  />
+                </div>
+              </article>
+            )
+          )
+        }
+      </div>
+
+      <!-- Full write-ups for every therapy live on /services/ - the home page
+           links there rather than reprinting them. -->
+      <p class="text-center services-more">
+        <a class="btn btn--outline" href="/services/">Read About Each Massage in Detail</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================================================== 3. ABOUT ====== -->
+  <section class="section section--dark" id="about">
+    <div class="container split">
+      <div class="about__aside">
+        <span class="eyebrow eyebrow--light">About Us</span>
+        <p class="h-serif about__serif">
+          A quiet place to switch off, minutes from the airport
+        </p>
+      </div>
+
+      <div class="about__main">
+        <h2>About Russian Spa Mahipalpur</h2>
+        <p>
+          <strong>Russian Spa Mahipalpur</strong> is a wellness spa a few minutes from Delhi
+          Airport, offering body massage in Mahipalpur and Aerocity. We offer a range of massage
+          therapies designed to help you unwind after a busy day, including full body, oil and
+          cream massage. Our location makes us easy to reach from across Delhi NCR, whether you
+          are flying out of Terminal 3 or live nearby. Book a session and take some time to relax
+          and recover.
+        </p>
+
+        <!--
+          The second column used to be "International Therapists", claiming
+          "professionally trained international therapists". Nothing in the
+          project data supports a nationality or credential claim, and the
+          block also repeated the ₹1499 offer that has its own section below.
+          Replaced with the room/setting, which the promises and facilities
+          data do support.
+        -->
+        <div class="about__cols">
+          <div>
+            <h3>Experienced Therapists</h3>
+            <p>
+              Our therapists are trained across the therapies on our menu and will talk through
+              pressure and problem areas with you before the session starts, so the treatment
+              suits you rather than following a fixed script.
+            </p>
+          </div>
+          <div>
+            <h3>A Private, Calm Setting</h3>
+            <p>
+              Every treatment takes place in a private room. Shower, steam, jacuzzi and sauna
+              facilities are on site, and rooms are cleaned and reset between guests.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================== 4. FIRST VISIT OFFER === -->
+  <section class="section">
+    <div class="container split">
+      <div>
+        <span class="eyebrow">1st Visit Offer</span>
+        <h2>First Visit Massage Offer</h2>
+        <p class="price">1st Visit Just ₹1499</p>
+        <p class="offer__text">
+          First-time guests can book a full body massage with shower for ₹1499. It is a good way
+          to try the spa before choosing a longer treatment or a package, and it can be booked on
+          WhatsApp in a couple of messages.
+        </p>
+        <CTA message="Hi, I would like to book the 1st visit full body massage offer at ₹1499." />
+      </div>
+
+      <img
+        class="arch--right arch feature-img"
+        src={homeImages.firstVisitOffer.src}
+        alt={homeImages.firstVisitOffer.alt}
+        width={homeImages.firstVisitOffer.width}
+        height={homeImages.firstVisitOffer.height}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- ====================================================== 5. B2B ====== -->
+  <section class="section section--mint">
+    <div class="container split">
+      <img
+        class="arch feature-img"
+        src={homeImages.b2bSection.src}
+        alt={homeImages.b2bSection.alt}
+        width={homeImages.b2bSection.width}
+        height={homeImages.b2bSection.height}
+        loading="lazy"
+        decoding="async"
+      />
+
+      <div>
+        <span class="eyebrow">B2B Massage</span>
+        <h2>B2B Massage</h2>
+        <p class="price">₹2999</p>
+        <!--
+          Rewritten as a plain service description. The previous copy stacked
+          "Russian spa in Mahipalpur / spa in Mahipalpur / Russian spa in
+          Aerocity" into one sentence and closed by repeating the ₹1499 offer
+          that already has its own section directly above this one.
+        -->
+        <p>
+          A body-to-body massage session in a private room, with the treatment and pressure
+          agreed with your therapist beforehand. If you are not sure whether this or a standard
+          full body massage suits you better, ask us on WhatsApp and we will talk it through.
+        </p>
+        <CTA message="Hi, I would like to know more about the B2B massage at ₹2999." />
+      </div>
+    </div>
+  </section>
+
+  <!--
+    6. FOREIGNER THERAPIST - removed.
+    Swedish, aroma and deep tissue each already have their own card with a
+    price in the treatment menu above, so this section restated three services
+    a third time, repeated the ₹1499 offer for the third time on the page, and
+    stacked four location keyword variants into one paragraph.
+  -->
+
+  <!-- ================================================ 7. WHY CHOOSE ===== -->
+  <section class="section section--cream">
+    <div class="container">
+      <div class="section__head">
+        <h2>Why Guests Choose Russian Spa Mahipalpur</h2>
+        <p>
+          Reasonable prices, a calm private room and a therapist who adjusts the session to you.
+        </p>
+      </div>
+
+      <div class="grid why">
+        {
+          whyChoose.map((item) => (
+            <article class="card why__card">
+              <div class="card__body">
+                <h3 class="card__title">{item.title}</h3>
+                <p class="card__text">{item.body}</p>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!--
+    7b. COMPARISON TABLE - removed.
+    All four claims in the "Why Guests Choose" cards directly above (12
+    outlets, open every day, massage options, trained therapists) reappeared
+    as rows in the table, so the page made the same argument twice in a row.
+    src/data/comparison.ts was deleted with it.
+
+    8. OUR SPA OUTLETS - removed.
+    A second location list on top of "Spa Locations Across Delhi NCR" below,
+    repeating Aerocity and Karol Bagh. The footer still links every location
+    page site-wide, so no internal link was lost.
+
+    9. SPA NEAR DEFENCE COLONY - removed.
+    A full section targeting an area with no page of its own (the CTA went to
+    /contact/), and Defence Colony already has a card in the locations grid
+    below. That pattern is what Google calls doorway content.
+  -->
+
+  <!-- ================================================= 10. PACKAGES ===== -->
+  <section class="section">
+    <div class="container packages">
+      <div class="packages__intro">
+        <h2 class="h-serif">Massage Packages &amp; Pricing</h2>
+        <p class="muted">
+          Enjoy affordable spa packages at <strong>Russian Spa Mahipalpur</strong> with professional
+          therapists and a comfortable environment. Choose from a range of relaxing massage
+          treatments at pocket-friendly prices, conveniently located near Mahipalpur and Aerocity.
+        </p>
+      </div>
+
+      <div class="packages__cards">
+        {
+          packages.map((pack) => (
+            <article class={`pack ${pack.featured ? 'pack--featured' : ''}`}>
+              <h3 class="pack__name">{pack.name}</h3>
+              <p class="pack__price">
+                {pack.price}
+                <span>{pack.unit}</span>
+              </p>
+              <ul class="pack__features">
+                {pack.features.map((feature) => (
+                  <li>{feature}</li>
+                ))}
+              </ul>
+              <CTA message={`Hi, I am interested in the ${pack.name} package (${pack.price}).`} small />
+            </article>
+          ))
+        }
+      </div>
+
+      <!-- Descriptive anchor text: "Know More" tells neither a reader nor a
+           crawler where the link goes. -->
+      <a class="btn btn--outline packages__more" href="/pricing/">View Full Pricing</a>
+    </div>
+  </section>
+
+  <!--
+    11. OUR MASSAGE SERVICES - removed.
+    A second service card grid under the treatment menu: Thai Massage and
+    Couples Massage were straight duplicates of cards above, B2B has its own
+    section, and Full Body is covered by the first-visit offer. The six
+    write-ups still power /services/, which the treatment menu now links to.
+  -->
+
+  <!-- =============================================== 12. FACILITIES ===== -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="h-script">Spa Facilities</h2>
+        <p>Available on site alongside your treatment.</p>
+      </div>
+
+      <ul class="facilities">
+        {
+          facilities.map((facility) => (
+            <li class="facility">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor" aria-hidden="true">
+                <path d={facilityIcons[facility.icon]} />
+              </svg>
+              <span>{facility.title}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!--
+    13. FULL BODY MASSAGE BAND - removed.
+    The first-visit offer section above is the same service at the same
+    price, so this band repeated it. Its heading was also the ambiguous
+    "Full Body to Body Massage" wording flagged in the audit, and the copy
+    named Malviya Nagar, which has no page of its own.
+
+    14. POPULAR SERVICES AND PRICING - removed.
+    Three cards (Full Body, B2B, Hotel and Home Spa) linking to /pricing/,
+    all repeating services covered above. The packages section already
+    links to /pricing/ with descriptive anchor text.
+
+    15. WHAT IS INCLUDED AT OUR SPA - removed.
+    Every item on the strip appeared elsewhere: jacuzzi and steam in Spa
+    Facilities, and private room, 5 star hotel and foreigner therapist as
+    listed features of the two packages.
+  -->
+
+  <!-- =============================================== 16. THERAPISTS ===== -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <h2>Our Therapists</h2>
+      </div>
+
+      <ul class="team">
+        {
+          therapists.map((person) => {
+            const photo = homeImage(person.image);
+            return (
+              <li class="team__card">
+                <!--
+                  Alt describes the photo itself. It deliberately does not name
+                  the therapist: these are still placeholder stock images, so
+                  saying "Angelina" would describe something the image is not.
+                  The name is already on the card as real text.
+                -->
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  width={photo.width}
+                  height={photo.height}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div class="team__meta">
+                  <span class="team__name">{person.name}</span>
+                  <span class="team__role">{person.role}</span>
+                </div>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================= 17. COUNTERS ===== -->
+  <section class="counters">
+    <div class="container">
+      <ul class="counters__list">
+        {
+          counters.map((counter) => (
+            <li>
+              <span class="counters__value">
+                {counter.value}
+                {counter.suffix}
+              </span>
+              <span class="counters__label">{counter.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!--
+    18. REVIEWS - removed.
+    The testimonial block was taken out at the client's request because the
+    reviews behind it were not genuine. Do not re-add testimonials unless they
+    are real, and even then keep them as plain text: Review / AggregateRating
+    structured data is not allowed for reviews a business republishes on its
+    own site (Google review snippet policy).
+  -->
+
+  <!-- ========================================== 19. PRIME LOCATIONS ===== -->
+  <section class="section" id="locations">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="h-serif">Spa Locations Across Delhi NCR</h2>
+        <p>
+          We are easy to reach from Mahipalpur, Aerocity, Connaught Place, Karol Bagh, Lajpat
+          Nagar, Malviya Nagar, Dwarka and nearby areas of Delhi NCR, with flexible appointment
+          times.
+        </p>
+      </div>
+
+      <div class="grid locations-grid">
+        {
+          primeLocations.map((place) => (
+            <LocationCard
+              name={place.name}
+              description={place.description}
+              href={place.href}
+              image={homeImage(place.image)}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 20. HOW TO BOOK ===== -->
+  <section class="section section--mint">
+    <div class="container">
+      <div class="section__head">
+        <h2>How to Book an Appointment</h2>
+        <p>
+          Booking a massage spa in Delhi is simple and easy. Just call us or send a message on
+          WhatsApp, and our team will get in touch with you as soon as possible to confirm your
+          appointment.
+        </p>
+      </div>
+
+      <ol class="steps">
+        {
+          bookingSteps.map((step) => (
+            <li class="step">
+              <span class="step__num">{step.step}</span>
+              <h3 class="step__title">{step.title}</h3>
+              <p class="step__body">{step.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="text-center steps__cta">
+        <CTA label="Book on WhatsApp" />
+        <a class="btn btn--outline" href={`tel:${site.phoneE164}`}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== 21. FAQ ===== -->
+  <section class="section" id="faq">
+    <div class="container faq-section">
+      <div class="section__head">
+        <h2>Frequently Asked Questions</h2>
+      </div>
+      <FAQ faqs={homeFaqs} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ------------------------------------------------------------- 1. hero */
+  .hero {
+    display: grid;
+    align-items: center;
+    /* Phones keep a shorter hero so the first section is reachable without a
+       long scroll; desktop gets the tall hero below. */
+    min-height: clamp(370px, 52vh, 470px);
+    color: var(--white);
+  }
+
+  /* Tall hero on tablets and desktop, matching the live site (~690px at a
+     1920x1080 screen). vh keeps it proportional on shorter laptop screens. */
+  @media (min-width: 900px) {
+    .hero {
+      min-height: clamp(560px, 76vh, 780px);
+    }
+  }
+
+  /* Lighter veil than the other photo bands: just enough contrast behind the
+     headline to stay readable, while the massage photo still reads through. */
+  .hero::after {
+    background: linear-gradient(
+      100deg,
+      rgba(8, 32, 26, 0.64) 0%,
+      rgba(8, 32, 26, 0.36) 50%,
+      rgba(8, 32, 26, 0.14) 100%
+    );
+  }
+
+  .hero__inner {
+    padding-block: clamp(2.5rem, 1.8rem + 4vw, 4.75rem);
+  }
+
+  .hero__title {
+    /* Smaller than the global h1 scale on purpose - it keeps the headline to
+       three lines and leaves the background photo visible. */
+    font-size: clamp(1.45rem, 0.95rem + 1.9vw, 2.5rem);
+    max-width: 26ch;
+    color: var(--white);
+    margin-bottom: 0.9rem;
+    text-shadow: 0 2px 14px rgba(8, 32, 26, 0.45);
+  }
+
+  /* Carries the detail that used to be crammed into the H1 (services and the
+     ₹1499 first-visit price), without competing with the headline. */
+  .hero__sub {
+    max-width: 44ch;
+    margin-bottom: 1.6rem;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: clamp(0.9rem, 0.86rem + 0.2vw, 1.02rem);
+    text-shadow: 0 2px 12px rgba(8, 32, 26, 0.5);
+  }
+
+  /* ------------------------------------------------------- 2. highlights */
+  .highlights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
+    margin: 0;
+  }
+
+  .highlight {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .highlight img {
+    width: 100%;
+    aspect-ratio: 6 / 7;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+  }
+
+  .highlight:hover img {
+    transform: scale(1.07);
+  }
+
+  .highlight__label {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 2.25rem 0.7rem 0.8rem;
+    background: linear-gradient(transparent, rgba(8, 32, 26, 0.92));
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  /* ------------------------------------------------------------ 3. about */
+  .about__serif {
+    font-size: clamp(1.45rem, 1rem + 1.9vw, 2.35rem);
+    color: var(--white);
+    text-align: right;
+  }
+
+  .about__cols {
+    display: grid;
+    gap: clamp(1.25rem, 1rem + 1.5vw, 2.5rem);
+    margin-top: 2rem;
+  }
+
+  .about__cols h3 {
+    margin-bottom: 0.75rem;
+  }
+
+  @media (min-width: 700px) {
+    .about__cols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 899px) {
+    .about__serif {
+      text-align: left;
+    }
+  }
+
+  /* -------------------------------------------------- 4-6. image blocks */
+  .feature-img {
+    width: 100%;
+    object-fit: cover;
+    box-shadow: var(--shadow);
+  }
+
+  .offer__text {
+    margin-top: 1rem;
+  }
+
+  .price + p {
+    margin-top: 1rem;
+  }
+
+  .price {
+    margin-top: 0.5rem;
+  }
+
+  .split :global(.btn) {
+    margin-top: 1.75rem;
+  }
+
+  /* ------------------------------------------------ 2b. spa treatments */
+  /* Mobile-first: one card per row (as asked), 3 per row from 900px up. A
+     760px source image at a ~370px card width is a comfortable 2x for retina
+     screens without shipping more pixels than the layout ever shows. */
+  .treatments-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(1rem, 0.75rem + 1vw, 1.6rem);
+  }
+
+  @media (min-width: 640px) {
+    .treatments-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .treatments-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .treatment-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .treatment-card__img {
+    width: 100%;
+    aspect-ratio: 760 / 507;
+    object-fit: cover;
+  }
+
+  .treatment-card .card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  /* Each paragraph of the client's full copy renders as its own <p class="card__text">
+     - space them apart, and let only the last one absorb the flexible space so
+     the price/CTA footer still sits at the bottom of every card. */
+  .treatment-card .card__text + .card__text {
+    margin-top: 0.75rem;
+  }
+
+  .treatment-card .card__text:last-of-type {
+    flex: 1;
+  }
+
+  /* Content-writer subheading that introduces the two service-area
+     paragraphs - nests as h4 under the card's h3 name, one level deeper
+     rather than a sibling heading. */
+  .treatment-card__subhead {
+    margin-top: 1.1rem;
+    font-size: 0.92rem;
+    color: var(--green-700);
+  }
+
+  .treatment-card__subhead + .card__text {
+    margin-top: 0.5rem;
+  }
+
+  .treatment-card__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0.9rem 0 1.1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .treatment-card__price {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--green-700);
+  }
+
+  .treatment-card__duration {
+    font-size: 0.82rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .treatment-card :global(.btn) {
+    align-self: flex-start;
+  }
+
+  /* ------------------------------------------------------- 7. why choose */
+  .why {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .why__card {
+    text-align: center;
+  }
+
+  /* 7b. comparison table - styles removed with the section. */
+
+  /* 8. outlets - styles removed with the section. */
+
+  /* 9 + 13. photo bands - styles removed with those sections. */
+
+  /* -------------------------------------------------------- 10. packages */
+  .packages {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 3rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .packages {
+      grid-template-columns: 1fr 1.4fr;
+    }
+    .packages__more {
+      grid-column: 1 / -1;
+      justify-self: center;
+    }
+  }
+
+  .packages__intro h2 {
+    margin-bottom: 1rem;
+  }
+
+  .packages__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .pack {
+    background: linear-gradient(180deg, var(--green-050), var(--white));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.35rem 1.2rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .pack--featured {
+    border-color: var(--green-500);
+    box-shadow: var(--shadow);
+  }
+
+  .pack__name {
+    font-size: 1.05rem;
+    color: var(--green-800);
+  }
+
+  .pack__price {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    color: var(--green-700);
+    margin: 0.4rem 0 1.1rem;
+  }
+
+  .pack__price span {
+    font-size: 0.85rem;
+    font-family: var(--font-body);
+    color: var(--muted);
+  }
+
+  .pack__features {
+    display: grid;
+    gap: 0.55rem;
+    margin-bottom: 1.4rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .pack__features li::before {
+    content: '\2022';
+    color: var(--green-500);
+    margin-right: 0.5rem;
+  }
+
+  .packages__more {
+    justify-self: center;
+  }
+
+  /* ------------------------------------------------------ 12. facilities */
+  .facilities {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1.5rem;
+    margin: 0;
+    text-align: center;
+  }
+
+  .facility {
+    display: grid;
+    justify-items: center;
+    gap: 0.6rem;
+    color: var(--green-600);
+  }
+
+  .facility span {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  /* 14. top services - styles removed with the section. */
+
+  /* 15. promise - styles removed with the section. */
+
+  /* ------------------------------------------------------ 16. therapists */
+  .team {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+  }
+
+  .team__card {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .team__card img {
+    width: 100%;
+    aspect-ratio: 5 / 6;
+    object-fit: cover;
+  }
+
+  .team__meta {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: grid;
+    gap: 0.1rem;
+    padding: 2.5rem 1rem 1rem;
+    background: linear-gradient(transparent, rgba(8, 32, 26, 0.9));
+    color: var(--white);
+    text-align: center;
+  }
+
+  .team__name {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+  }
+
+  .team__role {
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    opacity: 0.8;
+  }
+
+  /* -------------------------------------------------------- 17. counters */
+  .counters {
+    background: var(--green-700);
+    color: var(--white);
+    padding-block: clamp(2rem, 1.5rem + 2vw, 3rem);
+  }
+
+  .counters__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin: 0;
+    text-align: center;
+  }
+
+  .counters__value {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 1.4rem + 1.8vw, 2.8rem);
+    line-height: 1.1;
+  }
+
+  .counters__label {
+    font-size: 0.88rem;
+    opacity: 0.85;
+  }
+
+  /* 18. reviews - styles removed along with the testimonial section. */
+
+  /* ------------------------------------------------------- 19. locations */
+  .locations-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  /* ----------------------------------------------------------- 20. steps */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    counter-reset: step;
+  }
+
+  .step {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.1rem;
+    text-align: center;
+  }
+
+  .step__num {
+    display: inline-grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--green-050);
+    color: var(--green-700);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .step__title {
+    font-size: 1.05rem;
+    color: var(--green-800);
+    margin-bottom: 0.5rem;
+  }
+
+  .step__body {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .steps__cta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+
+  /* ------------------------------------------------------------- 21. faq */
+  .faq-section {
+    max-width: 900px;
+  }
+</style>

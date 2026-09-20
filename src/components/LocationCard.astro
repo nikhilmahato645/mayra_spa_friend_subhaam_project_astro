@@ -1,0 +1,83 @@
+---
+/**
+ * Location / outlet card used in the "Prime Locations" grid and on the
+ * location landing pages.
+ */
+import CTA from './CTA.astro';
+import type { SiteImage } from '../data/home-images';
+
+interface Props {
+  name: string;
+  description: string;
+  href: string;
+  image: SiteImage;
+  headingLevel?: 'h3' | 'h4';
+}
+
+const { name, description, href, image, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+---
+
+<article class="card location-card">
+  <a href={href} class="location-card__media" aria-label={name}>
+    <img
+      src={image.src}
+      alt={image.alt || name}
+      width={image.width}
+      height={image.height}
+      loading="lazy"
+      decoding="async"
+    />
+  </a>
+  <div class="card__body">
+    <Heading class="card__title">
+      <a href={href}>{name}</a>
+    </Heading>
+    <p class="card__text">{description}</p>
+    <CTA message={`Hi, I would like to book an appointment at ${name}.`} small />
+  </div>
+</article>
+
+<style>
+  .location-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-align: center;
+  }
+
+  .location-card__media {
+    display: block;
+    padding: 0.85rem 0.85rem 0;
+  }
+
+  .location-card__media img {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+  }
+
+  .location-card .card__title {
+    font-size: 1.25rem;
+  }
+
+  .location-card .card__title a:hover {
+    text-decoration: underline;
+  }
+
+  .location-card .card__text {
+    margin-bottom: 1.2rem;
+  }
+
+  .location-card .card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: center;
+  }
+
+  .location-card :global(.btn) {
+    margin-top: auto;
+  }
+</style>

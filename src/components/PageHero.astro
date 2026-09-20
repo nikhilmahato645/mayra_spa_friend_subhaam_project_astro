@@ -1,0 +1,62 @@
+---
+/**
+ * Inner page hero: H1 over a photo, with the breadcrumb trail underneath.
+ * Used by every page except the home page.
+ */
+import Breadcrumbs from './Breadcrumbs.astro';
+import type { BreadcrumbItem } from '../utils/seo';
+import type { SiteImage } from '../data/home-images';
+
+interface Props {
+  /** The page H1. */
+  title: string;
+  /** Optional supporting line under the H1. */
+  subtitle?: string;
+  /** Background photo. */
+  image: SiteImage;
+  /** Breadcrumb trail, already including Home. */
+  breadcrumbs: BreadcrumbItem[];
+}
+
+const { title, subtitle, image, breadcrumbs } = Astro.props;
+---
+
+<section class="page-hero overlay">
+  <img
+    class="overlay__bg"
+    src={image.src}
+    alt=""
+    width={image.width}
+    height={image.height}
+    fetchpriority="high"
+    decoding="async"
+  />
+  <div class="container page-hero__inner">
+    <h1>{title}</h1>
+    {subtitle && <p class="page-hero__sub">{subtitle}</p>}
+  </div>
+</section>
+
+<Breadcrumbs items={breadcrumbs} />
+
+<style>
+  .page-hero {
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: var(--white);
+    padding-block: clamp(3rem, 2rem + 5vw, 6rem);
+  }
+
+  .page-hero h1 {
+    color: var(--white);
+    max-width: 22ch;
+    margin-inline: auto;
+  }
+
+  .page-hero__sub {
+    max-width: 62ch;
+    margin: 1rem auto 0;
+    color: rgba(255, 255, 255, 0.85);
+  }
+</style>

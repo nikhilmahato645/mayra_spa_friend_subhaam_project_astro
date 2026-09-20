@@ -1,0 +1,195 @@
+---
+/**
+ * BaseLayout - the single <head> used by every page on the site.
+ *
+ * It owns: canonical URL, robots directives, Open Graph + Twitter cards,
+ * font loading, favicons, and the JSON-LD graph (DaySpa + WebSite + WebPage,
+ * plus whatever extra schema a page passes in).
+ */
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import FloatingActions from '../components/FloatingActions.astro';
+import { site } from '../data/site';
+import { buildTitle, canonicalFrom, absoluteUrl, clampDescription, auditSeo } from '../utils/seo';
+import { daySpaSchema, webSiteSchema, webPageSchema } from '../utils/schema';
+
+interface Props {
+  /** Page title. Keep it under 60 characters. */
+  title: string;
+  /** Meta description. Keep it under 155 characters. */
+  description: string;
+  /** Set when `title` already contains the brand name (home page). */
+  bareTitle?: boolean;
+  /** Social share image, site-relative. Falls back to the default OG image. */
+  image?: string;
+  /** Block indexing for this page (thank-you pages, staging pages, ...). */
+  noindex?: boolean;
+  /** Extra JSON-LD objects (breadcrumbs, FAQ, services, offers). */
+  schemas?: (object | null)[];
+  /** Extra class on <body>, used for page specific tweaks. */
+  bodyClass?: string;
+}
+
+const {
+  title,
+  description,
+  bareTitle = false,
+  image = site.ogImage,
+  noindex = false,
+  schemas = [],
+  bodyClass = '',
+} = Astro.props;
+
+const pageTitle = buildTitle(title, { bare: bareTitle });
+const metaDescription = clampDescription(description);
+const canonical = canonicalFrom(Astro.url);
+const socialImage = absoluteUrl(image);
+
+auditSeo(Astro.url.pathname, pageTitle, metaDescription);
+
+/* The base graph every page carries, plus any page specific additions. */
+const jsonLd = [
+  daySpaSchema(),
+  webSiteSchema(),
+  webPageSchema({ url: canonical, name: pageTitle, description: metaDescription, image }),
+  ...schemas,
+].filter(Boolean);
+
+const robots = noindex
+  ? 'noindex, nofollow'
+  : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+---
+
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+
+    <!-- Core SEO -->
+    <title>{pageTitle}</title>
+    <meta name="description" content={metaDescription} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={robots} />
+    <meta name="googlebot" content={robots} />
+    <meta name="author" content={site.name} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Local business signals -->
+    <meta name="geo.region" content="IN-DL" />
+    <meta name="geo.placename" content="New Delhi" />
+    <meta name="theme-color" content="#1a5043" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={pageTitle} />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={socialImage} />
+
+    <!--
+      Icons and manifest. All three files are generated from the transparent
+      logo artwork (public/images/logo/logo.png) with sharp - see README.
+      The old /favicon.png (940 KB, white background) is no longer used.
+    -->
+    <link rel="icon" href="/favicon-512.png" type="image/png" sizes="512x512" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Fonts: preconnect first so the CSS request starts earlier -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&family=Poppins:wght@300;400;500;600&family=Dancing+Script:wght@600;700&display=swap"
+    />
+
+    <!-- Structured data -->
+    {
+      jsonLd.map((schema) => (
+        <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+      ))
+    }
+  </head>
+
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <FloatingActions />
+
+    <script>
+      /**
+       * Reveal-on-scroll, site wide.
+       *
+       * The hidden state (.reveal) is added HERE, by JavaScript - never in the
+       * HTML. So if JavaScript is off, or before this runs, every element is
+       * already visible: Google always sees the full page, and the animation is
+       * decoration on top. Anyone who asked for reduced motion is skipped.
+       */
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!reduceMotion && 'IntersectionObserver' in window) {
+        /* Blocks worth animating. Add a selector here to animate something new. */
+        const SELECTORS = [
+          '.section__head',
+          '.split > *',
+          '.card',
+          '.highlight',
+          '.outlet',
+          '.pack',
+          '.facility',
+          '.step',
+          '.team__card',
+          '.counters__list li',
+          '.promise__list li',
+          '.gallery__item',
+          '.offer',
+          '.prose__block',
+        ].join(',');
+
+        const targets = document.querySelectorAll<HTMLElement>(`main :is(${SELECTORS})`);
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target); // animate once, then stop watching
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
+        );
+
+        targets.forEach((element) => {
+          /* Skip anything already on screen at load - it would flash in. */
+          const box = element.getBoundingClientRect();
+          if (box.top < window.innerHeight * 0.9) return;
+
+          element.classList.add('reveal');
+          /* Stagger siblings so a row of cards arrives one after another. */
+          const index = Array.from(element.parentElement?.children ?? []).indexOf(element);
+          if (index > 0) element.dataset.revealDelay = String(Math.min(index, 5));
+          observer.observe(element);
+        });
+      }
+    </script>
+  </body>
+</html>
