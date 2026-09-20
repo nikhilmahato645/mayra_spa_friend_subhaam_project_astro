@@ -9,11 +9,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CTA from '../components/CTA.astro';
 import LocationCard from '../components/LocationCard.astro';
 import FAQ from '../components/FAQ.astro';
+import TherapistGrid from '../components/TherapistGrid.astro';
 import { site } from '../data/site';
 import { homeImages, homeImage } from '../data/home-images';
 import { therapyHighlights, facilities, packages } from '../data/services';
 import { primeLocations } from '../data/locations';
-import { counters, therapists, bookingSteps } from '../data/reviews';
+import { counters, therapistsFrom, bookingSteps } from '../data/reviews';
 import { homeFaqs } from '../data/faqs';
 import { treatments } from '../data/treatments';
 import { faqSchema, offerCatalogSchema, serviceSchema } from '../utils/schema';
@@ -488,41 +489,33 @@ const facilityIcons: Record<string, string> = {
   -->
 
   <!-- =============================================== 16. THERAPISTS ===== -->
+  <!--
+    Two groups under one heading - Russian first, Indian below - so the country
+    reads from the subheading instead of a badge on every photo. Each group's
+    "View More" opens its own group on /gallery/, so the anchors there must
+    keep their ids.
+  -->
   <section class="section">
     <div class="container">
       <div class="section__head">
         <h2>Our Therapists</h2>
+        <p class="muted">
+          Four Russian and four Indian therapists, all trained in the therapies on our menu. Call
+          or message a therapist directly to book the session you want.
+        </p>
       </div>
 
-      <ul class="team">
-        {
-          therapists.map((person) => {
-            const photo = homeImage(person.image);
-            return (
-              <li class="team__card">
-                <!--
-                  Alt describes the photo itself. It deliberately does not name
-                  the therapist: these are still placeholder stock images, so
-                  saying "Angelina" would describe something the image is not.
-                  The name is already on the card as real text.
-                -->
-                <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  width={photo.width}
-                  height={photo.height}
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div class="team__meta">
-                  <span class="team__name">{person.name}</span>
-                  <span class="team__role">{person.role}</span>
-                </div>
-              </li>
-            );
-          })
-        }
-      </ul>
+      <h3 class="team-group">Russian Therapists</h3>
+      <TherapistGrid people={therapistsFrom('Russian')} headingLevel="h4" />
+      <div class="team-more">
+        <a class="btn btn--outline" href="/gallery/#russian-therapists">View More</a>
+      </div>
+
+      <h3 class="team-group">Indian Therapists</h3>
+      <TherapistGrid people={therapistsFrom('Indian')} headingLevel="h4" />
+      <div class="team-more">
+        <a class="btn btn--outline" href="/gallery/#indian-therapists">View More</a>
+      </div>
     </div>
   </section>
 
@@ -975,46 +968,22 @@ const facilityIcons: Record<string, string> = {
   /* 15. promise - styles removed with the section. */
 
   /* ------------------------------------------------------ 16. therapists */
-  .team {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.25rem;
-    margin: 0;
-  }
-
-  .team__card {
-    position: relative;
-    border-radius: var(--radius);
-    overflow: hidden;
-    isolation: isolate;
-  }
-
-  .team__card img {
-    width: 100%;
-    aspect-ratio: 5 / 6;
-    object-fit: cover;
-  }
-
-  .team__meta {
-    position: absolute;
-    inset: auto 0 0 0;
-    display: grid;
-    gap: 0.1rem;
-    padding: 2.5rem 1rem 1rem;
-    background: linear-gradient(transparent, rgba(8, 32, 26, 0.9));
-    color: var(--white);
+  /* The cards carry their own styles - see components/TherapistGrid.astro. */
+  .team-group {
+    margin: 2.5rem 0 1.25rem;
+    font-size: 1.35rem;
+    color: var(--green-800);
     text-align: center;
   }
 
-  .team__name {
-    font-family: var(--font-display);
-    font-size: 1.05rem;
+  .team-group:first-of-type {
+    margin-top: 0;
   }
 
-  .team__role {
-    font-size: 0.7rem;
-    letter-spacing: 0.18em;
-    opacity: 0.8;
+  .team-more {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.75rem;
   }
 
   /* -------------------------------------------------------- 17. counters */

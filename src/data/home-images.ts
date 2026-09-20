@@ -100,14 +100,23 @@ export const homeImages = {
 
   /* ------------------------------------------------------- therapist cards */
   /*
-   * NOTE: these are neutral spa photos on purpose. Do not use random photos of
-   * people from the internet to represent your staff - replace these four with
-   * real, consented photos of your own therapists before going live.
+   * Client-supplied therapist photos, served from
+   * public/images/home_page/therpists/ (image1.jpg ... image8.jpg). They are
+   * read through src/data/reviews.ts by the "Our Therapists" section on the
+   * home page and by the same section on /gallery/.
+   *
+   * TODO (client): these files are still stock portraits standing in for the
+   * real staff. Overwrite image1..image8 with real, consented photos of your
+   * own therapists - keep the same file names and nothing else changes.
    */
-  therapist1: image('1600566752355-35792bedcfea', 'Professional massage therapist at Russian Spa Mahipalpur', 500, 620),
-  therapist2: image('1591343395902-1adcb454c4e2', 'Professional massage therapist at Russian Spa Mahipalpur', 500, 620),
-  therapist3: image('1507652313519-d4e9174996dd', 'Professional massage therapist at Russian Spa Mahipalpur', 500, 620),
-  therapist4: image('1470259078422-826894b933aa', 'Professional massage therapist at Russian Spa Mahipalpur', 500, 620),
+  therapist1: localImage('/images/home_page/therpists/image1.jpg', 'Massage therapist at Russian Spa Mahipalpur', 500, 620),
+  therapist2: localImage('/images/home_page/therpists/image2.jpg', 'Massage therapist at Russian Spa Mahipalpur', 500, 620),
+  therapist3: localImage('/images/home_page/therpists/image3.jpg', 'Massage therapist at Russian Spa Mahipalpur', 500, 620),
+  therapist4: localImage('/images/home_page/therpists/image4.jpg', 'Massage therapist at Russian Spa Mahipalpur', 500, 620),
+  therapist5: localImage('/images/home_page/therpists/image5.jpg', 'Massage therapist at Russian Spa Mahipalpur', 500, 620),
+  therapist6: localImage('/images/home_page/therpists/image6.jpg', 'Massage therapist at Russian Spa Mahipalpur', 500, 620),
+  therapist7: localImage('/images/home_page/therpists/image7.jpg', 'Massage therapist at Russian Spa Mahipalpur', 500, 620),
+  therapist8: localImage('/images/home_page/therpists/image8.jpg', 'Massage therapist at Russian Spa Mahipalpur', 500, 620),
 
   /* ------------------------------------------------------- prime locations */
   primeKarolBagh: image('1608571423902-eed4a5ad8108', 'Spa room at our Karol Bagh outlet', 800, 560),

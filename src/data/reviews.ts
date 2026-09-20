@@ -91,17 +91,105 @@ export const counters = [
 
 /* --------------------------------------------------------- team members */
 
+export interface Therapist {
+  /** Display name shown on the card. */
+  name: string;
+  /** Short line under the name - what this therapist is booked for. */
+  role: string;
+  /** Shown as a badge on the photo, and used for the alt text. */
+  origin: 'Russian' | 'Indian';
+  /** One or two sentences describing the therapist's work. */
+  description: string;
+  /** Key in src/data/home-images.ts - image1..image8 under /therpists/. */
+  image: string;
+}
+
 /**
- * Therapist cards. Names are the client's staff names as listed on the site.
- * Photos are resolved from src/data/home-images.ts - see the note there about
- * replacing the placeholder pictures with real, consented staff photos.
+ * Therapist cards, shown in full on both the home page and /gallery/. Each card carries a call button and a WhatsApp button, both
+ * built from the single number in src/data/site.ts.
+ *
+ * Four Russian and four Indian therapists, interleaved so the two sets are
+ * mixed through the grid rather than grouped. `origin` is what the badge on
+ * each photo shows, and the grid can also be filtered down to one of them.
+ *
+ * There is deliberately no star rating on these cards: a rating the business
+ * writes about its own staff is not a real review, and Google's review snippet
+ * policy does not allow self-published ratings. Do not add one back.
+ *
+ * TODO (client): names and descriptions here are placeholders to match the
+ * placeholder photos. Replace them with your real staff before going live.
  */
-export const therapists = [
-  { name: 'Angelina', role: 'STAFF', image: 'therapist1' },
-  { name: 'Mariya', role: 'STAFF', image: 'therapist2' },
-  { name: 'Elmira', role: 'STAFF', image: 'therapist3' },
-  { name: 'Aksinia', role: 'STAFF', image: 'therapist4' },
+export const therapists: Therapist[] = [
+  {
+    name: 'Angelina',
+    origin: 'Russian',
+    role: 'Deep Tissue & Swedish',
+    description:
+      'Eight years with deep tissue and Swedish massage. Works at a firm, steady pressure and checks in through the session.',
+    image: 'therapist1',
+  },
+  {
+    name: 'Priya Sharma',
+    origin: 'Indian',
+    role: 'Aromatherapy & Relaxation',
+    description:
+      'Trained in aromatherapy and relaxation massage. Picks the oil blend with you before the session starts.',
+    image: 'therapist2',
+  },
+  {
+    name: 'Mariya',
+    origin: 'Russian',
+    role: 'Hot Stone & Body Spa',
+    description:
+      'Specialises in hot stone therapy and full body spa rituals for tired shoulders, back and legs.',
+    image: 'therapist3',
+  },
+  {
+    name: 'Anjali Verma',
+    origin: 'Indian',
+    role: 'Thai & Stretch Therapy',
+    description:
+      'Thai massage and assisted stretching. A good fit if you sit at a desk all day or train regularly.',
+    image: 'therapist4',
+  },
+  {
+    name: 'Elmira',
+    origin: 'Russian',
+    role: 'Sports & Deep Tissue',
+    description:
+      'Sports and deep tissue work for stiff muscles and recovery between training days.',
+    image: 'therapist5',
+  },
+  {
+    name: 'Neha Kapoor',
+    origin: 'Indian',
+    role: 'Couples & Signature Spa',
+    description:
+      'Handles couples sessions and our signature spa package, start to finish, in a private room.',
+    image: 'therapist6',
+  },
+  {
+    name: 'Aksinia',
+    origin: 'Russian',
+    role: 'Russian Banya & Full Body',
+    description:
+      'Traditional Russian banya treatments and full body massage, the therapies our Mahipalpur outlet is known for.',
+    image: 'therapist7',
+  },
+  {
+    name: 'Kavya Nair',
+    origin: 'Indian',
+    role: 'Reflexology & Head Massage',
+    description:
+      'Reflexology, foot work and head massage - the short sessions guests book on a lunch break.',
+    image: 'therapist8',
+  },
 ];
+
+/** The therapists from one country, in the order above. */
+export function therapistsFrom(origin: Therapist['origin']): Therapist[] {
+  return therapists.filter((person) => person.origin === origin);
+}
 
 /* ------------------------------------------------------- booking steps */
 
