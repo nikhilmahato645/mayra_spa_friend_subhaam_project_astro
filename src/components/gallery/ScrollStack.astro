@@ -1,0 +1,252 @@
+---
+/**
+ * SCROLL STACK - cards that pile up on each other as you scroll past.
+ *
+ * Inspired by the React Bits "Scroll Stack". That component is React and paid,
+ * so this is an independent Astro + vanilla JS build of the same idea.
+ *
+ * The stacking itself is pure CSS: every card is `position: sticky`, each one
+ * pinned a few pixels lower than the one before, so a card stops while the
+ * next slides up over it. That much works with JavaScript switched off.
+ *
+ * The script only adds the polish - the card underneath shrinks and dims a
+ * little as it gets buried, which is what sells the depth.
+ */
+import type { GalleryItem } from '../../data/gallery';
+import { variants, srcSet } from '../../utils/image';
+
+interface Props {
+  items: GalleryItem[];
+  /** Heading level, so the page keeps a correct outline. */
+  headingLevel?: 'h3' | 'h4';
+}
+
+const { items, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+
+/* The photo takes a little over half of a 1040px column on desktop. */
+const SIZES = '(min-width: 820px) 560px, 92vw';
+---
+
+<ol class="stack" data-stack>
+  {
+    items.map((photo, index) => (
+      <li class="stack__item" data-stack-card style={`--i:${index}`}>
+        <article class="stack__card">
+          <div class="stack__media">
+            <picture>
+              <source
+                type="image/webp"
+                srcset={srcSet(variants(photo.src).webpSmall, variants(photo.src).webp, 620, 1000)}
+                sizes={SIZES}
+              />
+              <img
+                src={photo.src}
+                srcset={srcSet(variants(photo.src).jpgSmall, photo.src, 620, 1000)}
+                sizes={SIZES}
+                alt={photo.alt}
+                width={photo.width}
+                height={photo.height}
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
+          </div>
+
+          <div class="stack__body">
+            <span class="stack__index" aria-hidden="true">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <Heading class="stack__title">{photo.title}</Heading>
+            <p class="stack__text">{photo.caption}</p>
+          </div>
+        </article>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .stack {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .stack__item {
+    position: sticky;
+    /*
+     * 120px clears the sticky header; each card then stops 16px below the one
+     * before it, which is what leaves the stacked edges visible.
+     */
+    top: calc(120px + var(--i) * 16px);
+    /* Only the last card needs no room beneath it, but the extra is harmless. */
+    padding-bottom: 1.5rem;
+  }
+
+  .stack__card {
+    display: grid;
+    gap: 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--white);
+    box-shadow: 0 18px 50px rgba(8, 32, 26, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.65),
+      0 0 70px rgba(255, 255, 255, 0.35);
+    /* JS writes --squash / --veil as the card gets buried. */
+    transform: scale(var(--squash, 1));
+    transform-origin: top center;
+    transition: transform 0.25s linear;
+  }
+
+  @media (min-width: 820px) {
+    .stack__card {
+      grid-template-columns: 1.15fr 1fr;
+      align-items: stretch;
+    }
+  }
+
+  .stack__media {
+    position: relative;
+  }
+
+  .stack__media::after {
+    /* Dims the card as the next one climbs over it. */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 32, 26, 0.55);
+    opacity: var(--veil, 0);
+    transition: opacity 0.25s linear;
+    pointer-events: none;
+  }
+
+  .stack__media picture {
+    display: block;
+    height: 100%;
+  }
+
+  .stack__media img {
+    width: 100%;
+    height: 100%;
+    min-height: 240px;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+
+  .stack__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: clamp(1.4rem, 1rem + 2vw, 2.6rem);
+    background: var(--cream);
+  }
+
+  .stack__index {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+  }
+
+  .stack__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 1.1rem + 1vw, 1.9rem);
+    color: var(--green-800);
+  }
+
+  .stack__text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stack__card,
+    .stack__media::after {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Shrink and dim each card once the next one starts covering it.
+   *
+   * Everything is measured inside a single rAF callback driven by scroll, for
+   * the same reason as the tilted tiles: measuring in the scroll handler is
+   * what makes this stutter.
+   */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduceMotion) {
+    document.querySelectorAll<HTMLElement>('[data-stack]').forEach((root) => {
+      const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-stack-card]'));
+      if (cards.length < 2) return;
+
+      /* Matches `top: calc(120px + ...)` in the CSS above. */
+      const PIN_TOP = 120;
+      /* How far a card sinks before it is fully buried. */
+      const DEPTH = 420;
+
+      let onScreen = false;
+      let queued = false;
+
+      function paint() {
+        queued = false;
+
+        /*
+         * READ FIRST, WRITE SECOND.
+         *
+         * Measuring one card and then styling it, over and over, makes the
+         * browser recompute layout on every single pass of the loop - that is
+         * the "Forced reflow" Lighthouse reports. Taking every measurement up
+         * front means layout is computed once for the whole frame.
+         */
+        const tops = cards.map((item) => item.getBoundingClientRect().top);
+
+        cards.forEach((item, index) => {
+          const card = item.firstElementChild as HTMLElement | null;
+          if (!card) return;
+
+          /* The last card is never covered, so it never shrinks. */
+          if (index === cards.length - 1) {
+            card.style.setProperty('--squash', '1');
+            card.style.setProperty('--veil', '0');
+            return;
+          }
+
+          const pinnedAt = PIN_TOP + index * 16;
+          const buried = Math.max(0, pinnedAt - tops[index]);
+          const progress = Math.min(1, buried / DEPTH);
+
+          card.style.setProperty('--squash', String(1 - progress * 0.07));
+          card.style.setProperty('--veil', String(progress * 0.75));
+        });
+      }
+
+      function request() {
+        if (queued || !onScreen) return;
+        queued = true;
+        requestAnimationFrame(paint);
+      }
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(
+          ([entry]) => {
+            onScreen = entry.isIntersecting;
+            if (onScreen) request();
+          },
+          { rootMargin: '200px 0px' }
+        ).observe(root);
+      } else {
+        onScreen = true;
+      }
+
+      window.addEventListener('scroll', request, { passive: true });
+      window.addEventListener('resize', request);
+      paint();
+    });
+  }
+</script>

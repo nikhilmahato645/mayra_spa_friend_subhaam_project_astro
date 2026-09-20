@@ -1,0 +1,88 @@
+---
+/**
+ * Smooth / momentum scrolling, powered by Lenis.
+ *
+ * This is the Astro port of the usual React `<SmoothScroll />` client
+ * component. There is no island or framework runtime here: an Astro script
+ * block is already a bundled, deferred module, and Astro hoists it into one
+ * shared bundle, so mounting it site wide costs one cached file rather than a
+ * copy per page.
+ *
+ * NOTE: never write a literal script tag inside this frontmatter, not even in
+ * a comment. The Astro compiler scans the file for that token and treats what
+ * follows as the component's real script block, which breaks the dev server's
+ * dependency scan with a confusing esbuild error.
+ *
+ * It is mounted once, in src/layouts/BaseLayout.astro, so every route gets it
+ * - home, about, services, the ten outlet pages, pricing, gallery, contact.
+ * To take a single page back to native scrolling, that page needs its own
+ * layout; do not add conditions here.
+ *
+ * The matching CSS lives in src/styles/global.css under "lenis" - Lenis puts
+ * .lenis / .lenis-smooth / .lenis-stopped on <html> while it runs.
+ */
+---
+
+<script>
+  import Lenis from 'lenis';
+
+  /*
+   * Accessibility first: anyone who asked their system for less motion never
+   * gets Lenis at all, so the page scrolls exactly as the browser intends.
+   */
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const lenis = new Lenis({
+      duration: 1.1,
+      easing: (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t)),
+      smoothWheel: true,
+      /*
+       * Touch is deliberately left alone. iOS and Android already do momentum
+       * scrolling themselves, and stacking a second layer on top of it is what
+       * makes a site feel jerky or "stuck" on a phone.
+       */
+      syncTouch: false,
+    });
+
+    let frame = requestAnimationFrame(function raf(time: number) {
+      lenis.raf(time);
+      frame = requestAnimationFrame(raf);
+    });
+
+    /*
+     * Anchor links. global.css sets scroll-behavior: smooth for the no-JS
+     * case, and the .lenis-smooth rule turns that off while Lenis runs so the
+     * two are not animating the same scroll at once - so the jump to #id has
+     * to go through Lenis instead. The 120px offset is the same one
+     * scroll-padding-top uses to clear the sticky header.
+     */
+    document.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const link = (event.target as Element | null)?.closest?.('a[href*="#"]');
+      if (!(link instanceof HTMLAnchorElement)) return;
+      /* Only links pointing at a spot on THIS page. */
+      if (link.origin !== window.location.origin) return;
+      if (link.pathname !== window.location.pathname) return;
+      if (!link.hash || link.hash === '#') return;
+      if (!document.querySelector(link.hash)) return;
+
+      event.preventDefault();
+      lenis.scrollTo(link.hash, { offset: -120 });
+      history.pushState(null, '', link.hash);
+    });
+
+    /*
+     * The React version tears Lenis down when the component unmounts. This is
+     * a plain multi-page site, so leaving the page already disposes of it -
+     * but the same teardown is wired to astro:before-swap so that turning on
+     * View Transitions later cannot leave a dead rAF loop behind.
+     */
+    const destroy = () => {
+      cancelAnimationFrame(frame);
+      lenis.destroy();
+    };
+
+    document.addEventListener('astro:before-swap', destroy, { once: true });
+  }
+</script>

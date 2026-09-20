@@ -1,0 +1,122 @@
+---
+/**
+ * SMOKE VEIL - slow white steam drifting across a section.
+ *
+ * Purely decorative, and it looks it: three blurred white clouds on long,
+ * offset loops so the drift never visibly repeats. It sits behind the content
+ * of whatever section it is dropped into.
+ *
+ * Drop it in as the first child of a `position: relative` section:
+ *
+ *   <section class="section" style="position: relative">
+ *     <SmokeVeil />
+ *     ...
+ *   </section>
+ *
+ * It is aria-hidden and pointer-events: none, so it can never get in the way
+ * of a screen reader or a click. It stops completely for anyone who asked
+ * their system for reduced motion - a constantly moving background is exactly
+ * what that setting is for.
+ */
+
+interface Props {
+  /** 'light' drifts white smoke (for pale sections), 'dark' drifts shadow. */
+  tone?: 'light' | 'dark';
+  /** 0 - 1. How strongly the veil reads. */
+  strength?: number;
+}
+
+const { tone = 'light', strength = 0.55 } = Astro.props;
+---
+
+<div class={`veil veil--${tone}`} style={`--veil-strength:${strength}`} aria-hidden="true">
+  <span class="veil__puff veil__puff--a"></span>
+  <span class="veil__puff veil__puff--b"></span>
+  <span class="veil__puff veil__puff--c"></span>
+</div>
+
+<style>
+  .veil {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: var(--veil-strength, 0.55);
+  }
+
+  .veil__puff {
+    position: absolute;
+    border-radius: 50%;
+    /* One big blur is far cheaper than many small ones. */
+    filter: blur(60px);
+    will-change: transform;
+  }
+
+  .veil--light .veil__puff {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%);
+  }
+
+  .veil--dark .veil__puff {
+    background: radial-gradient(circle, rgba(8, 32, 26, 0.6), rgba(8, 32, 26, 0) 70%);
+  }
+
+  .veil__puff--a {
+    top: -14%;
+    left: -8%;
+    width: 46%;
+    height: 68%;
+    animation: veil-a 34s ease-in-out infinite alternate;
+  }
+
+  .veil__puff--b {
+    right: -10%;
+    bottom: -18%;
+    width: 52%;
+    height: 72%;
+    animation: veil-b 42s ease-in-out infinite alternate;
+  }
+
+  .veil__puff--c {
+    top: 26%;
+    left: 40%;
+    width: 38%;
+    height: 50%;
+    opacity: 0.7;
+    animation: veil-c 50s ease-in-out infinite alternate;
+  }
+
+  /* Long, mismatched loops - the three never line back up. */
+  @keyframes veil-a {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(16%, 10%, 0) scale(1.25);
+    }
+  }
+
+  @keyframes veil-b {
+    from {
+      transform: translate3d(0, 0, 0) scale(1.1);
+    }
+    to {
+      transform: translate3d(-14%, -12%, 0) scale(0.92);
+    }
+  }
+
+  @keyframes veil-c {
+    from {
+      transform: translate3d(-8%, 4%, 0) scale(0.95);
+    }
+    to {
+      transform: translate3d(10%, -8%, 0) scale(1.2);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .veil__puff {
+      animation: none;
+    }
+  }
+</style>

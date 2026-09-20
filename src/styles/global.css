@@ -116,6 +116,42 @@ ol {
   padding: 0;
 }
 
+/* =========================================================== lenis
+ * Lenis puts these classes on <html> while it is running. It is only loaded
+ * on pages that include <SmoothScroll /> (see src/components/SmoothScroll.astro),
+ * so on every other page none of these ever match.
+ */
+
+/* Lenis measures the document itself; a locked height would fight it. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+/*
+ * The important one. <html> above sets scroll-behavior: smooth for anchor
+ * links when JavaScript never runs - but with Lenis animating the scroll
+ * itself, two smooth animations on one scroll container stutter. Lenis wins
+ * while it is active.
+ */
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+/* Boxes that scroll on their own - the mobile menu - keep their own scroll. */
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* An iframe swallows wheel events, which would strand the page mid-scroll. */
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
 /* Accessibility: never remove focus rings, only restyle them. */
 :focus-visible {
   outline: 3px solid var(--green-500);

@@ -88,6 +88,29 @@ export const site = {
     },
   ],
   openingHoursLabel: 'Open all days, 9:00 AM - 11:00 PM',
+
+  /**
+   * The running offer, shown on the sticky tab pinned to the right edge of
+   * every page (src/components/OfferTab.astro).
+   *
+   * ONE PLACE. Change the wording here and the tab, its accessible label and
+   * the WhatsApp message it opens all change together - there is no second
+   * copy of this text anywhere.
+   *
+   * Set `active: false` to take the tab off the whole site without deleting
+   * anything; put it back to true when the next offer runs.
+   *
+   * Keep `label` short. It is set vertically down a ~44px wide tab, so a long
+   * sentence runs off the top and bottom of the screen.
+   */
+  offer: {
+    active: true,
+    label: '50% OFF ON 2 BOOKINGS',
+    /** Read out to screen readers, and used as the link's title. */
+    description: 'Get 50% off when you book two sessions together',
+    /** Pre-filled into WhatsApp when the tab is tapped. */
+    message: 'Hi, I would like to claim the 50% off on two bookings offer.',
+  },
   priceRange: '₹1499 - ₹15999',
   currency: 'INR',
 

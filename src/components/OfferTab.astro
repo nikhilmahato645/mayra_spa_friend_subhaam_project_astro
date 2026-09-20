@@ -1,0 +1,141 @@
+---
+/**
+ * OFFER TAB - the sticky strip pinned to the right edge of every page.
+ *
+ * The same pattern Myntra uses for its coupon tab: a narrow vertical tab that
+ * rides the right edge, sitting over the page rather than in it. Tapping it
+ * opens WhatsApp with the offer already typed into the message box, so the
+ * visitor only has to press send.
+ *
+ * The wording, the WhatsApp message and the on/off switch all live in
+ * `site.offer` (src/data/site.ts) - never hard-code any of it here.
+ *
+ * Details that matter:
+ *   - it is one <a>, not a button plus a script. No JavaScript is involved, so
+ *     it works before hydration, with JS off, and it can be opened in a new
+ *     tab or long-pressed like any other link.
+ *   - the label is set with `writing-mode: vertical-rl`, not `rotate()`. A
+ *     rotated element keeps its unrotated box, so the tab would reserve a
+ *     wide, mostly empty strip; vertical-rl gives the element the tall narrow
+ *     box it actually occupies.
+ *   - it is vertically centred, which keeps it clear of the WhatsApp and call
+ *     buttons in the bottom corners (see FloatingActions.astro).
+ */
+import { site, whatsappHref } from '../data/site';
+
+const { offer } = site;
+---
+
+{
+  offer.active && (
+    <a
+      class="offer-tab"
+      href={whatsappHref(offer.message)}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={offer.description}
+      aria-label={`${offer.description}. Opens WhatsApp.`}
+    >
+      <span class="offer-tab__arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+          <path d="M15 5 8 12l7 7z" />
+        </svg>
+      </span>
+      <span class="offer-tab__label">{offer.label}</span>
+    </a>
+  )
+}
+
+<style>
+  .offer-tab {
+    /*
+     * A slate grey, deliberately outside the site's green palette, and a
+     * square tab with no rounding - both to match the reference the client
+     * asked for. Kept as local custom properties rather than added to
+     * global.css because nothing else on the site uses this colour.
+     */
+    --tab-bg: #535766;
+    --tab-bg-hover: #43464f;
+
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: var(--z-float);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.9rem 0.55rem 1rem;
+
+    background: var(--tab-bg);
+    color: var(--white);
+    border-radius: 0;
+    box-shadow: -6px 0 22px rgba(8, 32, 26, 0.24);
+
+    text-decoration: none;
+    transition: background-color 0.2s ease, padding-right 0.2s ease;
+  }
+
+  .offer-tab:hover,
+  .offer-tab:focus-visible {
+    background: var(--tab-bg-hover);
+    /* Nudges out from the edge rather than moving, so nothing reflows. */
+    padding-right: 0.85rem;
+  }
+
+  /*
+   * vertical-rl reads top-to-bottom; the 180deg rotation flips it so the text
+   * runs bottom-to-top, which is the direction an edge tab is normally read.
+   */
+  .offer-tab__label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .offer-tab__arrow {
+    display: grid;
+    place-items: center;
+    opacity: 0.85;
+  }
+
+  /* A little smaller on phones, where edge space is worth more. */
+  @media (max-width: 600px) {
+    .offer-tab {
+      padding: 0.75rem 0.4rem 0.8rem;
+    }
+
+    .offer-tab__label {
+      font-size: 0.64rem;
+      letter-spacing: 0.12em;
+    }
+  }
+
+  /*
+   * A short landscape window (a phone on its side) leaves no room for a tall
+   * tab between the header and the corner buttons, so it steps aside.
+   */
+  @media (max-height: 420px) {
+    .offer-tab {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .offer-tab {
+      transition: none;
+    }
+  }
+
+  @media print {
+    .offer-tab {
+      display: none;
+    }
+  }
+</style>

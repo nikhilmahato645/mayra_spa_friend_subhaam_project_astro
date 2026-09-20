@@ -2,33 +2,70 @@
 /**
  * GALLERY PAGE - /gallery/
  *
- * STATUS: structure ready, waiting for real photos.
+ * Four sections, each one its own component under components/gallery/, each
+ * one reading its own folder of photos from src/data/gallery.ts:
  *
- * HOW TO FINISH THIS PAGE
- *   1. put your photos in public/images/gallery/;
- *   2. replace the entries in `galleryImages` (src/data/page-images.ts) with
- *      localImage('/images/gallery/<file>.webp', '<alt text>', w, h);
- *   3. remove '/gallery/' from src/data/drafts.mjs.
+ *   1. Skewed Carousel  - the rooms, as angled 3D cards.
+ *   2. Tilted Tiles     - a drifting collage behind the intro copy.
+ *   3. Scroll Stack     - signature therapies, stacking as you scroll.
+ *   4. Tile Reveal      - the details, uncovering as they arrive.
+ *   5. Dolly Gallery    - the closing tunnel, directly above the footer.
  *
- * Alt text matters here: it is what puts these photos into Google Images.
+ * White smoke (components/gallery/SmokeVeil.astro) drifts behind the pale
+ * sections. It is decoration only - aria-hidden, pointer-events: none, and
+ * frozen for anyone who asked for reduced motion.
+ *
+ * NO HERO BANNER on purpose. A full width banner photo above the fold pushes
+ * the actual gallery below it and competes with it; on a page whose whole job
+ * is the photos, the first thing should be photos. The page keeps a plain text
+ * header instead, which still carries the h1 and the breadcrumb trail.
+ *
+ * SEO NOTES
+ *   - every photo is real <img> markup with alt text and width/height, so all
+ *     42 are crawlable and none of them shift the layout as they load;
+ *   - ImageGallery + ImageObject structured data lists the same photos with
+ *     the same captions the visitor sees;
+ *   - the therapist section keeps its two anchors, which the home page links
+ *     to; do not rename those ids.
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PageHero from '../../components/PageHero.astro';
-import GalleryGrid from '../../components/GalleryGrid.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CTA from '../../components/CTA.astro';
 import TherapistGrid from '../../components/TherapistGrid.astro';
-import { site } from '../../data/site';
-import { pageHeroes, galleryImages } from '../../data/page-images';
+import SkewedCarousel from '../../components/gallery/SkewedCarousel.astro';
+import TiltedTiles from '../../components/gallery/TiltedTiles.astro';
+import ScrollStack from '../../components/gallery/ScrollStack.astro';
+import TileReveal from '../../components/gallery/TileReveal.astro';
+import DollyGallery from '../../components/gallery/DollyGallery.astro';
+import SmokeVeil from '../../components/gallery/SmokeVeil.astro';
+import { site, telHref } from '../../data/site';
 import { therapistsFrom } from '../../data/reviews';
+import {
+  carouselImages,
+  tiltedImages,
+  stackImages,
+  revealImages,
+  dollyImages,
+  allGalleryImages,
+} from '../../data/gallery';
 import { breadcrumbTrail } from '../../utils/seo';
-import { breadcrumbSchema } from '../../utils/schema';
+import { breadcrumbSchema, imageGallerySchema } from '../../utils/schema';
 import { isDraft } from '../../data/drafts.mjs';
 
-const title = 'Spa Gallery in Delhi';
-const description = `Photos of the treatment rooms, facilities and interiors at Russian Spa Mahipalpur near Delhi Aerocity. Call ${site.phone} to book a session.`;
+const title = 'Spa Gallery in Mahipalpur & Delhi Aerocity';
+const description = `Photos of the treatment rooms, steam room, jacuzzi and therapies at Russian Spa Mahipalpur near Delhi Aerocity. Call ${site.phone} to book.`;
 
 const crumbs = breadcrumbTrail([{ name: 'Gallery', href: '/gallery/' }]);
-const schemas = [breadcrumbSchema(crumbs)];
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  imageGallerySchema({
+    name: `Spa Gallery - ${site.name}`,
+    description,
+    url: '/gallery/',
+    images: allGalleryImages,
+  }),
+];
 ---
 
 <BaseLayout
@@ -36,21 +73,92 @@ const schemas = [breadcrumbSchema(crumbs)];
   description={description}
   schemas={schemas}
   noindex={isDraft(Astro.url.pathname)}
+  usesUnsplash={false}
 >
-  <PageHero
-    title="Our Spa Gallery"
-    subtitle="A look inside our treatment rooms, relaxation areas and facilities near Mahipalpur and Aerocity."
-    image={pageHeroes.gallery}
-    breadcrumbs={crumbs}
-  />
+  <Breadcrumbs items={crumbs} />
 
-  <section class="section">
+  <!-- ================================================ 1. PAGE HEADER ==== -->
+  <!-- Text only. The photographs start immediately below it. -->
+  <section class="section g-head g-veiled">
+    <SmokeVeil strength={0.5} />
     <div class="container">
-      <GalleryGrid images={galleryImages} minColumn="260px" eagerCount={3} />
+      <p class="g-head__eyebrow">Gallery</p>
+      <h1>Inside Russian Spa Mahipalpur</h1>
+      <p class="g-head__lead">
+        Every room, therapy and detail below is from our outlets in Mahipalpur, Aerocity and across
+        Delhi NCR - private treatment rooms, the steam room and jacuzzi, and the therapies our
+        guests book most. Open all days, {site.openingHoursLabel.replace('Open all days, ', '')}.
+      </p>
+
+      <div class="g-head__actions">
+        <CTA label="Book on WhatsApp" />
+        <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ 2. SKEWED CAROUSEL ==== -->
+  <section class="section section--tight" aria-labelledby="rooms-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="rooms-heading">Our Rooms &amp; Facilities</h2>
+        <p class="muted">
+          Drag, swipe or use the arrows. Every room here is bookable at one of our outlets.
+        </p>
+      </div>
+    </div>
+
+    <!-- Full bleed: the angled cards need room to run past the container. -->
+    <div class="g-bleed">
+      <SkewedCarousel items={carouselImages} label="Spa rooms and facilities" />
+    </div>
+  </section>
+
+  <!-- =============================================== 3. TILTED TILES ==== -->
+  <section class="section" aria-labelledby="tilted-heading">
+    <div class="container">
+      <TiltedTiles images={tiltedImages}>
+        <h2 id="tilted-heading" class="g-tilted__title">A Room Ready, Every Day</h2>
+        <p class="g-tilted__text">
+          Twelve outlets across Delhi NCR, eight years of sessions, and a room turned over between
+          every guest. Fresh linen, a private shower and a therapist who talks the session through
+          with you first.
+        </p>
+        <a class="btn btn--light" href="/pricing/">See Pricing</a>
+      </TiltedTiles>
+    </div>
+  </section>
+
+  <!-- ================================================ 4. SCROLL STACK ==== -->
+  <section class="section section--cream g-veiled" aria-labelledby="therapies-heading">
+    <SmokeVeil strength={0.7} />
+    <div class="container container--narrow">
+      <div class="section__head">
+        <h2 id="therapies-heading">Signature Therapies</h2>
+        <p class="muted">Scroll through the five sessions our guests book most.</p>
+      </div>
+
+      <ScrollStack items={stackImages} />
+    </div>
+  </section>
+
+  <!-- ================================================= 5. TILE REVEAL ==== -->
+  <section class="section g-veiled" aria-labelledby="details-heading">
+    <SmokeVeil strength={0.45} />
+    <div class="container">
+      <div class="section__head">
+        <h2 id="details-heading">The Small Details</h2>
+        <p class="muted">
+          The parts of a visit that are easy to miss - and the ones guests mention afterwards.
+        </p>
+      </div>
+
+      <TileReveal items={revealImages} />
     </div>
   </section>
 
   <!--
+    ================================================== 6. THERAPISTS =====
     The same therapists as the home page, split into the two groups guests ask
     for. The home page has a "View More" button per group pointing at
     #russian-therapists and #indian-therapists, so those ids must stay.
@@ -73,6 +181,7 @@ const schemas = [breadcrumbSchema(crumbs)];
     </div>
   </section>
 
+  <!-- ======================================================= 7. CTA ===== -->
   <section class="section">
     <div class="container text-center">
       <h2>Visit Us for a Relaxing Session</h2>
@@ -85,14 +194,97 @@ const schemas = [breadcrumbSchema(crumbs)];
       </div>
     </div>
   </section>
+  <!--
+    ============================================= 8. DOLLY GALLERY =====
+    The closing band, deliberately the LAST section on the page so it sits
+    directly above the site footer. The camera travels forward through the
+    stack as the page scrolls; see components/gallery/DollyGallery.astro.
+  -->
+  <section class="section g-dolly" aria-labelledby="dolly-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="dolly-heading" class="g-dolly__title">Step Inside</h2>
+        <p class="g-dolly__lead">
+          Eight more rooms from our outlets - the pool, the steam room and the banya - coming at you
+          one at a time as you scroll.
+        </p>
+      </div>
+
+      <DollyGallery items={dollyImages} label="More rooms at Russian Spa Mahipalpur" />
+    </div>
+  </section>
+
 </BaseLayout>
 
 <style>
-  .lead {
-    max-width: 60ch;
-    margin: 1rem auto 0;
+  /* ------------------------------------------------------ 1. page header */
+  .g-head {
+    text-align: center;
+    padding-bottom: 0;
   }
 
+  .g-head__eyebrow {
+    margin: 0 0 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .g-head h1 {
+    margin: 0;
+  }
+
+  .g-head__lead {
+    max-width: 68ch;
+    margin: 1rem auto 0;
+    color: var(--ink-soft);
+  }
+
+  .g-head__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.75rem;
+  }
+
+  /* ------------------------------------------------- 2. carousel bleed */
+  .section--tight {
+    padding-bottom: clamp(1.5rem, 1rem + 2vw, 3rem);
+  }
+
+  /*
+   * The carousel's side cards are meant to run off the edge of the screen, so
+   * this one block escapes the container. overflow-x is clipped on <body>
+   * already, so nothing here can cause a sideways scrollbar.
+   */
+  .g-bleed {
+    width: 100%;
+    margin-top: 2rem;
+  }
+
+  /* --------------------------------------------------- 3. tilted tiles */
+  .g-tilted__title {
+    margin: 0;
+    color: var(--white);
+    font-size: clamp(1.7rem, 1.2rem + 2.2vw, 3rem);
+  }
+
+  .g-tilted__text {
+    margin: 1rem 0 1.9rem;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  /* --------------------------------------------------- 4. scroll stack */
+  .container--narrow {
+    max-width: 1040px;
+  }
+
+  /* ------------------------------------------------------ 6. therapists */
   .team-group {
     margin: 2.5rem 0 1.25rem;
     font-size: 1.35rem;
@@ -102,6 +294,44 @@ const schemas = [breadcrumbSchema(crumbs)];
 
   .team-group:first-of-type {
     margin-top: 0;
+  }
+
+  /*
+   * Sections carrying a SmokeVeil have to establish a stacking context, and
+   * their own content has to sit above the smoke.
+   */
+  .g-veiled {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .g-veiled > .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ------------------------------------------------- 8. dolly gallery */
+  .g-dolly {
+    position: relative;
+    background: radial-gradient(120% 90% at 50% 0%, var(--green-850), var(--green-950) 70%);
+    color: var(--white);
+    overflow: hidden;
+  }
+
+  .g-dolly__title {
+    color: var(--white);
+  }
+
+  .g-dolly__lead {
+    max-width: 58ch;
+    margin: 0.75rem auto 0;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* ------------------------------------------------------------ 7. CTA */
+  .lead {
+    max-width: 60ch;
+    margin: 1rem auto 0;
   }
 
   .cta-row {

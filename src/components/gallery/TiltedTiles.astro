@@ -1,0 +1,224 @@
+---
+/**
+ * TILTED TILES - a rotated grid of image columns that drift as you scroll.
+ *
+ * Inspired by the React Bits "Tilted Tiles". That component is React and paid,
+ * so this is an independent Astro + vanilla JS build of the same idea.
+ *
+ * How it works: the whole grid is rotated and scaled up past the edges of its
+ * box, which is set to `overflow: hidden`. Neighbouring columns then travel in
+ * opposite directions as the section crosses the viewport, which is what reads
+ * as depth. The scaling is why the rotated corners never show through.
+ *
+ * It is decoration behind a heading, so:
+ *   - the whole band is aria-hidden; the heading beside it carries the meaning.
+ *   - the drift only runs while the section is on screen, and never at all for
+ *     anyone who asked for reduced motion.
+ */
+import type { SiteImage } from '../../data/gallery';
+import { variants, srcSet } from '../../utils/image';
+
+interface Props {
+  images: SiteImage[];
+  /** Columns to split the photos across. */
+  columns?: number;
+}
+
+const { images, columns = 4 } = Astro.props;
+
+/* Deal the photos out column by column, so each column gets a different set. */
+const grid: SiteImage[][] = Array.from({ length: columns }, () => []);
+images.forEach((photo, index) => grid[index % columns].push(photo));
+
+/* Four columns across the plane, so each tile is about a quarter of it. */
+const SIZES = '(min-width: 900px) 25vw, 45vw';
+---
+
+<div class="tilted" data-tilted>
+  <div class="tilted__plane">
+    {
+      grid.map((column, columnIndex) => (
+        <div class="tilted__col" data-tilted-col data-dir={columnIndex % 2 === 0 ? '1' : '-1'}>
+          {/*
+            Each column is printed twice so there is always more image above
+            and below than the drift can ever expose.
+          */}
+          {[...column, ...column].map((photo) => (
+            <picture>
+              <source
+                type="image/webp"
+                srcset={srcSet(variants(photo.src).webpSmall, variants(photo.src).webp, 380, 600)}
+                sizes={SIZES}
+              />
+              <img
+                src={photo.src}
+                srcset={srcSet(variants(photo.src).jpgSmall, photo.src, 380, 600)}
+                sizes={SIZES}
+                alt=""
+                width={photo.width}
+                height={photo.height}
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="tilted__scrim"></div>
+
+  <div class="tilted__content">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .tilted {
+    position: relative;
+    isolation: isolate;
+    min-height: clamp(460px, 62vw, 680px);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--green-950);
+  }
+
+  /*
+   * The tilt. scale() is doing real work here: rotating a rectangle inside a
+   * clipped box leaves triangular gaps at the corners, and scaling up past the
+   * edges is what covers them.
+   */
+  .tilted__plane {
+    position: absolute;
+    inset: -18%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.9rem;
+    transform: rotate(-11deg) scale(1.28);
+    transform-origin: center;
+    z-index: 0;
+  }
+
+  .tilted__col {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+    /* JS writes --drift; the fallback is a still, tidy grid. */
+    transform: translate3d(0, var(--drift, 0px), 0);
+    will-change: transform;
+  }
+
+  /* Every other column starts half a tile down, so rows never line up. */
+  .tilted__col:nth-child(even) {
+    margin-top: -7%;
+  }
+
+  .tilted__col picture {
+    display: block;
+  }
+
+  .tilted__col img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+  }
+
+  /*
+   * The wash over the photos. Without it the white heading would sit on top of
+   * whatever happened to drift past, and stop being readable.
+   */
+  .tilted__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(8, 32, 26, 0.86) 0%,
+        rgba(8, 32, 26, 0.72) 45%,
+        rgba(8, 32, 26, 0.9) 100%
+      );
+  }
+
+  .tilted__content {
+    position: relative;
+    z-index: 2;
+    max-width: 62ch;
+    padding: clamp(2rem, 1rem + 4vw, 4rem) 1.25rem;
+    color: var(--white);
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tilted__col {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Drift the columns as the band crosses the viewport.
+   *
+   * The scroll listener only ever stores a number; the reading and writing of
+   * layout happens in one rAF callback. Measuring in the scroll handler itself
+   * is what makes this kind of effect stutter.
+   */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduceMotion) {
+    document.querySelectorAll<HTMLElement>('[data-tilted]').forEach((root) => {
+      const columns = Array.from(root.querySelectorAll<HTMLElement>('[data-tilted-col]'));
+      if (!columns.length) return;
+
+      /* Pixels a column travels across the full pass. */
+      const RANGE = 170;
+
+      let onScreen = false;
+      let queued = false;
+
+      function paint() {
+        queued = false;
+
+        const box = root.getBoundingClientRect();
+        /*
+         * progress runs -1 -> 1: -1 when the band is just below the fold, 0
+         * when it is centred, 1 once it has left the top.
+         */
+        const centre = box.top + box.height / 2;
+        const progress = (window.innerHeight / 2 - centre) / (window.innerHeight / 2 + box.height / 2);
+        const clamped = Math.max(-1, Math.min(1, progress));
+
+        columns.forEach((column) => {
+          const direction = Number(column.dataset.dir || '1');
+          column.style.setProperty('--drift', `${clamped * RANGE * direction}px`);
+        });
+      }
+
+      function request() {
+        if (queued || !onScreen) return;
+        queued = true;
+        requestAnimationFrame(paint);
+      }
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(
+          ([entry]) => {
+            onScreen = entry.isIntersecting;
+            if (onScreen) request();
+          },
+          { rootMargin: '150px 0px' }
+        ).observe(root);
+      } else {
+        onScreen = true;
+      }
+
+      window.addEventListener('scroll', request, { passive: true });
+      window.addEventListener('resize', request);
+      paint();
+    });
+  }
+</script>

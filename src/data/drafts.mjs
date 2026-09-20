@@ -19,7 +19,8 @@
 export const draftPages = [
   // '/about/' was published once its copy was written - it now carries
   // index,follow and appears in the sitemap.
-  '/gallery/',
+  // '/gallery/' was published once its photos and copy were in place - it now
+  // carries index,follow and appears in the sitemap.
   '/russian-spa-in-mahipalpur/',
   '/russian-spa-in-aerocity/',
   '/russian-spa-in-vasant-kunj/',

@@ -1,0 +1,359 @@
+---
+/**
+ * INVERTED DOME - a draggable strip of tiles bent like the inside of a lens.
+ *
+ * Inspired by the React Bits "Inverted Dome". That one is a paid React
+ * component that bends an image atlas on the GPU; this is an independent Astro
+ * build of the same idea in CSS 3D. Same read: the tile in the middle faces
+ * you flat, and the further out a tile sits the more it turns away and falls
+ * back, so the strip curves away at both ends like the inside of a dome.
+ *
+ * It is driven by drag, wheel and a slow auto drift, and it keeps moving after
+ * you let go until friction stops it. The strip loops, so it never runs out.
+ *
+ * PROGRESSIVE ENHANCEMENT: with no JavaScript it is a plain horizontal
+ * scroller of real <img> markup with scroll-snap - every photo present, in
+ * order, and still browsable. The script adds `.is-domed` and only then does
+ * it become the curved strip.
+ */
+
+export interface DomeTile {
+  /** File name stem under /images/home_page/, without the extension. */
+  image: string;
+  /** Caption shown under the tile at the centre. */
+  label: string;
+  /** Alt text. */
+  alt: string;
+}
+
+interface Props {
+  tiles: DomeTile[];
+  /** Accessible name for the region. */
+  label: string;
+  /** How hard the strip bends. Degrees of turn per tile away from centre. */
+  curve?: number;
+  /** Tiles per second of the idle drift. */
+  autoSpeed?: number;
+}
+
+const { tiles, label, curve = 17, autoSpeed = 0.1 } = Astro.props;
+---
+
+<div
+  class="dome"
+  data-dome
+  data-curve={curve}
+  data-auto-speed={autoSpeed}
+  role="group"
+  aria-roledescription="carousel"
+  aria-label={label}
+>
+  <ul class="dome__track" data-dome-track>
+    {
+      tiles.map((tile, index) => (
+        <li class="dome__tile" data-dome-tile>
+          <picture>
+            <source srcset={`/images/home_page/${tile.image}.webp`} type="image/webp" />
+            <img
+              src={`/images/home_page/${tile.image}.jpg`}
+              alt={tile.alt}
+              width="600"
+              height="600"
+              loading={index < 4 ? 'eager' : 'lazy'}
+              decoding="async"
+              draggable="false"
+            />
+          </picture>
+          <span class="dome__label">{tile.label}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="dome__hint" aria-hidden="true">Drag to look around</p>
+</div>
+
+<style>
+  .dome {
+    --tile-w: clamp(150px, 20vw, 250px);
+  }
+
+  /* ------------------------------------------------ no-JS: plain scroller */
+  .dome__track {
+    display: flex;
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0 0 1rem;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .dome__tile {
+    position: relative;
+    flex: 0 0 var(--tile-w);
+    scroll-snap-align: center;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--green-950);
+  }
+
+  .dome__tile picture {
+    display: block;
+  }
+
+  .dome__tile img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    user-select: none;
+  }
+
+  .dome__label {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 2rem 0.8rem 0.8rem;
+    background: linear-gradient(transparent, rgba(8, 32, 26, 0.9));
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: 0.86rem;
+    text-align: center;
+  }
+
+  .dome__hint {
+    margin: 0.9rem 0 0;
+    text-align: center;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ------------------------------------------------- enhanced: the lens */
+  .dome.is-domed {
+    position: relative;
+    height: clamp(230px, 26vw, 330px);
+    perspective: 900px;
+    perspective-origin: 50% 50%;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: pan-y;
+  }
+
+  .dome.is-domed:active {
+    cursor: grabbing;
+  }
+
+  .dome.is-domed .dome__track {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
+    overflow: visible;
+    transform-style: preserve-3d;
+  }
+
+  .dome.is-domed .dome__tile {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--tile-w);
+    margin: 0;
+    /*
+     * The bend. JS writes all four: --x slides the tile along the strip,
+     * --turn rotates it away from you, --depth pushes it back, and --fade
+     * drops it out at the ends.
+     */
+    transform: translate(-50%, -50%) translateX(var(--x, 0px)) translateZ(var(--depth, 0px))
+      rotateY(var(--turn, 0deg));
+    opacity: var(--fade, 1);
+    box-shadow: 0 18px 44px rgba(8, 32, 26, 0.3);
+    will-change: transform;
+  }
+
+  /* Only the tile at the centre is square-on, so only it is captioned. */
+  .dome.is-domed .dome__label {
+    opacity: var(--label, 0);
+    transition: opacity 0.3s ease;
+  }
+
+  .dome.is-domed .dome__hint {
+    position: absolute;
+    inset: auto 0 0.4rem 0;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dome.is-domed .dome__label {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Drive the strip.
+   *
+   * `offset` is measured in tiles, not pixels: 0 means tile 0 is at the
+   * centre, 2.5 means we are half way between tiles 2 and 3. Drag, wheel and
+   * the idle drift all just move that one number; everything else is derived
+   * from it each frame.
+   */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-dome]').forEach((root) => {
+    const tiles = Array.from(root.querySelectorAll<HTMLElement>('[data-dome-tile]'));
+    const count = tiles.length;
+    if (count < 4) return;
+
+    root.classList.add('is-domed');
+
+    const CURVE = Number(root.dataset.curve || 17);
+    const AUTO = reduceMotion ? 0 : Number(root.dataset.autoSpeed || 0.1);
+    /* Tiles either side of centre that are drawn at all. */
+    const VISIBLE = 4;
+    /* How much of its own width a tile is spaced from its neighbour. */
+    const STEP = 0.78;
+    /* Momentum left after each frame once the drag is released. */
+    const FRICTION = 0.94;
+
+    let offset = 0;
+    let velocity = 0;
+    let dragging = false;
+    let dragStartX = 0;
+    let dragStartOffset = 0;
+    let tileWidth = 0;
+    let onScreen = false;
+    let hovered = false;
+    let last = performance.now();
+
+    function measure() {
+      tileWidth = tiles[0].offsetWidth || 200;
+    }
+
+    function paint(now: number) {
+      const elapsed = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      if (!dragging) {
+        /* Momentum from the throw, then the idle drift underneath it. */
+        offset += velocity;
+        velocity *= FRICTION;
+        if (Math.abs(velocity) < 0.0005) velocity = 0;
+        if (!hovered && velocity === 0) offset += elapsed * AUTO;
+      }
+
+      tiles.forEach((tile, index) => {
+        /*
+         * Wrap the distance into one loop of the strip so tiles that fall off
+         * one end reappear at the other.
+         */
+        let d = (((index - offset) % count) + count) % count;
+        if (d > count / 2) d -= count;
+
+        if (Math.abs(d) > VISIBLE) {
+          tile.style.visibility = 'hidden';
+          return;
+        }
+        tile.style.visibility = 'visible';
+
+        /*
+         * The lens. Turning is linear in d, but the push back grows with the
+         * square of it - that is what makes the ends fall away rather than
+         * simply rotate, and it is what reads as the inside of a dome.
+         */
+        tile.style.setProperty('--x', `${d * tileWidth * STEP}px`);
+        tile.style.setProperty('--turn', `${-d * CURVE}deg`);
+        tile.style.setProperty('--depth', `${-(Math.abs(d) ** 2) * 26}px`);
+        tile.style.setProperty('--fade', String(Math.max(0, 1 - Math.abs(d) / (VISIBLE + 0.6))));
+        tile.style.setProperty('--label', String(Math.abs(d) < 0.45 ? 1 : 0));
+        tile.style.zIndex = String(Math.round(60 - Math.abs(d) * 10));
+      });
+
+      if (onScreen) requestAnimationFrame(paint);
+    }
+
+    function start() {
+      last = performance.now();
+      requestAnimationFrame(paint);
+    }
+
+    /* ------------------------------------------------------------- drag */
+    root.addEventListener('pointerdown', (event) => {
+      dragging = true;
+      velocity = 0;
+      dragStartX = event.clientX;
+      dragStartOffset = offset;
+      root.setPointerCapture(event.pointerId);
+    });
+
+    root.addEventListener('pointermove', (event) => {
+      if (!dragging) return;
+      const moved = (event.clientX - dragStartX) / (tileWidth * STEP);
+      const next = dragStartOffset - moved;
+      /* Velocity is the last step, which becomes the throw on release. */
+      velocity = next - offset;
+      offset = next;
+    });
+
+    function endDrag(event: PointerEvent) {
+      if (!dragging) return;
+      dragging = false;
+      if (root.hasPointerCapture(event.pointerId)) root.releasePointerCapture(event.pointerId);
+    }
+
+    root.addEventListener('pointerup', endDrag);
+    root.addEventListener('pointercancel', endDrag);
+
+    root.addEventListener('pointerenter', () => {
+      hovered = true;
+    });
+    root.addEventListener('pointerleave', () => {
+      hovered = false;
+    });
+
+    /*
+     * Wheel: only a deliberate sideways gesture steers the strip. A plain
+     * vertical wheel is the visitor scrolling the page, and hijacking that
+     * would trap them in the section.
+     */
+    root.addEventListener(
+      'wheel',
+      (event) => {
+        if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+        event.preventDefault();
+        offset += event.deltaX / (tileWidth * STEP);
+        velocity = 0;
+      },
+      { passive: false }
+    );
+
+    /* Keyboard, once the strip has focus. */
+    root.tabIndex = 0;
+    root.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      velocity = 0;
+      offset += event.key === 'ArrowRight' ? 1 : -1;
+    });
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(
+        ([entry]) => {
+          const was = onScreen;
+          onScreen = entry.isIntersecting;
+          if (onScreen && !was) start();
+        },
+        { rootMargin: '100px 0px' }
+      ).observe(root);
+    } else {
+      onScreen = true;
+      start();
+    }
+
+    window.addEventListener('resize', measure);
+    measure();
+    paint(performance.now());
+  });
+</script>

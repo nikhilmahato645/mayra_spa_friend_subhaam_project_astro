@@ -1,0 +1,317 @@
+---
+/**
+ * DOLLY GALLERY - photos rise out of the depth and slip past the lens.
+ *
+ * Inspired by the React Bits "Dolly Gallery". That component is React and
+ * paid, so this is an independent Astro + vanilla JS build of the same idea.
+ *
+ * The name is the camera move: the camera itself travels forward through a
+ * stack of photos laid out along the Z axis, rather than the photos sliding
+ * sideways. Scrolling the page drives the camera; a slow auto drift keeps it
+ * alive while the visitor is still, and the pointer tilts the whole stack a
+ * few degrees like a lens being steered.
+ *
+ * The stack loops, so it never runs out of photos in either direction. There
+ * is no smoke or haze layer here - the depth comes from the blur and fade on
+ * the frames themselves.
+ *
+ * PROGRESSIVE ENHANCEMENT: with no JavaScript this is a plain horizontal
+ * scroller of real <img> markup - every photo crawlable and in order. The
+ * script adds `.is-dolly` and only then does it become the tunnel.
+ */
+import type { GalleryItem } from '../../data/gallery';
+import { variants, srcSet } from '../../utils/image';
+
+interface Props {
+  items: GalleryItem[];
+  /** Accessible name for the region. */
+  label: string;
+  /** Pixels of depth between one photo and the next. Higher = longer tunnel. */
+  spacing?: number;
+  /** Slots travelled per second while nothing else is happening. */
+  autoSpeed?: number;
+}
+
+const { items, label, spacing = 340, autoSpeed = 0.14 } = Astro.props;
+
+/* The frame is at most 520px wide. */
+const SIZES = '(min-width: 1370px) 520px, (min-width: 700px) 38vw, 260px';
+---
+
+<div
+  class="dolly"
+  data-dolly
+  data-spacing={spacing}
+  data-auto-speed={autoSpeed}
+  role="group"
+  aria-roledescription="gallery"
+  aria-label={label}
+>
+  <div class="dolly__stage">
+    <ul class="dolly__track" data-dolly-track>
+      {
+        items.map((photo, index) => (
+          <li class="dolly__frame" data-dolly-frame style={`--i:${index}`}>
+            <picture>
+              <source
+                type="image/webp"
+                srcset={srcSet(variants(photo.src).webpSmall, variants(photo.src).webp, 560, 900)}
+                sizes={SIZES}
+              />
+              <img
+                src={photo.src}
+                srcset={srcSet(variants(photo.src).jpgSmall, photo.src, 560, 900)}
+                sizes={SIZES}
+                alt={photo.alt}
+                width={photo.width}
+                height={photo.height}
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+              />
+            </picture>
+            <span class="dolly__label">{photo.title}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <p class="dolly__hint" aria-hidden="true">Scroll to move through the gallery</p>
+</div>
+
+<style>
+  .dolly {
+    --frame-w: clamp(260px, 38vw, 520px);
+  }
+
+  /* ------------------------------------------------ no-JS: plain scroller */
+  .dolly__stage {
+    position: relative;
+  }
+
+  .dolly__track {
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    padding: 0 0 1rem;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .dolly__frame {
+    position: relative;
+    flex: 0 0 var(--frame-w);
+    scroll-snap-align: center;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--green-950);
+  }
+
+  .dolly__frame picture {
+    display: block;
+  }
+
+  .dolly__frame img {
+    width: 100%;
+    aspect-ratio: 45 / 31;
+    object-fit: cover;
+    user-select: none;
+  }
+
+  .dolly__label {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 2.5rem 1rem 1rem;
+    background: linear-gradient(transparent, rgba(8, 32, 26, 0.88));
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: 1rem;
+  }
+
+  .dolly__hint {
+    margin: 1rem 0 0;
+    text-align: center;
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    /* 0.5 failed the contrast check against the dark band behind it. */
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  /* -------------------------------------------------- enhanced: the tunnel */
+  .dolly.is-dolly .dolly__stage {
+    height: clamp(420px, 52vw, 640px);
+    perspective: 1150px;
+    perspective-origin: 50% 50%;
+    overflow: hidden;
+  }
+
+  .dolly.is-dolly .dolly__track {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
+    overflow: visible;
+    transform-style: preserve-3d;
+    /* JS writes --tilt-x / --tilt-y from the pointer. */
+    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .dolly.is-dolly .dolly__frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--frame-w);
+    margin: 0;
+    /* JS writes --z / --shift / --fade / --blur every frame. */
+    transform: translate(-50%, -50%) translate3d(var(--shift, 0px), 0, var(--z, 0px));
+    opacity: var(--fade, 0);
+    filter: blur(var(--blur, 0px)) saturate(var(--sat, 1));
+    box-shadow: 0 30px 80px rgba(8, 32, 26, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.07),
+      0 0 60px rgba(255, 255, 255, 0.06);
+    will-change: transform, opacity;
+  }
+
+  /* Only the frame at the lens shows its label. */
+  .dolly.is-dolly .dolly__label {
+    opacity: var(--label, 0);
+    transition: opacity 0.35s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dolly.is-dolly .dolly__track,
+    .dolly.is-dolly .dolly__label {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Drive the camera through the stack.
+   *
+   * `camera` is measured in slots, not pixels: slot 0 is at the lens, slot 3
+   * is three photos deep. Scrolling past the section moves the camera through
+   * every slot once, and a slow auto drift is added on top so the tunnel is
+   * never completely still.
+   */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-dolly]').forEach((root) => {
+    const frames = Array.from(root.querySelectorAll<HTMLElement>('[data-dolly-frame]'));
+    const track = root.querySelector<HTMLElement>('[data-dolly-track]');
+    const count = frames.length;
+    if (count < 3 || !track) return;
+
+    root.classList.add('is-dolly');
+
+    const SPACING = Number(root.dataset.spacing || 340);
+    const AUTO = reduceMotion ? 0 : Number(root.dataset.autoSpeed || 0.14);
+    /* How far ahead of the lens a photo starts fading in. */
+    const FAR = count - 2.2;
+    /* How far past the lens it keeps travelling before it is gone. */
+    const NEAR = -1;
+
+    let camera = 0;
+    let drift = 0;
+    let pointerX = 0;
+    let pointerY = 0;
+    let onScreen = false;
+    let hovered = false;
+    let last = performance.now();
+
+    /** Where the section sits in its own scroll pass, 0 -> 1. */
+    function scrollProgress() {
+      const box = root.getBoundingClientRect();
+      const travel = window.innerHeight + box.height;
+      const seen = window.innerHeight - box.top;
+      return Math.max(0, Math.min(1, seen / travel));
+    }
+
+    function paint(now: number) {
+      const elapsed = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      if (!hovered) drift += elapsed * AUTO;
+      camera = scrollProgress() * count + drift;
+
+      track!.style.setProperty('--tilt-y', `${pointerX * 5}deg`);
+      track!.style.setProperty('--tilt-x', `${-pointerY * 4}deg`);
+
+      frames.forEach((frame, index) => {
+        /*
+         * Wrap the distance into one loop of the stack, then pull the slots
+         * that sit just behind the camera in front of it instead - that is
+         * what makes the tunnel endless in both directions.
+         */
+        let d = (((index - camera) % count) + count) % count;
+        if (d > count - 1.4) d -= count;
+
+        /* Past the lens, or too deep to matter - skip the work entirely. */
+        if (d < NEAR || d > FAR + 1.6) {
+          frame.style.setProperty('--fade', '0');
+          frame.style.visibility = 'hidden';
+          return;
+        }
+        frame.style.visibility = 'visible';
+
+        /* Fade in from the depth, and out again as it slides past. */
+        let fade = 1;
+        if (d > FAR) fade = Math.max(0, (FAR + 1.6 - d) / 1.6);
+        if (d < 0.4) fade = Math.min(fade, Math.max(0, (d - NEAR) / 1.4));
+
+        frame.style.setProperty('--z', `${-d * SPACING}px`);
+        /* Photos drift apart sideways as they come at you - it reads as speed. */
+        frame.style.setProperty('--shift', `${(index % 2 === 0 ? 1 : -1) * d * 14}px`);
+        frame.style.setProperty('--fade', String(fade));
+        frame.style.setProperty('--blur', `${Math.max(0, (d - 1.5) * 1.6)}px`);
+        frame.style.setProperty('--sat', String(Math.max(0.55, 1 - d * 0.1)));
+        frame.style.setProperty('--label', String(d < 0.75 ? 1 : 0));
+        frame.style.zIndex = String(Math.round(100 - d * 10));
+      });
+
+      if (onScreen) requestAnimationFrame(paint);
+    }
+
+    function start() {
+      last = performance.now();
+      requestAnimationFrame(paint);
+    }
+
+    root.addEventListener('pointermove', (event) => {
+      const box = root.getBoundingClientRect();
+      pointerX = (event.clientX - box.left) / box.width - 0.5;
+      pointerY = (event.clientY - box.top) / box.height - 0.5;
+    });
+
+    root.addEventListener('pointerenter', () => {
+      hovered = true;
+    });
+    root.addEventListener('pointerleave', () => {
+      hovered = false;
+      pointerX = 0;
+      pointerY = 0;
+    });
+
+    /* The loop only runs while the section is actually on screen. */
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(
+        ([entry]) => {
+          const was = onScreen;
+          onScreen = entry.isIntersecting;
+          if (onScreen && !was) start();
+        },
+        { rootMargin: '100px 0px' }
+      ).observe(root);
+    } else {
+      onScreen = true;
+      start();
+    }
+
+    /* One pass immediately, so the tunnel is built before the first scroll. */
+    paint(performance.now());
+  });
+</script>

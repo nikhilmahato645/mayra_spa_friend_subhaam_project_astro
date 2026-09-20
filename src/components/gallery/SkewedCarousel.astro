@@ -1,0 +1,494 @@
+---
+/**
+ * SKEWED CAROUSEL - angled 3D cards, one flat in the middle.
+ *
+ * Inspired by the React Bits "Skewed Carousel". That component is React and
+ * paid, so this is an independent Astro + vanilla JS build of the same idea -
+ * nothing is copied from it. Everything it needs lives in this one file.
+ *
+ * PROGRESSIVE ENHANCEMENT, which matters because this is the first thing on
+ * the gallery page:
+ *   - with no JavaScript it is a plain horizontal scroller with scroll-snap.
+ *     Every photo is real markup, in order, so Google indexes all eight.
+ *   - the script adds `.is-3d` and only then do the cards become the angled
+ *     stage. If the script fails, the scroller is still there.
+ *
+ * Controls: arrows, dots, arrow keys, and swipe. Autoplay is off for anyone
+ * who asked for reduced motion, and pauses on hover, focus and when the
+ * section is off screen.
+ */
+import type { GalleryItem } from '../../data/gallery';
+import { variants, srcSet } from '../../utils/image';
+
+interface Props {
+  items: GalleryItem[];
+  /** Accessible name for the carousel region. */
+  label: string;
+}
+
+const { items, label } = Astro.props;
+
+/*
+ * The card is at most 310px wide, so a phone at 2x needs ~440px and a desktop
+ * at 2x needs ~700px - which is why those are the two copies on disk.
+ */
+const SIZES = '(min-width: 1400px) 310px, (min-width: 960px) 22vw, 210px';
+
+/** The generated WebP / narrow copies of one photo. */
+const art = (photo: GalleryItem) => variants(photo.src);
+---
+
+<div class="skewed" data-skewed aria-roledescription="carousel" aria-label={label}>
+  <div class="skewed__stage">
+    <ul class="skewed__track" data-skewed-track>
+      {
+        items.map((photo, index) => (
+          <li
+            class="skewed__card"
+            data-skewed-card
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${index + 1} of ${items.length}: ${photo.title}`}
+          >
+            {/*
+              The first card is the page's Largest Contentful Paint, so it is
+              never lazy and carries fetchpriority="high" - that is what tells
+              the browser to fetch it ahead of the other images it finds at the
+              same moment. Every other card stays lazy.
+            */}
+            <picture>
+              <source type="image/webp" srcset={srcSet(art(photo).webpSmall, art(photo).webp, 440, 700)} sizes={SIZES} />
+              <img
+                src={photo.src}
+                srcset={srcSet(art(photo).jpgSmall, photo.src, 440, 700)}
+                sizes={SIZES}
+                alt={photo.alt}
+                width={photo.width}
+                height={photo.height}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                fetchpriority={index === 0 ? 'high' : undefined}
+                decoding={index === 0 ? 'auto' : 'async'}
+                draggable="false"
+              />
+            </picture>
+            <div class="skewed__meta">
+              <h3 class="skewed__title">{photo.title}</h3>
+              <p class="skewed__caption">{photo.caption}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div class="skewed__controls">
+    <button class="skewed__arrow" type="button" data-skewed-prev aria-label="Previous photo">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M15 5 8 12l7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+
+    {/*
+      Plain buttons, deliberately. They were role="tab" inside a role="tablist",
+      but the tab role is only valid when each tab controls a tabpanel - there
+      are no panels here, so those roles were a promise the markup did not
+      keep. aria-current says the same thing without claiming the pattern.
+    */}
+    <div class="skewed__dots" data-skewed-dots>
+      {
+        items.map((photo, index) => (
+          <button
+            class="skewed__dot"
+            type="button"
+            data-skewed-dot
+            aria-label={'Show ' + photo.title}
+            aria-current={index === 0 ? 'true' : 'false'}
+          />
+        ))
+      }
+    </div>
+
+    <button class="skewed__arrow" type="button" data-skewed-next aria-label="Next photo">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="m9 5 7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<style>
+  .skewed {
+    --card-w: clamp(210px, 22vw, 310px);
+  }
+
+  /* ------------------------------------------------ no-JS: plain scroller */
+  /*
+   * The height is declared HERE, not only under .is-3d, and both layouts use
+   * the same value. That is the whole point: the script swaps a flex scroller
+   * for an absolutely positioned 3D stage, and if the two were different
+   * heights the page below would jump the moment the script ran. Lighthouse
+   * measured exactly that as 0.155 of Cumulative Layout Shift.
+   */
+  .skewed__stage {
+    height: clamp(380px, 46vw, 580px);
+    overflow: hidden;
+  }
+
+  .skewed__track {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .skewed__card {
+    position: relative;
+    flex: 0 0 var(--card-w);
+    scroll-snap-align: center;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--green-950);
+  }
+
+  .skewed__card picture {
+    display: block;
+  }
+
+  .skewed__card img {
+    width: 100%;
+    max-height: 100%;
+    aspect-ratio: 7 / 9;
+    object-fit: cover;
+    user-select: none;
+  }
+
+  .skewed__meta {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 3.5rem 1.15rem 1.15rem;
+    background: linear-gradient(transparent, rgba(8, 32, 26, 0.92));
+    color: var(--white);
+  }
+
+  .skewed__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    line-height: 1.2;
+  }
+
+  .skewed__caption {
+    margin: 0.35rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+
+  /* ----------------------------------------------- enhanced: the 3D stage */
+  /* Same box as above - this only turns it into a 3D stage. */
+  .skewed.is-3d .skewed__stage {
+    position: relative;
+    perspective: 1400px;
+    perspective-origin: 50% 50%;
+  }
+
+  .skewed.is-3d .skewed__track {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
+    overflow: visible;
+    transform-style: preserve-3d;
+  }
+
+  .skewed.is-3d .skewed__card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--card-w);
+    margin: 0;
+    /* JS writes --x / --rot / --scale / --fade on each card. */
+    transform: translate(-50%, -50%) translateX(var(--x, 0px)) rotateY(var(--rot, 0deg))
+      scale(var(--scale, 1));
+    opacity: var(--fade, 1);
+    /*
+       Two shadows, not one: a deep soft drop for the weight, plus a faint
+       white halo that reads as light catching the edge of the card.
+    */
+    box-shadow: 0 26px 60px rgba(8, 32, 26, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.12),
+      0 0 50px rgba(255, 255, 255, 0.1);
+    transition: transform 0.62s cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
+  }
+
+  /* Only the middle card is readable, so only it shows its caption. */
+  .skewed.is-3d .skewed__meta {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .skewed.is-3d .skewed__card[data-active] .skewed__meta {
+    opacity: 1;
+    transform: none;
+  }
+
+  .skewed.is-3d .skewed__card[data-active] {
+    box-shadow: 0 34px 80px rgba(8, 32, 26, 0.34), 0 0 0 1px rgba(255, 255, 255, 0.22),
+      0 0 90px rgba(255, 255, 255, 0.18);
+  }
+
+  /* The off-centre cards are a backdrop - dim them so the middle one leads. */
+  .skewed.is-3d .skewed__card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 32, 26, 0.42);
+    opacity: var(--dim, 0);
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+  }
+
+  .skewed.is-3d .skewed__card[hidden] {
+    display: none;
+  }
+
+  /* -------------------------------------------------------- the controls */
+  .skewed__controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .skewed__arrow {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--green-100);
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--green-800);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+
+  .skewed__arrow:hover {
+    background: var(--green-700);
+    color: var(--white);
+    transform: translateY(-2px);
+  }
+
+  .skewed__dots {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .skewed__dot {
+    width: 26px;
+    height: 4px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(16, 54, 44, 0.2);
+    cursor: pointer;
+    transition: background-color 0.25s ease, width 0.25s ease;
+  }
+
+  .skewed__dot[aria-current='true'] {
+    width: 42px;
+    background: var(--green-700);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skewed.is-3d .skewed__card,
+    .skewed.is-3d .skewed__meta,
+    .skewed__dot {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * One instance per [data-skewed] on the page, so the component can be used
+   * more than once without the two fighting over the same state.
+   */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-skewed]').forEach((root) => {
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-skewed-card]'));
+    const dots = Array.from(root.querySelectorAll<HTMLElement>('[data-skewed-dot]'));
+    const prev = root.querySelector<HTMLButtonElement>('[data-skewed-prev]');
+    const next = root.querySelector<HTMLButtonElement>('[data-skewed-next]');
+    if (cards.length < 2) return;
+
+    /* From here on the CSS switches to the 3D stage. */
+    root.classList.add('is-3d');
+
+    /* How far apart the cards sit, and how hard they turn away from you. */
+    const STEP_X = 0.62; // of one card width
+    const TURN = 34; // degrees per step
+    const SHRINK = 0.11; // scale lost per step
+    const VISIBLE = 3; // cards either side of the middle one
+
+    let active = 0;
+
+    /*
+     * The card width is measured once and then cached.
+     *
+     * Measuring on every move meant unhiding the cards (a write), reading
+     * offsetWidth (a read) and then writing transforms again - a forced reflow
+     * on each arrow press. The width only actually changes when the window
+     * does, so that is the only time it is re-measured.
+     */
+    let cardWidth = 0;
+
+    function measure() {
+      /* A card left display:none reports 0, so unhide everything first. */
+      cards.forEach((card) => {
+        card.hidden = false;
+      });
+      cardWidth = cards[0].offsetWidth || 260;
+    }
+
+    function layout() {
+      if (!cardWidth) measure();
+
+      cards.forEach((card, index) => {
+        const offset = index - active;
+        const distance = Math.abs(offset);
+
+        /* Anything further out than VISIBLE is removed from the document so
+           it cannot be tabbed into or read out while it is invisible. */
+        if (distance > VISIBLE) {
+          card.hidden = true;
+          return;
+        }
+        card.hidden = false;
+
+        card.style.setProperty('--x', `${offset * cardWidth * STEP_X}px`);
+        card.style.setProperty('--rot', `${-offset * TURN}deg`);
+        card.style.setProperty('--scale', String(Math.max(0.55, 1 - distance * SHRINK)));
+        card.style.setProperty('--fade', String(Math.max(0, 1 - distance * 0.2)));
+        card.style.setProperty('--dim', String(distance === 0 ? 0 : Math.min(0.85, distance * 0.3)));
+        card.style.zIndex = String(50 - distance);
+
+        card.toggleAttribute('data-active', distance === 0);
+        /* Only the middle card is a tab stop / reachable content. */
+        card.setAttribute('aria-hidden', distance === 0 ? 'false' : 'true');
+      });
+
+      dots.forEach((dot, index) => {
+        dot.setAttribute('aria-current', index === active ? 'true' : 'false');
+      });
+    }
+
+    function goTo(index: number) {
+      /* Wraps around, so "next" on the last card returns to the first. */
+      active = (index + cards.length) % cards.length;
+      layout();
+    }
+
+    prev?.addEventListener('click', () => {
+      stopAuto();
+      goTo(active - 1);
+    });
+    next?.addEventListener('click', () => {
+      stopAuto();
+      goTo(active + 1);
+    });
+
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        stopAuto();
+        goTo(index);
+      });
+    });
+
+    /* Clicking a side card brings it to the middle - what people try first. */
+    cards.forEach((card, index) => {
+      card.addEventListener('click', () => {
+        if (index === active) return;
+        stopAuto();
+        goTo(index);
+      });
+    });
+
+    /* Arrow keys, once the carousel itself has focus. */
+    root.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      stopAuto();
+      goTo(active + (event.key === 'ArrowRight' ? 1 : -1));
+    });
+
+    /* Swipe. Pointer events cover mouse drag, touch and pen in one listener. */
+    let startX: number | null = null;
+    root.addEventListener('pointerdown', (event) => {
+      startX = event.clientX;
+    });
+    root.addEventListener('pointerup', (event) => {
+      if (startX === null) return;
+      const moved = event.clientX - startX;
+      startX = null;
+      if (Math.abs(moved) < 40) return;
+      stopAuto();
+      goTo(active + (moved < 0 ? 1 : -1));
+    });
+
+    /* ------------------------------------------------------------ autoplay */
+    let timer: number | undefined;
+
+    function startAuto() {
+      if (reduceMotion || timer) return;
+      timer = window.setInterval(() => goTo(active + 1), 4200);
+    }
+
+    function pauseAuto() {
+      window.clearInterval(timer);
+      timer = undefined;
+    }
+
+    /** Stops for good once the visitor has taken control themselves. */
+    let surrendered = false;
+    function stopAuto() {
+      surrendered = true;
+      pauseAuto();
+    }
+
+    root.addEventListener('pointerenter', pauseAuto);
+    root.addEventListener('focusin', pauseAuto);
+    root.addEventListener('pointerleave', () => {
+      if (!surrendered) startAuto();
+    });
+
+    /* No point animating a carousel nobody is looking at. */
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && !surrendered) startAuto();
+          else pauseAuto();
+        },
+        { threshold: 0.35 }
+      ).observe(root);
+    } else {
+      startAuto();
+    }
+
+    window.addEventListener('resize', () => {
+      measure();
+      layout();
+    });
+    layout();
+  });
+</script>

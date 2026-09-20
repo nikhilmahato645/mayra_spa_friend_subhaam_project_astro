@@ -157,3 +157,40 @@ export function offerCatalogSchema(
     })),
   };
 }
+
+/**
+ * ImageGallery rich result for /gallery/.
+ *
+ * Each photo becomes an ImageObject with the same alt text that is on the page,
+ * which is what lets Google Images tie the file to the business. Photos with no
+ * alt text are decorative and are left out on purpose - an ImageObject with no
+ * caption tells Google nothing.
+ */
+export function imageGallerySchema(params: {
+  name: string;
+  description: string;
+  url: string;
+  images: { src: string; alt: string; width: number; height: number }[];
+}) {
+  const described = params.images.filter((photo) => photo.alt.trim().length > 0);
+  if (described.length === 0) return null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ImageGallery',
+    name: params.name,
+    description: params.description,
+    url: absoluteUrl(params.url),
+    isPartOf: { '@id': ids.website },
+    about: { '@id': ids.business },
+    numberOfItems: described.length,
+    associatedMedia: described.map((photo) => ({
+      '@type': 'ImageObject',
+      contentUrl: absoluteUrl(photo.src),
+      caption: photo.alt,
+      width: photo.width,
+      height: photo.height,
+      representativeOfPage: false,
+    })),
+  };
+}

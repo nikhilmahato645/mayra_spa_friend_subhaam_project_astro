@@ -10,6 +10,8 @@ import CTA from '../components/CTA.astro';
 import LocationCard from '../components/LocationCard.astro';
 import FAQ from '../components/FAQ.astro';
 import TherapistGrid from '../components/TherapistGrid.astro';
+import PricingStack from '../components/home/PricingStack.astro';
+import InvertedDome from '../components/effects/InvertedDome.astro';
 import { site } from '../data/site';
 import { homeImages, homeImage } from '../data/home-images';
 import { therapyHighlights, facilities, packages } from '../data/services';
@@ -22,6 +24,31 @@ import { faqSchema, offerCatalogSchema, serviceSchema } from '../utils/schema';
 const title = 'Russian Spa in Mahipalpur & Delhi Aerocity | Book Now';
 const description =
   'Book a relaxing massage at Russian Spa Mahipalpur near Delhi Aerocity. Full body, Thai, deep tissue, B2B and couples massage. 1st visit ₹1499.';
+
+/*
+ * The treatments that carry a real local photo AND a price - those are the
+ * only ones that can fill a price card. A treatment still waiting on its
+ * photo (it has remoteImage instead) is skipped rather than shown with a
+ * stock stand-in beside a real price.
+ */
+const pricedTreatments = treatments.filter((treatment) => Boolean(treatment.image));
+
+/* Six is enough to feel like a stack without turning the page into a tower. */
+const stackedPrices = pricedTreatments.slice(0, 6).map((treatment) => ({
+  name: treatment.name,
+  price: treatment.price,
+  duration: treatment.duration,
+  priceNote: treatment.priceNote,
+  description: treatment.cardText,
+  image: treatment.image as string,
+}));
+
+/* The dome strip shows the whole photographed menu, not just the six. */
+const domeTiles = pricedTreatments.map((treatment) => ({
+  image: treatment.image as string,
+  label: treatment.name,
+  alt: `${treatment.name} at Russian Spa Mahipalpur`,
+}));
 
 /* Structured data specific to the home page. */
 const schemas = [
@@ -402,9 +429,26 @@ const facilityIcons: Record<string, string> = {
   -->
 
   <!-- ================================================= 10. PACKAGES ===== -->
-  <section class="section">
-    <div class="container packages">
-      <div class="packages__intro">
+  <!--
+    Massage Packages & Pricing.
+
+    The heading runs full width across the top - it is the section's title, not
+    a column beside the cards. Under it, PricingStack puts the write-up for
+    whichever card is currently on top in a sticky panel on the left, and the
+    cards themselves stack on the right.
+
+    NOTE: this section deliberately does NOT use the .packages grid class any
+    more. That class splits its children into a 1fr / 1.4fr two column layout,
+    which is what pushed the heading into a narrow column with the cards beside
+    it. The two headline package cards below keep their own grid.
+
+    There is no decorative backdrop here. A full-section cursor-reactive tile
+    field was tried and its 3D plane painted over the hero banner further up
+    the page, which is not something a backdrop is allowed to do.
+  -->
+  <section class="section packages-band">
+    <div class="container">
+      <div class="section__head">
         <h2 class="h-serif">Massage Packages &amp; Pricing</h2>
         <p class="muted">
           Enjoy affordable spa packages at <strong>Russian Spa Mahipalpur</strong> with professional
@@ -412,6 +456,8 @@ const facilityIcons: Record<string, string> = {
           treatments at pocket-friendly prices, conveniently located near Mahipalpur and Aerocity.
         </p>
       </div>
+
+      <PricingStack items={stackedPrices} />
 
       <div class="packages__cards">
         {
@@ -435,7 +481,31 @@ const facilityIcons: Record<string, string> = {
 
       <!-- Descriptive anchor text: "Know More" tells neither a reader nor a
            crawler where the link goes. -->
-      <a class="btn btn--outline packages__more" href="/pricing/">View Full Pricing</a>
+      <div class="packages__more-row">
+        <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ 10b. TREATMENT DOME ==== -->
+  <!--
+    The photographed menu on a curved, draggable strip - the tile in the
+    middle faces you and the rest bend away like the inside of a lens.
+    See components/effects/InvertedDome.astro.
+  -->
+  <section class="section section--cream" aria-labelledby="dome-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="dome-heading">The Treatment Menu</h2>
+        <p class="muted">
+          Drag the strip, or use the arrow keys, to look through every treatment we photograph at
+          our outlets. Prices for all of them are on the pricing page.
+        </p>
+      </div>
+    </div>
+
+    <div class="dome-bleed">
+      <InvertedDome tiles={domeTiles} label="Spa treatment menu" />
     </div>
   </section>
 
@@ -865,26 +935,11 @@ const facilityIcons: Record<string, string> = {
   /* 9 + 13. photo bands - styles removed with those sections. */
 
   /* -------------------------------------------------------- 10. packages */
-  .packages {
-    display: grid;
-    gap: clamp(1.5rem, 1rem + 2vw, 3rem);
-    align-items: center;
-  }
-
-  @media (min-width: 900px) {
-    .packages {
-      grid-template-columns: 1fr 1.4fr;
-    }
-    .packages__more {
-      grid-column: 1 / -1;
-      justify-self: center;
-    }
-  }
-
-  .packages__intro h2 {
-    margin-bottom: 1rem;
-  }
-
+  /*
+   * The old .packages / .packages__intro / .packages__more rules are gone with
+   * the two column layout they served. The heading is full width now and the
+   * side-by-side lives inside PricingStack.
+   */
   .packages__cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -984,6 +1039,29 @@ const facilityIcons: Record<string, string> = {
     display: flex;
     justify-content: center;
     margin-top: 1.75rem;
+  }
+
+  /* ------------------------------------------------- 10. packages band */
+  .packages-band .section__head {
+    margin-bottom: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+  }
+
+  /* The two headline packages sit under the stack, not beside it. */
+  .packages__cards {
+    margin-top: clamp(2.5rem, 2rem + 2vw, 4rem);
+  }
+
+  .packages__more-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 2.25rem;
+  }
+
+  /* -------------------------------------------- 10b. treatment dome */
+  /* The strip's outer tiles are meant to run past the container edge. */
+  .dome-bleed {
+    width: 100%;
+    margin-top: 2rem;
   }
 
   /* -------------------------------------------------------- 17. counters */

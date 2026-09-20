@@ -1,0 +1,460 @@
+---
+/**
+ * PRICING STACK - price cards that pile up as you scroll, with the write-up
+ * for whichever card is on top showing beside them.
+ *
+ * Two columns on a wide screen:
+ *
+ *   LEFT   a sticky panel. It holds one write-up per treatment, stacked in the
+ *          same grid cell, and only the one matching the card currently pinned
+ *          at the top is visible. Scrolling therefore reads as the description
+ *          changing as each card swipes up.
+ *   RIGHT  the cards. Every card is `position: sticky`, each pinned a few
+ *          pixels lower than the one before, so a card stops while the next
+ *          slides up over it. That much is pure CSS and works with JavaScript
+ *          switched off.
+ *
+ * Below 900px the panel is dropped and each card carries its own one-line
+ * note instead - a sticky side panel and sticky cards fight each other for the
+ * top of a phone screen, and the long write-up is not what someone scanning
+ * prices on a phone is after. The copy is never printed twice.
+ *
+ * This is the same stacking effect as "Signature Therapies" on /gallery/
+ * (components/gallery/ScrollStack.astro), rebuilt around prices.
+ */
+import { whatsappHref } from '../../data/site';
+
+/** The subset of a Treatment this component needs. */
+export interface PricedTreatment {
+  name: string;
+  price: string;
+  duration: string;
+  /** One line for the card - shown on phones, where the panel is hidden. */
+  priceNote: string;
+  /** The full write-up, shown in the side panel on wide screens. */
+  description: string;
+  /** File name stem under /images/home_page/, without the extension. */
+  image: string;
+}
+
+interface Props {
+  items: PricedTreatment[];
+  /** Heading level, so the page keeps a correct outline. */
+  headingLevel?: 'h3' | 'h4';
+}
+
+const { items, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+const total = items.length;
+---
+
+<div class="pstack" data-pstack>
+  <!--
+    The side panel. It is aria-hidden: every name and price in it is already
+    on the card beside it, so a screen reader would otherwise hear the whole
+    menu twice. The descriptions are the one thing only here, which is why the
+    cards keep their own short note.
+  -->
+  <div class="pstack__aside" aria-hidden="true">
+    <div class="pstack__panel">
+      {
+        items.map((treatment, index) => (
+          <article class="pstack__slide" data-pstack-slide data-active={index === 0 ? '' : undefined}>
+            <span class="pstack__step">
+              {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+            </span>
+            <p class="pstack__slide-name">{treatment.name}</p>
+            <p class="pstack__long">{treatment.description}</p>
+            <p class="pstack__facts">
+              <span>{treatment.price}</span>
+              <span class="pstack__dot">&middot;</span>
+              <span>{treatment.duration}</span>
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+
+  <ol class="pstack__cards">
+    {
+      items.map((treatment, index) => (
+        <li class="pstack__item" data-pstack-card style={`--i:${index}`}>
+          <article class="pstack__card">
+            <div class="pstack__media">
+              <picture>
+                <source srcset={`/images/home_page/${treatment.image}.webp`} type="image/webp" />
+                <img
+                  src={`/images/home_page/${treatment.image}.jpg`}
+                  alt={`${treatment.name} at Russian Spa Mahipalpur`}
+                  width="900"
+                  height="600"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
+            </div>
+
+            <div class="pstack__body">
+              <span class="pstack__index" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+
+              <Heading class="pstack__name">{treatment.name}</Heading>
+
+              <p class="pstack__price">
+                {treatment.price}
+                <span class="pstack__duration">/ {treatment.duration}</span>
+              </p>
+
+              <p class="pstack__note">{treatment.priceNote}</p>
+
+              <a
+                class="pstack__cta"
+                href={whatsappHref(
+                  `Hi, I would like to book the ${treatment.name} (${treatment.price}, ${treatment.duration}).`
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Book on WhatsApp
+              </a>
+            </div>
+          </article>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .pstack {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 900px) {
+    .pstack {
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: clamp(2rem, 1rem + 3vw, 4rem);
+      align-items: start;
+    }
+  }
+
+  /* ------------------------------------------------------- the side panel */
+  .pstack__aside {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .pstack__aside {
+      display: block;
+      position: sticky;
+      /* Sits level with the first pinned card (see --i / top below). */
+      top: 150px;
+    }
+  }
+
+  /*
+   * Every write-up occupies the same grid cell, so the panel is as tall as the
+   * longest one and nothing shifts as they swap.
+   */
+  .pstack__panel {
+    display: grid;
+  }
+
+  .pstack__slide {
+    grid-area: 1 / 1;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+    pointer-events: none;
+  }
+
+  .pstack__slide[data-active] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .pstack__step {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    letter-spacing: 0.24em;
+    color: var(--gold);
+  }
+
+  .pstack__slide-name {
+    margin: 0 0 0.75rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.3rem);
+    line-height: 1.15;
+    color: var(--green-800);
+  }
+
+  .pstack__long {
+    margin: 0;
+    font-size: 0.97rem;
+    line-height: 1.8;
+    color: var(--ink-soft);
+  }
+
+  .pstack__facts {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 1.2rem 0 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green-700);
+  }
+
+  .pstack__dot {
+    color: var(--gold);
+  }
+
+  /* ------------------------------------------------------------ the cards */
+  .pstack__cards {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pstack__item {
+    position: sticky;
+    /*
+     * 120px clears the sticky header; each card then stops 16px below the one
+     * before it, which is what leaves the stacked edges visible.
+     */
+    top: calc(120px + var(--i) * 16px);
+    padding-bottom: 1.5rem;
+  }
+
+  .pstack__card {
+    display: grid;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--white);
+    box-shadow: 0 18px 50px rgba(8, 32, 26, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.65);
+    /* JS writes --squash / --veil as the card gets buried. */
+    transform: scale(var(--squash, 1));
+    transform-origin: top center;
+    transition: transform 0.25s linear;
+  }
+
+  @media (min-width: 560px) {
+    .pstack__card {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+  }
+
+  .pstack__media {
+    position: relative;
+  }
+
+  .pstack__media::after {
+    /* Dims the card as the next one climbs over it. */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 32, 26, 0.55);
+    opacity: var(--veil, 0);
+    transition: opacity 0.25s linear;
+    pointer-events: none;
+  }
+
+  .pstack__media picture {
+    display: block;
+    height: 100%;
+  }
+
+  .pstack__media img {
+    width: 100%;
+    height: 100%;
+    min-height: 210px;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+
+  .pstack__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: clamp(1.2rem, 0.9rem + 1.6vw, 2rem);
+    background: var(--cream);
+  }
+
+  .pstack__index {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+  }
+
+  .pstack__name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 1rem + 0.7vw, 1.55rem);
+    line-height: 1.2;
+    color: var(--green-800);
+  }
+
+  .pstack__price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 1.15rem + 1vw, 1.95rem);
+    color: var(--green-700);
+  }
+
+  .pstack__duration {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .pstack__note {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  /* The panel carries the long copy on a wide screen, so the card drops it. */
+  @media (min-width: 900px) {
+    .pstack__note {
+      display: none;
+    }
+  }
+
+  .pstack__cta {
+    align-self: flex-start;
+    margin-top: 0.7rem;
+    padding: 0.55rem 1.35rem;
+    border-radius: 999px;
+    background: var(--whatsapp);
+    color: var(--white);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .pstack__cta:hover {
+    background: var(--whatsapp-dark);
+    transform: translateY(-2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pstack__card,
+    .pstack__media::after,
+    .pstack__slide,
+    .pstack__cta {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Two jobs, both driven off one set of measurements per frame:
+   *   1. shrink and dim each card once the next one starts covering it;
+   *   2. show the side panel write-up belonging to the card now on top.
+   *
+   * READ FIRST, WRITE SECOND: every measurement is taken before any style is
+   * written. Measuring one card and then styling it, over and over, makes the
+   * browser recompute layout on each pass - a forced reflow.
+   */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-pstack]').forEach((root) => {
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-pstack-card]'));
+    const slides = Array.from(root.querySelectorAll<HTMLElement>('[data-pstack-slide]'));
+    if (cards.length < 2) return;
+
+    /* Matches `top: calc(120px + ...)` in the CSS above. */
+    const PIN_TOP = 120;
+    /* How far a card sinks before it is fully buried. */
+    const DEPTH = 420;
+
+    let onScreen = false;
+    let queued = false;
+    let shown = 0;
+
+    function paint() {
+      queued = false;
+
+      const tops = cards.map((item) => item.getBoundingClientRect().top);
+
+      /*
+       * The card on top is the last one that has reached its pin. A couple of
+       * pixels of slack stops it flickering between two cards while one is
+       * settling exactly on the line.
+       */
+      let active = 0;
+      tops.forEach((top, index) => {
+        if (top <= PIN_TOP + index * 16 + 2) active = index;
+      });
+
+      if (active !== shown) {
+        slides[shown]?.removeAttribute('data-active');
+        slides[active]?.setAttribute('data-active', '');
+        shown = active;
+      }
+
+      if (reduceMotion) return;
+
+      cards.forEach((item, index) => {
+        const card = item.firstElementChild as HTMLElement | null;
+        if (!card) return;
+
+        /* The last card is never covered, so it never shrinks. */
+        if (index === cards.length - 1) {
+          card.style.setProperty('--squash', '1');
+          card.style.setProperty('--veil', '0');
+          return;
+        }
+
+        const pinnedAt = PIN_TOP + index * 16;
+        const buried = Math.max(0, pinnedAt - tops[index]);
+        const progress = Math.min(1, buried / DEPTH);
+
+        card.style.setProperty('--squash', String(1 - progress * 0.07));
+        card.style.setProperty('--veil', String(progress * 0.75));
+      });
+    }
+
+    function request() {
+      if (queued || !onScreen) return;
+      queued = true;
+      requestAnimationFrame(paint);
+    }
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(
+        ([entry]) => {
+          onScreen = entry.isIntersecting;
+          if (onScreen) request();
+        },
+        { rootMargin: '200px 0px' }
+      ).observe(root);
+    } else {
+      onScreen = true;
+    }
+
+    window.addEventListener('scroll', request, { passive: true });
+    window.addEventListener('resize', request);
+    paint();
+  });
+</script>

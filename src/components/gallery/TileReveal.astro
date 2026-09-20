@@ -1,0 +1,222 @@
+---
+/**
+ * TILE REVEAL - a grid whose tiles uncover themselves as they scroll in.
+ *
+ * Inspired by the React Bits "Tile Reveal". That component is React and paid,
+ * so this is an independent Astro + vanilla JS build of the same idea.
+ *
+ * Each tile sits behind a panel that wipes away diagonally, staggered across
+ * the grid so the photos arrive in a wave rather than all at once.
+ *
+ * The hidden state is added by JavaScript, never in the HTML - so with the
+ * script off, or before it runs, every photo is simply visible. The animation
+ * is decoration on top, and Google always sees the finished grid.
+ */
+import type { GalleryItem } from '../../data/gallery';
+import { variants, srcSet } from '../../utils/image';
+
+interface Props {
+  items: GalleryItem[];
+  /** Heading level for each tile's caption. */
+  headingLevel?: 'h3' | 'h4';
+}
+
+const { items, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+
+/* Tiles are a minimum of 210px and rarely wider than 300px. */
+const SIZES = '(min-width: 900px) 300px, 45vw';
+---
+
+<ul class="reveal-grid" data-reveal-grid>
+  {
+    items.map((photo) => (
+      <li class="tile" data-reveal-tile>
+        <figure class="tile__figure">
+          <picture>
+            <source
+              type="image/webp"
+              srcset={srcSet(variants(photo.src).webpSmall, variants(photo.src).webp, 430, 800)}
+              sizes={SIZES}
+            />
+            <img
+              src={photo.src}
+              srcset={srcSet(variants(photo.src).jpgSmall, photo.src, 430, 800)}
+              sizes={SIZES}
+              alt={photo.alt}
+              width={photo.width}
+              height={photo.height}
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+          <figcaption class="tile__cap">
+            <Heading class="tile__title">{photo.title}</Heading>
+            <p class="tile__text">{photo.caption}</p>
+          </figcaption>
+        </figure>
+        <span class="tile__shutter" aria-hidden="true"></span>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .reveal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tile {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--green-950);
+    isolation: isolate;
+    box-shadow: 0 10px 30px rgba(8, 32, 26, 0.1);
+    transition: box-shadow 0.4s ease, transform 0.4s ease;
+  }
+
+  /* White halo on hover - the same light the carousel card carries. */
+  .tile:hover,
+  .tile:focus-within {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 54px rgba(8, 32, 26, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5),
+      0 0 60px rgba(255, 255, 255, 0.45);
+  }
+
+  .tile__figure {
+    margin: 0;
+    height: 100%;
+  }
+
+  .tile picture {
+    display: block;
+  }
+
+  .tile img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .tile:hover img,
+  .tile:focus-within img {
+    transform: scale(1.07);
+  }
+
+  .tile__cap {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 3rem 1rem 1rem;
+    background: linear-gradient(transparent, rgba(8, 32, 26, 0.9));
+    color: var(--white);
+  }
+
+  .tile__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1rem;
+  }
+
+  .tile__text {
+    margin: 0.2rem 0 0;
+    font-size: 0.76rem;
+    line-height: 1.5;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+
+  .tile:hover .tile__text,
+  .tile:focus-within .tile__text {
+    opacity: 0.85;
+    transform: none;
+  }
+
+  /*
+   * The shutter. It covers the tile only once JS has added .is-covered, and
+   * slides away diagonally when the tile reaches the viewport.
+   */
+  .tile__shutter {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: var(--green-800);
+    transform: translate3d(0, -101%, 0);
+    pointer-events: none;
+  }
+
+  .tile.is-covered .tile__shutter {
+    transform: none;
+  }
+
+  .tile.is-covered.is-open .tile__shutter {
+    transform: translate3d(101%, 101%, 0);
+    transition: transform 0.85s cubic-bezier(0.76, 0, 0.24, 1);
+    transition-delay: calc(var(--stagger, 0) * 90ms);
+  }
+
+  /* The photo itself lifts in behind the shutter. */
+  .tile.is-covered .tile__figure {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+
+  .tile.is-covered.is-open .tile__figure {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.6s ease, transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition-delay: calc(var(--stagger, 0) * 90ms + 120ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tile,
+    .tile img,
+    .tile__text {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Cover each tile, then uncover it when it scrolls in.
+   *
+   * `.is-covered` is added here rather than in the HTML so the grid is never
+   * blank for anyone whose JavaScript did not run.
+   */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    document.querySelectorAll<HTMLElement>('[data-reveal-grid]').forEach((grid) => {
+      const tiles = Array.from(grid.querySelectorAll<HTMLElement>('[data-reveal-tile]'));
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.classList.add('is-open');
+            observer.unobserve(entry.target); // reveal once, then stop watching
+          }
+        },
+        { rootMargin: '0px 0px -10% 0px', threshold: 0.15 }
+      );
+
+      tiles.forEach((tile, index) => {
+        /* A tile already on screen at load would flash - leave it uncovered. */
+        if (tile.getBoundingClientRect().top < window.innerHeight * 0.85) return;
+
+        tile.classList.add('is-covered');
+        /* Stagger across the row, then start again - a wave, not a queue. */
+        tile.style.setProperty('--stagger', String(index % 3));
+        observer.observe(tile);
+      });
+    });
+  }
+</script>

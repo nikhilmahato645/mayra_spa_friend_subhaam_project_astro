@@ -18,8 +18,16 @@ import SocialLinks from './SocialLinks.astro';
 const path = Astro.url.pathname;
 ---
 
-<div id="mobile-menu" class="curtain" data-menu aria-hidden="true">
-  <div class="curtain__inner">
+<!--
+  `inert` is what keeps the closed menu out of the tab order. aria-hidden on
+  its own only hides it from screen readers - every link inside stayed
+  focusable, so tabbing out of the header walked invisibly through the whole
+  menu. Lighthouse reports that as "[aria-hidden] elements contain focusable
+  descendents". setMenu() below keeps the two attributes in step.
+-->
+<div id="mobile-menu" class="curtain" data-menu aria-hidden="true" inert>
+  <!-- data-lenis-prevent: this panel scrolls itself, Lenis must not take it over. -->
+  <div class="curtain__inner" data-lenis-prevent>
     <nav class="curtain__nav" aria-label="Mobile navigation">
       <ul>
         {
@@ -202,6 +210,7 @@ const path = Astro.url.pathname;
     if (!menu || !toggle) return;
     menu.classList.toggle('is-open', open);
     menu.setAttribute('aria-hidden', String(!open));
+    menu.toggleAttribute('inert', !open);
     toggle.setAttribute('aria-expanded', String(open));
     toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   }
