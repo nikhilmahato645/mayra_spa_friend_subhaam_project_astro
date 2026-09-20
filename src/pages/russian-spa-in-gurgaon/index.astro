@@ -2,12 +2,1035 @@
 /**
  * LOCATION PAGE - /russian-spa-in-gurgaon/
  *
- * All content for this page lives in src/data/locations.ts under the slug
- * below. Fill in `intro`, `sections` and `faqs` there, then remove this page
- * from src/data/drafts.mjs to publish it (lifts noindex + adds it to the
- * sitemap). Do not put copy in this file - keep every area in one data file.
+ * WHY THIS ONE IS NOT A LocationLayout PAGE
+ *
+ * LocationLayout assumes the area it is given is somewhere we can serve from
+ * an outlet and prints "Massage Services Available Near <area>" around it.
+ * Gurgaon is not an outlet - there is no Gurgaon branch - so this page is
+ * written as a page for people SEARCHING from Gurgaon / Gurugram, which needs
+ * a structure the shared skeleton does not have: an honest note about where
+ * the business actually is, a treatment chooser, a full price table and a
+ * location block that points at the real Aerocity address.
+ *
+ * It is also deliberately not the Aerocity page with the city renamed. The
+ * Aerocity page leads with the address; this one leads with the journey, adds
+ * a "Choosing the Right Massage" comparison that exists nowhere else on the
+ * site, and carries a different FAQ set.
+ *
+ * ALL COPY lives in src/data/gurgaon.ts, along with the list of claims that
+ * are banned on this page. Do not write prose into this file.
+ *
+ * STRUCTURED DATA: BaseLayout already emits DaySpa (the REAL Aerocity
+ * address) + WebSite + WebPage on every page. This page adds only breadcrumbs,
+ * the FAQ verbatim and a Service whose areaServed is Gurgaon. There is no
+ * second LocalBusiness and no Gurgaon address anywhere in the graph - a
+ * LocalBusiness pinned to a city the business does not trade from is exactly
+ * the kind of thing Google penalises.
  */
-import LocationLayout from '../../layouts/LocationLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import { site, telHref, mailHref } from '../../data/site';
+import {
+  gurgaonMeta,
+  gurgaonImages,
+  gurgaonTreatments,
+  gurgaonChoices,
+  gurgaonPrices,
+  gurgaonReasons,
+  gurgaonSteps,
+  gurgaonFaqs,
+} from '../../data/gurgaon';
+import { variants, srcSet } from '../../utils/image';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Gurgaon', href: '/russian-spa-in-gurgaon/' },
+]);
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(gurgaonFaqs),
+  serviceSchema({
+    name: 'Russian spa and body massage for guests from Gurgaon',
+    description: gurgaonMeta.description,
+    url: `${site.url}/russian-spa-in-gurgaon/`,
+    areaServed: 'Gurgaon, Haryana',
+  }),
+];
+
+/* Same embed the contact page builds: the Google Business Profile addressed
+   by its CID, so there is no hand-written latitude or longitude and no API
+   key in the front end. It points at Aerocity, which is where we are. */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+
+const hero = gurgaonImages.hero;
+const heroArt = variants(hero.src);
 ---
 
-<LocationLayout slug="russian-spa-in-gurgaon" />
+<BaseLayout
+  title={gurgaonMeta.title}
+  description={gurgaonMeta.description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  usesUnsplash={false}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ===================================================== 1. HERO ====== -->
+  <section class="ghero">
+    <div class="container ghero__grid">
+      <div class="ghero__copy">
+        <p class="ghero__eyebrow">For guests searching from Gurgaon &amp; Gurugram</p>
+        <h1>Russian Spa in Gurgaon</h1>
+        <p class="ghero__sub">Body massage, banya and full body treatments, booked by appointment</p>
+        <p class="ghero__lead">
+          If you are in Gurgaon looking for a Russian spa, a full body massage or an hour away from
+          the traffic, this page is for you &mdash; with one thing said up front. We have no branch
+          inside Gurgaon. <a href="/">Russian Spa Mahipalpur</a> trades from a single address on
+          Northern Access Road in Aerocity, New Delhi, at the Delhi end of the corridor you already
+          drive. A good share of our guests come from the Gurugram side, so the menu, the prices and
+          the directions below are set out with that trip in mind.
+        </p>
+
+        <div class="ghero__actions">
+          <a class="btn" href="/services/">View Massage Services</a>
+          <a class="btn btn--outline" href="/pricing/">Check Prices</a>
+        </div>
+      </div>
+
+      <div class="ghero__media">
+        <picture>
+          <source
+            type="image/webp"
+            srcset={srcSet(heroArt.webpSmall, heroArt.webp, 760, 1600)}
+            sizes="(min-width: 980px) 560px, 92vw"
+          />
+          <img
+            src={hero.src}
+            srcset={srcSet(heroArt.jpgSmall, hero.src, 760, 1600)}
+            sizes="(min-width: 980px) 560px, 92vw"
+            alt={hero.alt}
+            width={hero.width}
+            height={hero.height}
+            loading="eager"
+            fetchpriority="high"
+          />
+        </picture>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 2. WHAT IS ON OFFER = -->
+  <section class="section" aria-labelledby="services-heading">
+    <div class="container narrow">
+      <h2 id="services-heading">Massage &amp; Spa Services for Gurgaon Guests</h2>
+      <p>
+        Ten treatments are on the menu and they fall into three sorts of visit. There is the
+        traditional Russian banya, a staged heat ritual rather than a massage. There is plain
+        bodywork &mdash; Swedish, deep tissue, sports massage, shiatsu and clothed Thai stretching
+        &mdash; running from light and flowing to slow and firm. And there is the quieter end:
+        aromatherapy, hot stone therapy, reflexology, and a couple&rsquo;s package for two people in
+        one room.
+      </p>
+      <p>
+        When you are travelling in from Gurugram rather than dropping by, it is worth settling on
+        the treatment before you set off instead of deciding at reception &mdash; it is the
+        difference between a booked room and whatever happens to be free. Every therapy is explained
+        in full on the <a href="/services/">massage services page</a>, and you can see the rooms and
+        the setting in the <a href="/gallery/">spa gallery</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================= 3. TREATMENTS ==== -->
+  <section class="section section--cream" aria-labelledby="treatments-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="treatments-heading">Popular Massage Treatments</h2>
+        <p class="muted">
+          Six of the sessions booked most often, with the price and the length you will actually be
+          quoted. The other four are in the table further down.
+        </p>
+      </div>
+
+      <ul class="tcards">
+        {
+          gurgaonTreatments.map((treatment) => {
+            const art = treatment.image ? variants(treatment.image.src) : null;
+            return (
+              <li class="tcard">
+                {treatment.image && art && (
+                  <picture>
+                    <source
+                      type="image/webp"
+                      srcset={srcSet(art.webpSmall, art.webp, 460, treatment.image.width)}
+                      sizes="(min-width: 900px) 360px, 92vw"
+                    />
+                    <img
+                      src={treatment.image.src}
+                      srcset={srcSet(art.jpgSmall, treatment.image.src, 460, treatment.image.width)}
+                      sizes="(min-width: 900px) 360px, 92vw"
+                      alt={treatment.image.alt}
+                      width={treatment.image.width}
+                      height={treatment.image.height}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </picture>
+                )}
+
+                <div class="tcard__body">
+                  <h3>{treatment.name}</h3>
+                  <p class="tcard__meta">
+                    <span class="tcard__price">{treatment.price}</span>
+                    <span class="tcard__dot" aria-hidden="true">
+                      &middot;
+                    </span>
+                    <span>{treatment.duration}</span>
+                  </p>
+                  <p class="tcard__text">{treatment.body}</p>
+                  <p class="tcard__cta">
+                    <a href="/pricing/">See this treatment on the price list</a>
+                  </p>
+                </div>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================= 4. WHAT TO EXPECT = -->
+  <section class="section" aria-labelledby="expect-heading">
+    <div class="container split-band">
+      <div class="split-band__media">
+        <picture>
+          <source
+            type="image/webp"
+            srcset={srcSet(
+              variants(gurgaonImages.relaxation.src).webpSmall,
+              variants(gurgaonImages.relaxation.src).webp,
+              620,
+              1000
+            )}
+            sizes="(min-width: 900px) 520px, 92vw"
+          />
+          <img
+            src={gurgaonImages.relaxation.src}
+            srcset={srcSet(
+              variants(gurgaonImages.relaxation.src).jpgSmall,
+              gurgaonImages.relaxation.src,
+              620,
+              1000
+            )}
+            sizes="(min-width: 900px) 520px, 92vw"
+            alt={gurgaonImages.relaxation.alt}
+            width={gurgaonImages.relaxation.width}
+            height={gurgaonImages.relaxation.height}
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+      </div>
+
+      <div class="split-band__copy">
+        <h2 id="expect-heading">What to Expect From a Russian Spa Experience</h2>
+        <p>
+          A session starts with a short conversation, not with you face down on the table. The
+          therapist asks what you want from the hour, whether anything is sore or best left alone,
+          and what pressure suits you &mdash; light, medium or firm. Answer that one honestly; the
+          pressure that feels right to one guest is either too much or pointless for the next.
+        </p>
+        <p>
+          The room is private and reset between guests, with fresh linen, clean towels and the oils
+          laid out where you can see them. You are given time on your own to change and settle
+          before the therapist comes back in.
+        </p>
+        <p>
+          During the treatment, speak up whenever you like. Firmer, lighter, skip the shoulders
+          &mdash; none of that is an interruption, and a therapist would far rather adjust at minute
+          ten than hear at the end that the whole hour was uncomfortable. Afterwards, do not rush
+          off: sit for a few minutes and drink some water before you head back to the car.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 5. FULL BODY MASSAGE = -->
+  <section class="section section--cream" aria-labelledby="fullbody-heading">
+    <div class="container split-band split-band--reverse">
+      <div class="split-band__copy">
+        <h2 id="fullbody-heading">Full Body Massage in Gurgaon</h2>
+        <p>
+          A full body massage is what most people mean when they search for a body massage in
+          Gurgaon, and it is the session first-time guests book more than any other. The therapist
+          works through the back and shoulders, along the arms, over the legs and finishes at the
+          feet, keeping one pace and the one pressure you agreed at the start.
+        </p>
+        <p>
+          It is a general reset rather than targeted work, which is the main difference between it
+          and a deep tissue session: nothing gets singled out, everything gets covered. Anything you
+          would rather was skipped &mdash; a bruise, a recent scar, an area you simply do not want
+          touched &mdash; is left alone, so mention it before you begin.
+        </p>
+        <p>
+          On a first visit it is bookable at <strong>&#8377;1,499</strong>, which is an introductory
+          rate for that treatment and does not extend to the rest of the menu.
+        </p>
+      </div>
+
+      <div class="split-band__media">
+        <picture>
+          <source
+            type="image/webp"
+            srcset={srcSet(
+              variants(gurgaonImages.fullBody.src).webpSmall,
+              variants(gurgaonImages.fullBody.src).webp,
+              460,
+              700
+            )}
+            sizes="(min-width: 900px) 520px, 92vw"
+          />
+          <img
+            src={gurgaonImages.fullBody.src}
+            srcset={srcSet(
+              variants(gurgaonImages.fullBody.src).jpgSmall,
+              gurgaonImages.fullBody.src,
+              460,
+              700
+            )}
+            sizes="(min-width: 900px) 520px, 92vw"
+            alt={gurgaonImages.fullBody.alt}
+            width={gurgaonImages.fullBody.width}
+            height={gurgaonImages.fullBody.height}
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 6. WHICH ONE ==== -->
+  <section class="section" aria-labelledby="choose-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="choose-heading">Choosing the Right Massage</h2>
+        <p class="muted">
+          None of these is the best one &mdash; they do different jobs. Match what you are after on
+          the left to the treatment on the right, and say so when you book.
+        </p>
+      </div>
+
+      <div class="choose">
+        <table class="ctable">
+          <caption class="sr-only">What you are looking for, and the treatment that suits it</caption>
+          <thead>
+            <tr>
+              <th scope="col">If you want</th>
+              <th scope="col">Consider</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              gurgaonChoices.map((row) => (
+                <tr>
+                  <th scope="row">{row.want}</th>
+                  <td>{row.consider}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+
+        <div class="choose__media">
+          <picture>
+            <source
+              type="image/webp"
+              srcset={srcSet(
+                variants(gurgaonImages.reflexology.src).webpSmall,
+                variants(gurgaonImages.reflexology.src).webp,
+                460,
+                700
+              )}
+              sizes="(min-width: 900px) 360px, 92vw"
+            />
+            <img
+              src={gurgaonImages.reflexology.src}
+              srcset={srcSet(
+                variants(gurgaonImages.reflexology.src).jpgSmall,
+                gurgaonImages.reflexology.src,
+                460,
+                700
+              )}
+              sizes="(min-width: 900px) 360px, 92vw"
+              alt={gurgaonImages.reflexology.alt}
+              width={gurgaonImages.reflexology.width}
+              height={gurgaonImages.reflexology.height}
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+          <p class="muted small">
+            Not sure which to pick? Describe what is bothering you when you message and the team
+            will suggest something from the <a href="/services/">full menu</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================ 7. THE GURGAON RUN = -->
+  <section class="section section--cream" aria-labelledby="areas-heading">
+    <div class="container narrow">
+      <h2 id="areas-heading">Serving Guests Searching From Gurgaon and Gurugram</h2>
+      <p>
+        Searches for a spa in Gurgaon come from a wide spread of the city &mdash; Cyber City and
+        Udyog Vihar at the Delhi end, Golf Course Road and Sushant Lok further in, MG Road, Sector
+        29 and the DLF phases around them. What those addresses have in common is the same road out
+        towards Delhi, and our address sits at the far end of it.
+      </p>
+      <p>
+        We do not publish a driving time or a distance from any of them, and it is worth being
+        sceptical of a spa that does. That run is entirely a question of which route you take and
+        what hour you leave, and a single figure would be wrong for most of the day. Check it
+        yourself on the map further down, on the day you are coming.
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================================================== 8. AIRPORT ==== -->
+  <section class="section" aria-labelledby="airport-heading">
+    <div class="container narrow">
+      <h2 id="airport-heading">A Convenient Spa Option Near Delhi Airport</h2>
+      <p>
+        Aerocity is the hotel and business district attached to Indira Gandhi International Airport,
+        with Mahipalpur immediately beside it. For anyone moving between Gurugram and the airport,
+        that puts the spa on a route you may be taking anyway &mdash; before a flight, after
+        landing, or on the way back from dropping someone off.
+      </p>
+      <p>
+        Two practical notes if you are working to a departure. Book ahead rather than arriving on
+        spec, because rooms are held for appointments and not for walk-ins. And give yourself much
+        more time than the treatment alone needs: a 90-minute session means 90 minutes on the table,
+        plus changing, plus the road back. Everything you need to reach us is on the
+        <a href="/contact/">contact page</a>, and there is a page of its own for our
+        <a href="/russian-spa-in-aerocity/">Aerocity location</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 9. PRICES ==== -->
+  <section class="section section--cream" aria-labelledby="prices-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="prices-heading">Massage Prices</h2>
+        <p class="muted">
+          The whole menu. These are the same rates quoted when you book &mdash; nothing on this list
+          costs more because you came from Gurgaon.
+        </p>
+      </div>
+
+      <table class="ptable">
+        <caption class="sr-only">Every massage treatment with its session length and price</caption>
+        <thead>
+          <tr>
+            <th scope="col">Treatment</th>
+            <th scope="col">Duration</th>
+            <th scope="col">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            gurgaonPrices.map((row) => (
+              <tr>
+                <th scope="row">{row.name}</th>
+                <td>{row.duration}</td>
+                <td class="ptable__price">{row.price}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+
+      <p class="offer-note">
+        <strong>First visit full body massage &mdash; &#8377;1,499.</strong> An introductory rate for
+        the full body massage on a first appointment only. It does not apply to the treatments in
+        the table above or to the spa packages, which are charged as listed.
+      </p>
+
+      <div class="centre-row">
+        <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================== 10. REASONS ==== -->
+  <section class="section" aria-labelledby="reasons-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="reasons-heading">Why Guests Choose Russian Spa</h2>
+      </div>
+
+      <ul class="reasons">
+        {
+          gurgaonReasons.map((reason) => (
+            <li class="reason">
+              <h3 class="reason__title">{reason.title}</h3>
+              <p class="reason__text">{reason.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== 11. LOCATION ==== -->
+  <section class="section section--cream" aria-labelledby="location-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="location-heading">Location &amp; Directions</h2>
+        <p class="muted">
+          One address, and it is not in Gurgaon. The map below is our real location in Aerocity,
+          New Delhi.
+        </p>
+      </div>
+
+      <dl class="details">
+        <div>
+          <dt>Address</dt>
+          <dd>{site.addressLine}</dd>
+        </div>
+        <div>
+          <dt>Phone</dt>
+          <dd><a href={telHref}>{site.phone}</a></dd>
+        </div>
+        <div>
+          <dt>E-mail</dt>
+          <dd><a href={mailHref}>{site.email}</a></dd>
+        </div>
+        <div>
+          <dt>Opening hours</dt>
+          <dd>{site.openingHoursLabel}</dd>
+        </div>
+      </dl>
+
+      <div class="centre-row">
+        <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Get Directions
+        </a>
+      </div>
+
+      <iframe
+        class="map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1040"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+      <p class="muted small nearby">
+        Coming from a different direction? We also have pages for
+        <a href="/russian-spa-in-mahipalpur/">Mahipalpur</a>,
+        <a href="/russian-spa-in-aerocity/">Aerocity</a> and
+        <a href="/russian-spa-in-vasant-kunj/">Vasant Kunj</a>, or read more
+        <a href="/about/">about the spa</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- =================================================== 12. BOOKING ==== -->
+  <section class="section" aria-labelledby="book-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="book-heading">Book a Massage</h2>
+        <p class="muted">
+          Five steps, no account and no deposit. Nothing is held until the team writes back to
+          confirm it.
+        </p>
+      </div>
+
+      <ol class="steps">
+        {
+          gurgaonSteps.map((item) => (
+            <li class="step">
+              <span class="step__num" aria-hidden="true">
+                {item.step}
+              </span>
+              <h3 class="step__title">{item.title}</h3>
+              <p class="step__text">{item.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="centre-row centre-row--gap">
+        <CTA
+          label="Book Your Massage"
+          message="Hi, I am travelling from Gurgaon and would like to book a massage."
+        />
+        <a class="btn btn--outline" href="/contact/">Contact Us</a>
+        <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 13. FAQ ==== -->
+  <section class="section section--cream" aria-labelledby="faq-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="faq-heading">Gurgaon Guests &mdash; Frequently Asked Questions</h2>
+      </div>
+      <FAQ faqs={gurgaonFaqs} questionTag="h3" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .narrow {
+    max-width: 860px;
+  }
+
+  .narrow > h2,
+  .narrow > p {
+    max-width: 72ch;
+  }
+
+  .narrow > p {
+    margin-top: 1rem;
+  }
+
+  .centre-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .centre-row--gap {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .small {
+    font-size: 0.9rem;
+  }
+
+  /* ------------------------------------------------------------- 1. hero */
+  .ghero {
+    padding-block: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  }
+
+  .ghero__grid {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 980px) {
+    .ghero__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .ghero__eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .ghero h1 {
+    margin: 0;
+  }
+
+  .ghero__sub {
+    margin: 0.5rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
+    color: var(--green-700);
+  }
+
+  .ghero__lead {
+    margin: 1.1rem 0 0;
+    max-width: 58ch;
+  }
+
+  .ghero__lead a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .ghero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.9rem;
+  }
+
+  .ghero__media img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  /* ------------------------------------------------------- 3. treatments */
+  .tcards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tcard {
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tcard picture {
+    display: block;
+  }
+
+  .tcard img {
+    width: 100%;
+    aspect-ratio: 7 / 5;
+    object-fit: cover;
+  }
+
+  .tcard__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.15rem 1.2rem 1.35rem;
+  }
+
+  .tcard__body h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--green-800);
+  }
+
+  .tcard__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .tcard__price {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--green-700);
+  }
+
+  .tcard__dot {
+    color: var(--gold);
+  }
+
+  .tcard__text {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  .tcard__cta {
+    margin: auto 0 0;
+    padding-top: 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .tcard__cta a {
+    color: var(--green-700);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  /* -------------------------------------------------- 4 + 5. split bands */
+  .split-band {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .split-band {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .split-band--reverse .split-band__media {
+      order: 2;
+    }
+  }
+
+  .split-band__media img {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .split-band__copy h2 {
+    margin-top: 0;
+  }
+
+  .split-band__copy p {
+    margin: 1rem 0 0;
+  }
+
+  /* ---------------------------------------------------------- 6. chooser */
+  .choose {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    align-items: start;
+  }
+
+  @media (min-width: 900px) {
+    .choose {
+      grid-template-columns: 1.5fr 1fr;
+    }
+  }
+
+  .ctable {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ctable th,
+  .ctable td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    font-size: 0.93rem;
+    border-bottom: 1px solid var(--green-100);
+  }
+
+  .ctable thead th {
+    background: var(--green-800);
+    color: var(--white);
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .ctable tbody th {
+    font-weight: 400;
+  }
+
+  .ctable tbody td {
+    font-weight: 600;
+    color: var(--green-800);
+  }
+
+  .ctable tbody tr:last-child th,
+  .ctable tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .choose__media img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  .choose__media p {
+    margin: 0.9rem 0 0;
+  }
+
+  .choose__media a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------------ 9. prices */
+  .ptable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ptable th,
+  .ptable td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--green-100);
+  }
+
+  .ptable thead th {
+    background: var(--green-800);
+    color: var(--white);
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .ptable tbody th {
+    font-weight: 600;
+    color: var(--green-800);
+  }
+
+  .ptable tbody tr:last-child th,
+  .ptable tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .ptable__price {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--green-700);
+    white-space: nowrap;
+  }
+
+  .offer-note {
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.15rem;
+    background: var(--green-050);
+    border-left: 3px solid var(--green-500);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  /* ---------------------------------------------------------- 10. reasons */
+  .reasons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .reason {
+    padding: 1.35rem 1.3rem;
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+  }
+
+  .reason__title {
+    margin: 0 0 0.4rem;
+    font-size: 1.02rem;
+    color: var(--green-800);
+  }
+
+  .reason__text {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  /* --------------------------------------------------------- 11. location */
+  .details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+    margin: 1.5rem 0 0;
+  }
+
+  .details dt {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .details dd {
+    margin: 0.25rem 0 0;
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .details a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .map {
+    display: block;
+    width: 100%;
+    height: clamp(300px, 38vw, 420px);
+    margin-top: 2rem;
+    border: 0;
+    border-radius: var(--radius);
+  }
+
+  .nearby {
+    margin-top: 1.25rem;
+  }
+
+  .nearby a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------------ 12. steps */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .step {
+    padding: 1.3rem 1.2rem;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+  }
+
+  .step__num {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--gold);
+  }
+
+  .step__title {
+    margin: 0.6rem 0 0.35rem;
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  .step__text {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+</style>

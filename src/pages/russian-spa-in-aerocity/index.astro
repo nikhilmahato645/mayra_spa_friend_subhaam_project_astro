@@ -2,12 +2,937 @@
 /**
  * LOCATION PAGE - /russian-spa-in-aerocity/
  *
- * All content for this page lives in src/data/locations.ts under the slug
- * below. Fill in `intro`, `sections` and `faqs` there, then remove this page
- * from src/data/drafts.mjs to publish it (lifts noindex + adds it to the
- * sitemap). Do not put copy in this file - keep every area in one data file.
+ * WHY THIS ONE IS NOT A LocationLayout PAGE
+ *
+ * The other nine /russian-spa-in-<area>/ pages are three-line files that render
+ * the shared LocationLayout from their entry in src/data/locations.ts. Aerocity
+ * is different: it is the address the business actually trades from (see
+ * `site.address`), so it gets a page written for it rather than the shared
+ * skeleton. LocationLayout is untouched and the other nine still use it.
+ *
+ * The layout is deliberately unlike the home page: a split hero rather than a
+ * full-bleed banner, then local context, treatment cards, a banya feature, a
+ * facilities grid, an airport section, a price table, reasons, address, map,
+ * booking steps and an Aerocity-specific FAQ. Same brand colours and type,
+ * different page.
+ *
+ * ALL COPY lives in src/data/aerocity.ts - including the notes on what is and
+ * is not allowed to be claimed here. Do not write prose into this file.
+ *
+ * STRUCTURED DATA: BaseLayout already emits DaySpa + WebSite + WebPage for
+ * every page, so this one adds only what it can back up with what is visible -
+ * breadcrumbs, the FAQ (verbatim) and a Service for the area. No second
+ * LocalBusiness, no rating, no reviews.
  */
-import LocationLayout from '../../layouts/LocationLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import { site, telHref } from '../../data/site';
+import {
+  aerocityMeta,
+  aerocityImages,
+  aerocityTreatments,
+  aerocityPrices,
+  aerocityFacilities,
+  aerocityReasons,
+  aerocitySteps,
+  aerocityFaqs,
+} from '../../data/aerocity';
+import { variants, srcSet } from '../../utils/image';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Aerocity', href: '/russian-spa-in-aerocity/' },
+]);
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(aerocityFaqs),
+  serviceSchema({
+    name: 'Russian spa and massage in Aerocity',
+    description: aerocityMeta.description,
+    url: `${site.url}/russian-spa-in-aerocity/`,
+    areaServed: 'Aerocity, New Delhi',
+  }),
+];
+
+/*
+ * The map is the same embed the contact page builds: the Google Business
+ * Profile addressed by its CID, so there is no hand-written latitude or
+ * longitude anywhere and no API key in the front end.
+ */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+
+const hero = aerocityImages.hero;
+const heroArt = variants(hero.src);
 ---
 
-<LocationLayout slug="russian-spa-in-aerocity" />
+<BaseLayout
+  title={aerocityMeta.title}
+  description={aerocityMeta.description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  usesUnsplash={false}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ===================================================== 1. HERO ====== -->
+  <!--
+    A split hero, not the full-bleed banner the home page uses. The photo is
+    the page's Largest Contentful Paint, so it is eager with fetchpriority.
+  -->
+  <section class="ahero">
+    <div class="container ahero__grid">
+      <div class="ahero__copy">
+        <p class="ahero__eyebrow">Aerocity, New Delhi</p>
+        <h1>Russian Spa in Aerocity</h1>
+        <p class="ahero__sub">Body Massage in Aerocity Near Delhi Airport</p>
+        <p class="ahero__lead">
+          Massage and heat treatments on Northern Access Road, in the middle of Aerocity &mdash;
+          handy whether you are flying through Indira Gandhi International Airport, staying at a
+          hotel nearby, or live on this side of Delhi NCR. Visits are by appointment.
+        </p>
+
+        <div class="ahero__actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I would like to book a massage at your Aerocity location."
+          />
+          <a class="btn btn--outline" href="/services/">View Massage Services</a>
+        </div>
+      </div>
+
+      <div class="ahero__media">
+        <picture>
+          <source
+            type="image/webp"
+            srcset={srcSet(heroArt.webpSmall, heroArt.webp, 760, 1600)}
+            sizes="(min-width: 980px) 560px, 92vw"
+          />
+          <img
+            src={hero.src}
+            srcset={srcSet(heroArt.jpgSmall, hero.src, 760, 1600)}
+            sizes="(min-width: 980px) 560px, 92vw"
+            alt={hero.alt}
+            width={hero.width}
+            height={hero.height}
+            loading="eager"
+            fetchpriority="high"
+          />
+        </picture>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 2. LOCAL CONTEXT ==== -->
+  <section class="section" aria-labelledby="experience-heading">
+    <div class="container narrow">
+      <h2 id="experience-heading">A Massage &amp; Spa Experience in Aerocity</h2>
+      <p>
+        Aerocity is a compact pocket of hotels and offices, which makes it somewhere you can stop
+        for an hour or two rather than cross the city for. Guests here tend to be staying in the
+        hotels around us, working in the offices nearby, or living in the surrounding areas and
+        would rather not drive into central Delhi for a massage.
+      </p>
+      <p>
+        The menu covers both ends of what people ask for: straightforward bodywork, from a light
+        Swedish session to firm deep tissue and clothed Thai stretching, and the traditional Russian
+        banya, which is a heat ritual rather than a massage. Every treatment is in a private room,
+        and we work by appointment so the room and the therapist are held for your slot.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================= 3. TREATMENTS ==== -->
+  <section class="section section--cream" aria-labelledby="treatments-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="treatments-heading">Massage Services Available in Aerocity</h2>
+        <p class="muted">
+          Six of the treatments booked most often at this location. Each one is explained in full,
+          with the rest of the menu, on the services page.
+        </p>
+      </div>
+
+      <ul class="tcards">
+        {
+          aerocityTreatments.map((treatment) => {
+            const art = treatment.image ? variants(treatment.image.src) : null;
+            return (
+              <li class="tcard">
+                {treatment.image && art && (
+                  <picture>
+                    <source
+                      type="image/webp"
+                      srcset={srcSet(art.webpSmall, art.webp, 460, 700)}
+                      sizes="(min-width: 900px) 360px, 92vw"
+                    />
+                    <img
+                      src={treatment.image.src}
+                      srcset={srcSet(art.jpgSmall, treatment.image.src, 460, 700)}
+                      sizes="(min-width: 900px) 360px, 92vw"
+                      alt={treatment.image.alt}
+                      width={treatment.image.width}
+                      height={treatment.image.height}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </picture>
+                )}
+
+                <div class="tcard__body">
+                  <h3>{treatment.name}</h3>
+                  {treatment.price && (
+                    <p class="tcard__meta">
+                      <span class="tcard__price">{treatment.price}</span>
+                      <span class="tcard__dot" aria-hidden="true">
+                        &middot;
+                      </span>
+                      <span>{treatment.duration}</span>
+                    </p>
+                  )}
+                  <p class="tcard__text">{treatment.body}</p>
+                </div>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      <div class="centre-row">
+        <a class="btn btn--outline" href="/services/">Explore All Massage Services</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 4. BANYA ==== -->
+  <section class="section" aria-labelledby="banya-heading">
+    <div class="container split-band">
+      <div class="split-band__media">
+        <picture>
+          <source
+            type="image/webp"
+            srcset={srcSet(
+              variants(aerocityImages.banya.src).webpSmall,
+              variants(aerocityImages.banya.src).webp,
+              620,
+              1000
+            )}
+            sizes="(min-width: 900px) 520px, 92vw"
+          />
+          <img
+            src={aerocityImages.banya.src}
+            srcset={srcSet(variants(aerocityImages.banya.src).jpgSmall, aerocityImages.banya.src, 620, 1000)}
+            sizes="(min-width: 900px) 520px, 92vw"
+            alt={aerocityImages.banya.alt}
+            width={aerocityImages.banya.width}
+            height={aerocityImages.banya.height}
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+      </div>
+
+      <div class="split-band__copy">
+        <h2 id="banya-heading">Russian Spa Experience Near Delhi Airport</h2>
+        <p>
+          The banya is the reason the word Russian is in our name, and it is not a massage. It is a
+          bathing ritual built around heat, run in stages rather than as one continuous treatment.
+        </p>
+        <p>
+          You settle into the steam first and let the heat build gradually &mdash; the part most
+          people rush. Once you are warm, the therapist works over you with a birch venik, a bundle
+          of leafy branches used in rhythmic sweeping movements that carry the heat and the scent
+          across the skin. Cooling breaks sit between the stages, so you step out and recover before
+          going back in, and herbal tea is served at the end.
+        </p>
+        <p>
+          It suits anyone wanting something slower and more involved than an hour on a table. At
+          <strong>₹2,500 for 60 minutes</strong>, it is also the least expensive treatment we offer.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 5. FACILITIES ==== -->
+  <section class="section section--cream" aria-labelledby="facilities-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="facilities-heading">Comfortable Spa Facilities</h2>
+        <p class="muted">
+          What is on site here. Not every facility forms part of every treatment &mdash; the jacuzzi
+          and steam come with certain packages rather than a standard massage &mdash; so check what
+          your booking includes when you confirm it.
+        </p>
+      </div>
+
+      <div class="fac-grid">
+        <ul class="fac-list">
+          {
+            aerocityFacilities.map((facility) => (
+              <li class="fac">
+                <h3 class="fac__name">{facility.name}</h3>
+                <p class="fac__text">{facility.body}</p>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="fac-photos">
+          {
+            [aerocityImages.steam, aerocityImages.lounge].map((photo) => {
+              const art = variants(photo.src);
+              return (
+                <picture>
+                  <source
+                    type="image/webp"
+                    srcset={srcSet(art.webpSmall, art.webp, 500, 800)}
+                    sizes="(min-width: 900px) 330px, 92vw"
+                  />
+                  <img
+                    src={photo.src}
+                    srcset={srcSet(art.jpgSmall, photo.src, 500, 800)}
+                    sizes="(min-width: 900px) 330px, 92vw"
+                    alt={photo.alt}
+                    width={photo.width}
+                    height={photo.height}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </picture>
+              );
+            })
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================ 6. NEAR AIRPORT ==== -->
+  <section class="section" aria-labelledby="airport-heading">
+    <div class="container narrow">
+      <h2 id="airport-heading">Spa Near Delhi Airport</h2>
+      <p>
+        Our address sits inside Aerocity, the hotel and business district adjoining Indira Gandhi
+        International Airport, with Mahipalpur beside it &mdash; within reach of much of south and
+        west Delhi NCR, including Vasant Kunj, Dwarka and the Gurgaon side of the expressway.
+      </p>
+      <p>
+        That suits four sorts of visit: a session before a flight or after landing, hotel guests
+        staying in Aerocity, people working in the offices around the district, and residents
+        nearby. We do not publish a distance or driving time from any terminal &mdash; it depends on
+        your terminal, route and the traffic. Check the map below, and allow more time than you
+        think you need if a flight follows.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 7. PRICES ==== -->
+  <section class="section section--cream" aria-labelledby="prices-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="prices-heading">Massage Prices in Aerocity</h2>
+        <p class="muted">
+          A selection from the menu. These are the same prices quoted when you book &mdash; there is
+          no separate rate for this location.
+        </p>
+      </div>
+
+      <table class="ptable">
+        <caption class="sr-only">Selected massage treatments with price and session length</caption>
+        <thead>
+          <tr>
+            <th scope="col">Treatment</th>
+            <th scope="col">Session</th>
+            <th scope="col">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            aerocityPrices.map((row) => (
+              <tr>
+                <th scope="row">{row.name}</th>
+                <td>{row.duration}</td>
+                <td class="ptable__price">{row.price}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+
+      <p class="offer-note">
+        <strong>First visit full body massage &mdash; ₹1,499.</strong> An introductory price for the
+        full body massage on a first visit only. It does not apply to the treatments above or to the
+        packages, which are priced as listed.
+      </p>
+
+      <div class="centre-row">
+        <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== 8. REASONS ==== -->
+  <section class="section" aria-labelledby="reasons-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="reasons-heading">Why Guests Choose Our Aerocity Location</h2>
+      </div>
+
+      <ul class="reasons">
+        {
+          aerocityReasons.map((reason) => (
+            <li class="reason">
+              <h3 class="reason__title">{reason.title}</h3>
+              <p class="reason__text">{reason.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- =================================================== 9. LOCATION ==== -->
+  <section class="section section--cream" aria-labelledby="visit-heading">
+    <div class="container split-band split-band--reverse">
+      <div class="split-band__copy">
+        <h2 id="visit-heading">Location &amp; How to Reach Us</h2>
+
+        <dl class="details">
+          <div>
+            <dt>Address</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd><a href={telHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>WhatsApp</dt>
+            <dd>{site.phone} &mdash; same number, message any time</dd>
+          </div>
+          <div>
+            <dt>Opening hours</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+        </dl>
+
+        <p class="muted small">
+          Please book before you travel. Walk-ins depend entirely on what happens to be free.
+          <a href="/contact/">Contact us</a> for anything the page does not answer, or read more
+          <a href="/about/">about Russian Spa Mahipalpur</a>.
+        </p>
+      </div>
+
+      <div class="split-band__media">
+        <picture>
+          <source
+            type="image/webp"
+            srcset={srcSet(
+              variants(aerocityImages.reception.src).webpSmall,
+              variants(aerocityImages.reception.src).webp,
+              560,
+              900
+            )}
+            sizes="(min-width: 900px) 520px, 92vw"
+          />
+          <img
+            src={aerocityImages.reception.src}
+            srcset={srcSet(
+              variants(aerocityImages.reception.src).jpgSmall,
+              aerocityImages.reception.src,
+              560,
+              900
+            )}
+            sizes="(min-width: 900px) 520px, 92vw"
+            alt={aerocityImages.reception.alt}
+            width={aerocityImages.reception.width}
+            height={aerocityImages.reception.height}
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 10. MAP ==== -->
+  <section class="section" aria-labelledby="map-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="map-heading">Find Our Spa in Aerocity</h2>
+        <p class="muted">{site.addressLine}</p>
+      </div>
+
+      <div class="centre-row">
+        <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Get Directions
+        </a>
+      </div>
+
+      <!--
+        Lazy-loaded so it never competes with the content above it, and the
+        Get Directions link above works whether or not the embed loads.
+      -->
+      <iframe
+        class="map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1040"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+
+  <!-- ================================================ 11. PLAN A VISIT ==== -->
+  <section class="section section--cream" aria-labelledby="plan-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="plan-heading">Plan Your Visit</h2>
+        <p class="muted">
+          Five steps, no account needed. Your slot is booked when the team confirms it, not before.
+        </p>
+      </div>
+
+      <ol class="steps">
+        {
+          aerocitySteps.map((item) => (
+            <li class="step">
+              <span class="step__num" aria-hidden="true">
+                {item.step}
+              </span>
+              <h3 class="step__title">{item.title}</h3>
+              <p class="step__text">{item.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="centre-row centre-row--gap">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I would like to book an appointment at your Aerocity location."
+        />
+        <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 12. FAQ ==== -->
+  <section class="section" aria-labelledby="faq-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="faq-heading">Aerocity Spa &mdash; Frequently Asked Questions</h2>
+      </div>
+      <FAQ faqs={aerocityFaqs} questionTag="h3" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .narrow {
+    max-width: 860px;
+  }
+
+  .narrow > h2,
+  .narrow > p {
+    max-width: 72ch;
+  }
+
+  .narrow > p {
+    margin-top: 1rem;
+  }
+
+  .centre-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .centre-row--gap {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .small {
+    font-size: 0.9rem;
+  }
+
+  /* ------------------------------------------------------------- 1. hero */
+  .ahero {
+    padding-block: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  }
+
+  .ahero__grid {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 980px) {
+    .ahero__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .ahero__eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .ahero h1 {
+    margin: 0;
+  }
+
+  .ahero__sub {
+    margin: 0.5rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
+    color: var(--green-700);
+  }
+
+  .ahero__lead {
+    margin: 1.1rem 0 0;
+    max-width: 56ch;
+  }
+
+  .ahero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.9rem;
+  }
+
+  .ahero__media img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  /* ------------------------------------------------------- 3. treatments */
+  .tcards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tcard {
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tcard picture {
+    display: block;
+  }
+
+  .tcard img {
+    width: 100%;
+    aspect-ratio: 7 / 5;
+    object-fit: cover;
+  }
+
+  .tcard__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.15rem 1.2rem 1.35rem;
+  }
+
+  .tcard__body h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--green-800);
+  }
+
+  .tcard__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .tcard__price {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--green-700);
+  }
+
+  .tcard__dot {
+    color: var(--gold);
+  }
+
+  .tcard__text {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  /* -------------------------------------------------- 4 + 9. split bands */
+  .split-band {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .split-band {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .split-band--reverse .split-band__media {
+      order: 2;
+    }
+  }
+
+  .split-band__media img {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .split-band__copy h2 {
+    margin-top: 0;
+  }
+
+  .split-band__copy p {
+    margin: 1rem 0 0;
+  }
+
+  /* -------------------------------------------------------- 5. facilities */
+  .fac-grid {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  @media (min-width: 900px) {
+    .fac-grid {
+      grid-template-columns: 1.3fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .fac-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .fac {
+    padding: 1.1rem 1.15rem;
+    background: var(--white);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .fac__name {
+    margin: 0 0 0.3rem;
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  .fac__text {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .fac-photos {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .fac-photos img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  /* ------------------------------------------------------------ 7. prices */
+  .ptable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ptable th,
+  .ptable td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--green-100);
+  }
+
+  .ptable thead th {
+    background: var(--green-800);
+    color: var(--white);
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .ptable tbody th {
+    font-weight: 600;
+    color: var(--green-800);
+  }
+
+  .ptable tbody tr:last-child th,
+  .ptable tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .ptable__price {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--green-700);
+    white-space: nowrap;
+  }
+
+  .offer-note {
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.15rem;
+    background: var(--green-050);
+    border-left: 3px solid var(--green-500);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  /* ----------------------------------------------------------- 8. reasons */
+  .reasons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .reason {
+    padding: 1.35rem 1.3rem;
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+  }
+
+  .reason__title {
+    margin: 0 0 0.4rem;
+    font-size: 1.02rem;
+    color: var(--green-800);
+  }
+
+  .reason__text {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  /* ---------------------------------------------------------- 9. details */
+  .details {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 0 0;
+  }
+
+  .details dt {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .details dd {
+    margin: 0.25rem 0 0;
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .details a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* -------------------------------------------------------------- 10. map */
+  .map {
+    display: block;
+    width: 100%;
+    height: clamp(300px, 38vw, 420px);
+    margin-top: 2rem;
+    border: 0;
+    border-radius: var(--radius);
+  }
+
+  /* ------------------------------------------------------------ 11. steps */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: none;
+  }
+
+  .step {
+    padding: 1.3rem 1.2rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .step__num {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--gold);
+  }
+
+  .step__title {
+    margin: 0.6rem 0 0.35rem;
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  .step__text {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+</style>

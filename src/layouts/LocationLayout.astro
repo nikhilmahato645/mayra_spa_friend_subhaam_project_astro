@@ -13,6 +13,7 @@
  *      the page to the sitemap).
  */
 import BaseLayout from './BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import PageHero from '../components/PageHero.astro';
 import ServiceCard from '../components/ServiceCard.astro';
 import FAQ from '../components/FAQ.astro';
@@ -57,11 +58,18 @@ const schemas = [
   noindex={isDraft(Astro.url.pathname)}
   bareTitle
 >
+  <!--
+    The trail goes ABOVE the hero, directly under the header, which is where
+    the Aerocity, Gurgaon and Vasant Kunj pages put it. Every outlet page now
+    shows "Home / Outlets / Russian Spa in <area>" in the same position, so
+    PageHero is not given the `breadcrumbs` prop here.
+  -->
+  <Breadcrumbs items={crumbs} />
+
   <PageHero
     title={location.heading}
     subtitle={location.intro || undefined}
     image={pageHeroes.location}
-    breadcrumbs={crumbs}
   />
 
   <!-- ------------------------------------------ client copy (if present) -->

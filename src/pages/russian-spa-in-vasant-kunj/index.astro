@@ -2,12 +2,1164 @@
 /**
  * LOCATION PAGE - /russian-spa-in-vasant-kunj/
  *
- * All content for this page lives in src/data/locations.ts under the slug
- * below. Fill in `intro`, `sections` and `faqs` there, then remove this page
- * from src/data/drafts.mjs to publish it (lifts noindex + adds it to the
- * sitemap). Do not put copy in this file - keep every area in one data file.
+ * WHY THIS ONE IS NOT A <LocationLayout /> WRAPPER
+ * ------------------------------------------------
+ * The other nine outlet pages are three-line wrappers around LocationLayout,
+ * which renders one shared skeleton from src/data/locations.ts. That is right
+ * while those areas are still waiting for copy, but it means every one of them
+ * comes out with the same sections in the same order. This page has its own
+ * written copy and its own layout on purpose, so a visitor (and Google) can
+ * tell it apart from the home page and from /russian-spa-in-aerocity/.
+ *
+ * FACTUAL ACCURACY - READ BEFORE EDITING
+ * --------------------------------------
+ * There is NO Vasant Kunj outlet. src/data/site.ts holds one single address,
+ * in Aerocity, New Delhi. This page targets Vasant Kunj search intent as a
+ * SERVICE AREA and says so in the hero, in the local sections, in the
+ * directions block and in the FAQ. The map points at the real Aerocity
+ * listing. Do not add "our Vasant Kunj branch" wording, a second address, a
+ * Vasant Kunj map pin, travel times or distances - none of that is verified
+ * anywhere in this project.
+ *
+ * Every price below comes from src/data/treatments.ts and /pricing/. Every
+ * facility comes from `facilities` in src/data/services.ts, and steam and
+ * jacuzzi are listed there as features of the 5 star hotel package, which is
+ * why the facilities note says availability depends on the package.
  */
-import LocationLayout from '../../layouts/LocationLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import { site, telHref, whatsappHref } from '../../data/site';
+import { facilities } from '../../data/services';
+import { vasantKunjImages as photo } from '../../data/vasant-kunj-images';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import type { Faq } from '../../data/faqs';
+
+/* ----------------------------------------------------------------- meta */
+
+/*
+ * 46 characters, and passed with `bareTitle` below so BaseLayout does NOT
+ * append "| Russian Spa Mahipalpur" on top of it - with the suffix this runs
+ * to 79 characters and Google truncates it. The other outlet pages pass
+ * bareTitle for the same reason.
+ *
+ * The description is 152 characters, just inside the 155 character limit
+ * clampDescription() enforces; go over and the last words are replaced with an
+ * ellipsis in the SERP.
+ */
+const title = 'Russian Spa in Vasant Kunj | Body Massage & Spa';
+const description =
+  'Book a Russian Banya, deep tissue, Swedish or Thai massage near Vasant Kunj. See treatments, session times and prices, or message us to check a slot.';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Vasant Kunj', href: '/russian-spa-in-vasant-kunj/' },
+]);
+
+/* --------------------------------------------------------------- content */
+
+/**
+ * The six treatments highlighted on this page.
+ *
+ * Deliberately NOT the `cardText` strings from src/data/treatments.ts - those
+ * are printed on the home page. These are shorter, written for this page, and
+ * describe what the session feels like rather than what it claims to do.
+ */
+const treatments = [
+  {
+    name: 'Swedish Massage',
+    time: '60 minutes',
+    price: '₹2,800',
+    text: 'Long, flowing strokes worked over the back, arms and legs with a light oil. The pressure stays gentle and even throughout, which makes it a comfortable first choice if you have not had a massage before or simply want an unhurried, calming hour.',
+  },
+  {
+    name: 'Deep Tissue Massage',
+    time: '90 minutes',
+    price: '₹3,500',
+    text: 'A slower, firmer session that spends real time on the shoulders, lower back and other areas you point out. The therapist builds pressure gradually and checks in as they go, so the depth stays at a level you are happy with.',
+  },
+  {
+    name: 'Thai Massage',
+    time: '75 minutes',
+    price: '₹3,200',
+    text: 'Done on a mat in loose clothing, with no oil. Instead of strokes the session moves through assisted stretches and steady palm pressure along the limbs and back. Expect to be moved around a little rather than lying still the whole time.',
+  },
+  {
+    name: 'Aromatherapy Massage',
+    time: '75 minutes',
+    price: '₹3,000',
+    text: 'A softer, slower massage paired with a blended oil you choose at the start of the session. The scent carries through the room while the therapist works, and the pace stays light rather than deep. Good when you want the quietest option on the menu.',
+  },
+  {
+    name: 'Hot Stone Therapy',
+    time: '90 minutes',
+    price: '₹4,000',
+    text: 'Smooth warmed stones are rested along the back and used in the therapist’s hands alongside ordinary strokes. The warmth is the point of it - the session feels heavier and slower than an oil massage of the same length.',
+  },
+  {
+    name: 'Traditional Russian Banya',
+    time: '60 minutes',
+    price: '₹2,500',
+    text: 'The Russian bathing session rather than a massage: time in the heat, a cooling break, and a warm drink afterwards. It is the one treatment here you sit through rather than lie down for, and it is what the spa is named after.',
+  },
+];
+
+/**
+ * The treatment menu, as printed on /pricing/. Kept in the same order as the
+ * price list there so the two pages never disagree.
+ */
+const priceList = [
+  { name: 'Reflexology', time: '45 minutes', price: '₹2,200' },
+  { name: 'Traditional Russian Banya', time: '60 minutes', price: '₹2,500' },
+  { name: 'Swedish Massage', time: '60 minutes', price: '₹2,800' },
+  { name: 'Aromatherapy Massage', time: '75 minutes', price: '₹3,000' },
+  { name: 'Sports Massage', time: '60 minutes', price: '₹3,000' },
+  { name: 'Thai Massage', time: '75 minutes', price: '₹3,200' },
+  { name: 'Deep Tissue Massage', time: '90 minutes', price: '₹3,500' },
+  { name: 'Shiatsu Massage', time: '60 minutes', price: '₹3,500' },
+  { name: 'Hot Stone Therapy', time: '90 minutes', price: '₹4,000' },
+  { name: "Couple's Spa Package", time: '120 minutes', price: '₹7,500' },
+];
+
+/** Nearby South Delhi areas we are reachable from. NOT a list of branches. */
+const nearbyAreas = [
+  'Vasant Kunj',
+  'Vasant Vihar',
+  'Munirka',
+  'Mahipalpur',
+  'Aerocity',
+  'Chhatarpur',
+];
+
+/** Written for this page only - none of these repeat the home page FAQ. */
+const faqs: Faq[] = [
+  {
+    question: 'Is there a Russian spa near Vasant Kunj?',
+    answer:
+      `Not inside Vasant Kunj itself. Our spa is in Aerocity, New Delhi - ${site.addressLine} - which is the nearest outlet for guests coming from Vasant Kunj and the surrounding South Delhi neighbourhoods. Message or call us for directions before you set out.`,
+  },
+  {
+    question: 'What massage treatments can I book?',
+    answer:
+      'Swedish, deep tissue, Thai, aromatherapy, sports, Shiatsu and reflexology sessions, plus hot stone therapy, the Traditional Russian Banya and a couple’s package. Each one is described in more detail on our massage services page.',
+  },
+  {
+    question: 'How much does a massage cost?',
+    answer:
+      'Reflexology starts at ₹2,200 for 45 minutes and the Russian Banya is ₹2,500 for 60 minutes. Swedish is ₹2,800, deep tissue ₹3,500 for 90 minutes and hot stone therapy ₹4,000 for 90 minutes. The full list is on our pricing page.',
+  },
+  {
+    question: 'Is the spa near Delhi Airport?',
+    answer:
+      'Yes. The outlet is in Aerocity, the hotel district beside Indira Gandhi International Airport, so it is a practical stop if you are flying in or out of Delhi. Open daily, 9:00 AM to 11:00 PM.',
+  },
+  {
+    question: 'Can I book a full body massage?',
+    answer:
+      'Yes. It is part of the regular menu, and you choose the style and session length when you book. Tell us how much time you have and we will suggest what fits.',
+  },
+  {
+    question: 'Can two people book a session together?',
+    answer:
+      'Yes - the Couple’s Spa Package is a 120 minute session for two at ₹7,500. It is arranged in advance, so message us with the date and time you have in mind.',
+  },
+  {
+    question: 'What facilities are available at the spa?',
+    answer:
+      'Shower, hammam, jacuzzi bath, steam bath and sauna. Not every facility is part of every treatment - steam and jacuzzi are listed with the five star hotel package, for example - so check what your booking covers when you contact us.',
+  },
+  {
+    question: 'How do I book an appointment?',
+    answer:
+      `Message us on WhatsApp or call ${site.phone} with the treatment you want and the day and time you would prefer. We will check what is free and confirm your appointment - a slot is only held once we have confirmed it back to you.`,
+  },
+];
+
+/* ------------------------------------------------------------ structured data */
+
+/*
+ * LocalBusiness (DaySpa) is already emitted site-wide by BaseLayout, so it is
+ * deliberately NOT repeated here - a second copy would be a duplicate entity.
+ * Only the page specific schema is added: breadcrumbs, the FAQ (which matches
+ * the visible questions word for word) and a Service with Vasant Kunj as the
+ * area served, which is the accurate way to describe a service area.
+ */
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(faqs),
+  serviceSchema({
+    name: 'Russian spa and body massage for guests from Vasant Kunj',
+    description:
+      'Russian Banya, Swedish, deep tissue, Thai, aromatherapy and hot stone treatments at our Aerocity outlet, serving guests travelling from Vasant Kunj and nearby South Delhi.',
+    url: `${site.url}/russian-spa-in-vasant-kunj/`,
+    areaServed: 'Vasant Kunj, New Delhi',
+  }),
+];
+
+/* Same embed trick as /contact/ - the CID listing, rendered as a map. */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
 ---
 
-<LocationLayout slug="russian-spa-in-vasant-kunj" />
+<BaseLayout
+  title={title}
+  description={description}
+  image={photo.hero.src}
+  schemas={schemas}
+  usesUnsplash={false}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ==================================================== 1. HERO ======== -->
+  <!--
+    A split hero, not the centred photo-overlay <PageHero /> the other outlet
+    pages use, and not the full-bleed home page hero. Copy on the left, one
+    picture on the right.
+  -->
+  <section class="vk-hero">
+    <div class="container vk-hero__inner">
+      <div class="vk-hero__copy">
+        <p class="eyebrow">South Delhi &middot; Vasant Kunj service area</p>
+        <h1>Russian Spa in Vasant Kunj</h1>
+        <p class="vk-hero__sub">Body Massage &amp; Spa Services in Vasant Kunj</p>
+        <p>
+          Looking for a massage in Vasant Kunj? The menu runs from a quiet Swedish hour to a firm
+          deep tissue session and the Traditional Russian Banya the spa is named after.
+        </p>
+        <p>
+          The spa is in Aerocity, and it is open every day. Tell us what you are after and we
+          will check what is free.
+        </p>
+        <div class="vk-hero__actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I am in Vasant Kunj and would like to book a massage session."
+          />
+          <a class="btn btn--outline" href="#treatments">Explore Massage Services</a>
+        </div>
+        <p class="vk-hero__note">
+          <strong>Please note:</strong> we do not have an outlet inside Vasant Kunj. Guests
+          from the area are served at our Aerocity spa, {site.addressLine}.
+        </p>
+      </div>
+
+      <div class="vk-hero__art">
+        <img
+          src={photo.hero.src}
+          alt={photo.hero.alt}
+          width={photo.hero.width}
+          height={photo.hero.height}
+          fetchpriority="high"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================== 2. WHAT IS ON THE MENU ======= -->
+  <section class="section">
+    <div class="container vk-intro">
+      <div class="vk-intro__text">
+        <h2>Massage &amp; Spa Services in Vasant Kunj</h2>
+        <p>
+          Guests searching for a spa in Vasant Kunj usually want one of two things: an hour of
+          quiet, or a specific ache worked on. The menu covers both. Oil treatments such as
+          Swedish and aromatherapy keep the pressure light and the pace slow. Deep tissue, sports
+          and Shiatsu sessions go firmer and spend longer on the areas you point out. Thai massage
+          sits apart from all of them - no oil, loose clothing, assisted stretches instead of
+          strokes.
+        </p>
+        <p>
+          You pick the treatment and the session length when you book, and can still change your
+          mind after speaking to the therapist. Treatments take place in a private room. Sessions
+          are by appointment, which is what keeps the rooms quiet, so message or call ahead -
+          South Delhi evening slots go first.
+        </p>
+      </div>
+
+      <div class="vk-intro__strip">
+        <img
+          src={photo.bodyMassage.src}
+          alt={photo.bodyMassage.alt}
+          width={photo.bodyMassage.width}
+          height={photo.bodyMassage.height}
+          loading="lazy"
+          decoding="async"
+        />
+        <img
+          src={photo.thaiMassage.src}
+          alt={photo.thaiMassage.alt}
+          width={photo.thaiMassage.width}
+          height={photo.thaiMassage.height}
+          loading="lazy"
+          decoding="async"
+        />
+        <img
+          src={photo.aromaOils.src}
+          alt={photo.aromaOils.alt}
+          width={photo.aromaOils.width}
+          height={photo.aromaOils.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================== 3. POPULAR TREATMENTS ==== -->
+  <!--
+    Numbered text cards, not the photo <ServiceCard /> grid used on the home
+    page and by LocationLayout. Each card carries its own price and duration so
+    the section answers "what is it and what does it cost" in one place.
+  -->
+  <section class="section section--cream" id="treatments">
+    <div class="container">
+      <div class="section__head">
+        <h2>Popular Massage Treatments</h2>
+        <p>Six of the treatments guests book most often, with the session length and price.</p>
+      </div>
+
+      <ol class="vk-treatments">
+        {
+          treatments.map((treatment, index) => (
+            <li class="vk-treatment">
+              <span class="vk-treatment__num" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3>{treatment.name}</h3>
+              <p class="vk-treatment__meta">
+                {treatment.price} &middot; {treatment.time}
+              </p>
+              <p>{treatment.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="vk-more">
+        <a class="btn btn--outline" href="/services/">View All Massage Services</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================= 4. RUSSIAN BANYA === -->
+  <section class="section">
+    <div class="container vk-split">
+      <img
+        class="vk-split__img"
+        src={photo.banya.src}
+        alt={photo.banya.alt}
+        width={photo.banya.width}
+        height={photo.banya.height}
+        loading="lazy"
+        decoding="async"
+      />
+      <div>
+        <h2>Traditional Russian Banya in Vasant Kunj</h2>
+        <p>
+          The Banya is a bathing tradition rather than a massage, and it runs as a sequence. You
+          spend a short while in the heat, where water over hot stones lifts the humidity in the
+          room. A bundle of leafy birch twigs - the venik - is brushed and tapped over the skin,
+          which is where most of the sensation comes from. Then you step out and cool down. The
+          cycle repeats a couple of times, with a warm herbal tea between rounds.
+        </p>
+        <p>
+          The difference from a table massage is the rhythm. A Swedish or deep tissue session is
+          one continuous hour with a therapist working on you; the Banya alternates heat and cool
+          and leaves long pauses in between. Guests often book it alongside a shorter massage
+          rather than instead of one. It runs 60 minutes at ₹2,500.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 5. THE EXPERIENCE ===== -->
+  <section class="section section--mint">
+    <div class="container vk-split vk-split--reverse">
+      <img
+        class="vk-split__img"
+        src={photo.treatmentRoom.src}
+        alt={photo.treatmentRoom.alt}
+        width={photo.treatmentRoom.width}
+        height={photo.treatmentRoom.height}
+        loading="lazy"
+        decoding="async"
+      />
+      <div>
+        <h2>A Comfortable Massage Experience</h2>
+        <p>
+          A session starts with a short conversation, not with the oil. You say which treatment
+          you have picked, how firm you want it and whether anything should be left alone - a
+          sore shoulder, a recent injury, an area to skip. That minute shapes the whole hour.
+        </p>
+        <p>
+          Once the massage is under way you can still speak up. Asking for more pressure, less
+          pressure, more time on the back or a warmer room is expected rather than an
+          interruption, and the therapist will check in as they go. Treatments are given in a
+          private room, cleaned and reset with fresh linen between guests. If anything is not
+          comfortable, say so and it gets changed.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================ 6. NEARBY AREAS ==== -->
+  <section class="section">
+    <div class="container vk-narrow">
+      <h2>Convenient for Vasant Kunj and Nearby Areas</h2>
+      <p>
+        Vasant Kunj sits in the south-west corner of Delhi, close to the airport belt, and the
+        spa is on the other side of that same belt in Aerocity. That makes it a straightforward
+        trip for guests coming from Vasant Kunj as well as from Vasant Vihar, Munirka,
+        Mahipalpur, Chhatarpur and the wider South Delhi area.
+      </p>
+      <p>
+        To be clear: these are the neighbourhoods our guests travel in from, not addresses we
+        operate from. There is one spa, and it is the Aerocity one. Guests travelling from nearby
+        South Delhi areas can contact us to check availability and directions for the route they
+        are taking. Evenings and weekends fill up fastest, so a day or two of notice helps if you
+        want a particular time.
+      </p>
+      <ul class="vk-areas">
+        {nearbyAreas.map((area) => <li>{area}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================= 7. NEAR AIRPORT ==== -->
+  <section class="section section--cream">
+    <div class="container vk-narrow">
+      <h2>Spa Near Delhi Airport</h2>
+      <p>
+        Vasant Kunj, Mahipalpur and Aerocity all sit in the same stretch of south-west Delhi
+        around Indira Gandhi International Airport, which is why a search for a spa in Vasant
+        Kunj and one for a spa near Delhi Airport tend to turn up the same places. Our outlet is
+        in Aerocity itself, the hotel district beside the IGI terminals.
+      </p>
+      <p>
+        That suits people living around Vasant Kunj as well as travellers with hours between
+        flights. We do not publish a travel time from the terminals - it depends on the hour and
+        the traffic - so call ahead and we will tell you whether your window is realistic.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================== 8. FACILITIES ==== -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <h2>Spa Facilities</h2>
+      </div>
+
+      <div class="vk-facilities">
+        <ul class="vk-facilities__list">
+          {facilities.map((facility) => <li>{facility.title}</li>)}
+        </ul>
+        <img
+          class="vk-facilities__img"
+          src={photo.lounge.src}
+          alt={photo.lounge.alt}
+          width={photo.lounge.width}
+          height={photo.lounge.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      <p class="vk-note">
+        These facilities are available at the spa, but they are not part of every booking.
+        Steam and jacuzzi, for example, are listed as features of the five star hotel package
+        rather than of a standard treatment. Ask us what your booking includes before you come -
+        you can also <a href="/gallery/">view our spa gallery</a> or
+        <a href="/about/">read about our spa</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 9. PRICING ==== -->
+  <section class="section section--cream">
+    <div class="container vk-narrow">
+      <div class="section__head">
+        <h2>Massage Prices in Vasant Kunj</h2>
+        <p>The full treatment menu, with the session length each price covers.</p>
+      </div>
+
+      <table class="vk-prices">
+        <caption class="sr-only">Massage treatment prices and session lengths</caption>
+        <thead>
+          <tr>
+            <th scope="col">Treatment</th>
+            <th scope="col">Duration</th>
+            <th scope="col">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            priceList.map((row) => (
+              <tr>
+                <th scope="row">{row.name}</th>
+                <td>{row.time}</td>
+                <td class="vk-prices__amount">{row.price}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+
+      <div class="vk-first">
+        <div>
+          <h3>First Visit Full Body Massage</h3>
+          <p>
+            Booking with us for the first time? A full body massage with a shower is ₹1,499 for
+            that first appointment. It applies to that session only - everything else on the menu
+            above is charged at its listed price.
+          </p>
+        </div>
+        <p class="price vk-first__price">₹1,499</p>
+      </div>
+
+      <p class="vk-more">
+        <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================== 10. WHY HERE ===== -->
+  <section class="section">
+    <div class="container vk-narrow">
+      <h2>Why Guests Choose This Location</h2>
+      <ul class="vk-why">
+        <li>Reachable from Vasant Kunj and the surrounding South Delhi neighbourhoods.</li>
+        <li>Ten treatments to pick from, including the Traditional Russian Banya.</li>
+        <li>Every price and session length published up front, on this page and on /pricing/.</li>
+        <li>Treatments given in a private room, reset between guests.</li>
+        <li>Booking by WhatsApp or by phone, whichever you prefer.</li>
+        <li>Open every day, 9:00 AM to 11:00 PM.</li>
+        <li>In Aerocity, beside the airport hotel district.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================ 11. HOW TO BOOK ======== -->
+  <section class="section section--mint">
+    <div class="container vk-split">
+      <div>
+        <h2>How to Book Your Massage</h2>
+        <ol class="vk-steps">
+          <li>Pick a treatment from the menu above, or tell us how much time you have.</li>
+          <li>
+            Message us on WhatsApp or call <a href={telHref}>{site.phone}</a>.
+          </li>
+          <li>We check the day you want and tell you what is actually free.</li>
+          <li>You choose a time from what is open, and we confirm it back to you.</li>
+          <li>
+            Come to the spa at {site.address.locality} - your appointment is held from the
+            moment we confirm it, not before.
+          </li>
+        </ol>
+        <div class="vk-hero__actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I would like to book a massage session. I am travelling from Vasant Kunj."
+          />
+          <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+        </div>
+      </div>
+      <img
+        class="vk-split__img"
+        src={photo.booking.src}
+        alt={photo.booking.alt}
+        width={photo.booking.width}
+        height={photo.booking.height}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- ============================================ 12. LOCATION & MAP ===== -->
+  <!--
+    The map is the real Aerocity listing (site.mapsUrl, addressed by its Google
+    CID). There is no Vasant Kunj pin because there is no Vasant Kunj outlet.
+    It sits below the written address, loads lazily and carries a title, so it
+    never holds up the content above it.
+  -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <h2>Location &amp; Directions</h2>
+        <p>The outlet serving guests from Vasant Kunj is in Aerocity, New Delhi.</p>
+      </div>
+
+      <div class="vk-visit">
+        <dl class="vk-visit__facts">
+          <div>
+            <dt>Address</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd><a href={telHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>WhatsApp</dt>
+            <dd>
+              <a
+                href={whatsappHref('Hi, could you share directions to the spa from Vasant Kunj?')}
+                target="_blank"
+                rel="noopener noreferrer">{site.phone}</a
+              >
+            </dd>
+          </div>
+          <div>
+            <dt>Opening hours</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+          <div>
+            <dt>Getting here</dt>
+            <dd>
+              Open the listing below for a route from wherever you are starting. If you would
+              rather have it explained, call us and we will talk you through it.
+            </dd>
+          </div>
+        </dl>
+
+        <a
+          class="btn"
+          href={site.mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer">Get Directions</a
+        >
+      </div>
+
+      <iframe
+        class="vk-map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1200"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+
+  <!-- ========================================================= 13. FAQ === -->
+  <section class="section section--cream">
+    <div class="container vk-narrow">
+      <div class="section__head">
+        <h2>Vasant Kunj Spa - Frequently Asked Questions</h2>
+      </div>
+      <FAQ faqs={faqs} questionTag="h3" />
+    </div>
+  </section>
+
+  <!-- ================================================== 14. CLOSING CTA == -->
+  <section class="section section--dark">
+    <div class="container text-center">
+      <h2>Book a Massage Near Vasant Kunj</h2>
+      <p class="vk-lead">
+        Send us the treatment and the day you have in mind and we will tell you what is open.
+        Not sure which one to pick? Say how long you have and we will suggest something.
+      </p>
+      <div class="vk-hero__actions vk-hero__actions--center">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I would like to book a massage session near Vasant Kunj."
+        />
+        <a class="btn btn--light" href={telHref}>Call {site.phone}</a>
+      </div>
+      <p class="vk-footlinks">
+        <a href="/services/">Explore Massage Services</a>
+        <span aria-hidden="true">&middot;</span>
+        <a href="/pricing/">View Massage Pricing</a>
+        <span aria-hidden="true">&middot;</span>
+        <a href="/contact/">Contact Us</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ------------------------------------------------------------- 1. hero */
+  /*
+   * NO background colour here on purpose.
+   *
+   * <Breadcrumbs /> sits directly above this section and its bar is
+   * var(--green-050). When the hero carried that same colour the two ran
+   * together into one tall pale block, which made the breadcrumb look larger
+   * on this page than on the other outlet pages - where the hero is plain
+   * white and the trail reads as its own thin strip. The breadcrumb component
+   * itself is identical everywhere; only this background was different.
+   */
+  .vk-hero {
+    padding-block: clamp(2rem, 1.4rem + 2.6vw, 3.75rem);
+  }
+
+  .vk-hero__inner {
+    display: grid;
+    gap: clamp(1.75rem, 1rem + 3vw, 3.25rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .vk-hero__inner {
+      grid-template-columns: 1.05fr 1fr;
+    }
+  }
+
+  .vk-hero__sub {
+    font-family: var(--font-serif);
+    font-size: var(--fs-h3);
+    color: var(--green-700);
+    margin: 0.35rem 0 1rem;
+  }
+
+  .vk-hero__copy p + p {
+    margin-top: 0.85rem;
+  }
+
+  .vk-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 1.5rem;
+  }
+
+  .vk-hero__actions--center {
+    justify-content: center;
+  }
+
+  .vk-hero__note {
+    margin-top: 1.5rem;
+    padding: 0.85rem 1rem;
+    border-left: 3px solid var(--gold);
+    /* Was --white, which vanished once the hero itself became white. */
+    background: var(--green-050);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .vk-hero__art img {
+    width: 100%;
+    height: clamp(260px, 32vw, 440px);
+    object-fit: cover;
+    border-radius: var(--radius-lg) var(--radius-sm) var(--radius-lg) var(--radius-sm);
+    box-shadow: var(--shadow);
+  }
+
+  /* ------------------------------------------------------------ 2. intro */
+  .vk-intro {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 2.75rem);
+  }
+
+  @media (min-width: 900px) {
+    .vk-intro {
+      grid-template-columns: 1.35fr 1fr;
+      align-items: center;
+    }
+  }
+
+  .vk-intro__text h2 {
+    color: var(--green-700);
+    margin-bottom: 1rem;
+  }
+
+  .vk-intro__text p + p {
+    margin-top: 0.9rem;
+  }
+
+  .vk-intro__strip {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .vk-intro__strip img {
+    width: 100%;
+    height: 100%;
+    min-height: 130px;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  /* The first photo spans the full width above the other two. */
+  .vk-intro__strip img:first-child {
+    grid-column: 1 / -1;
+    min-height: 190px;
+  }
+
+  /* ------------------------------------------------------- 3. treatments */
+  .vk-treatments {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    counter-reset: none;
+  }
+
+  .vk-treatment {
+    position: relative;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.6rem 1.4rem 1.4rem;
+    overflow: hidden;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+
+  .vk-treatment:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+  }
+
+  .vk-treatment__num {
+    position: absolute;
+    top: -0.5rem;
+    right: 0.4rem;
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    line-height: 1;
+    color: var(--green-100);
+  }
+
+  .vk-treatment h3 {
+    position: relative;
+    color: var(--green-700);
+  }
+
+  .vk-treatment__meta {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    margin: 0.2rem 0 0.7rem;
+  }
+
+  .vk-treatment p:last-child {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .vk-more {
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  /* --------------------------------------------------- 4/5/11. split rows */
+  .vk-split {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .vk-split {
+      grid-template-columns: 1fr 1.15fr;
+    }
+
+    .vk-split--reverse > *:first-child {
+      order: 2;
+    }
+  }
+
+  .vk-split h2 {
+    color: var(--green-700);
+    margin-bottom: 1rem;
+  }
+
+  .vk-split p + p {
+    margin-top: 0.9rem;
+  }
+
+  .vk-split__img {
+    width: 100%;
+    height: clamp(240px, 30vw, 400px);
+    object-fit: cover;
+    border-radius: var(--radius-lg) var(--radius-sm) var(--radius-lg) var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ------------------------------------------------------ shared: narrow */
+  .vk-narrow {
+    max-width: 840px;
+  }
+
+  .vk-narrow > h2 {
+    color: var(--green-700);
+    margin-bottom: 1rem;
+  }
+
+  .vk-narrow p + p {
+    margin-top: 0.9rem;
+  }
+
+  /* ------------------------------------------------------- 6. area chips */
+  .vk-areas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  .vk-areas li {
+    background: var(--green-050);
+    border: 1px solid var(--green-100);
+    color: var(--green-700);
+    border-radius: 999px;
+    padding: 0.35rem 0.95rem;
+    font-size: 0.82rem;
+  }
+
+  /* -------------------------------------------------------- 8. facilities */
+  .vk-facilities {
+    display: grid;
+    gap: clamp(1.25rem, 1rem + 2vw, 2.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 800px) {
+    .vk-facilities {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .vk-facilities__list {
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .vk-facilities__list li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--green-050);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-family: var(--font-display);
+    letter-spacing: 0.03em;
+    color: var(--green-800);
+  }
+
+  .vk-facilities__list li::before {
+    content: '';
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--green-500);
+  }
+
+  .vk-facilities__img {
+    width: 100%;
+    height: clamp(220px, 26vw, 330px);
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  .vk-note {
+    max-width: 70ch;
+    margin-top: 1.75rem;
+    font-size: 0.87rem;
+    color: var(--muted);
+  }
+
+  .vk-note a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ---------------------------------------------------------- 9. pricing */
+  .vk-prices {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .vk-prices th,
+  .vk-prices td {
+    text-align: left;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--line);
+    font-weight: 400;
+  }
+
+  .vk-prices thead th {
+    background: var(--green-800);
+    color: var(--white);
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+  }
+
+  .vk-prices tbody th {
+    color: var(--ink);
+  }
+
+  .vk-prices tbody tr:last-child th,
+  .vk-prices tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .vk-prices__amount {
+    font-family: var(--font-display);
+    color: var(--green-700);
+    white-space: nowrap;
+  }
+
+  .vk-first {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    margin-top: 1.75rem;
+    padding: 1.4rem 1.5rem;
+    background: var(--white);
+    border: 1px dashed var(--gold);
+    border-radius: var(--radius);
+  }
+
+  .vk-first h3 {
+    color: var(--green-700);
+    margin-bottom: 0.35rem;
+  }
+
+  .vk-first p {
+    color: var(--muted);
+    margin: 0;
+    max-width: 58ch;
+  }
+
+  .vk-first__price {
+    font-size: clamp(1.7rem, 1.2rem + 1.6vw, 2.4rem);
+    color: var(--gold);
+  }
+
+  /* --------------------------------------------------------- 10. why/steps */
+  .vk-why,
+  .vk-steps {
+    margin-top: 1.25rem;
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .vk-why li {
+    position: relative;
+    padding-left: 1.6rem;
+  }
+
+  .vk-why li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green-500);
+  }
+
+  .vk-steps {
+    counter-reset: step;
+  }
+
+  .vk-steps li {
+    position: relative;
+    padding-left: 2.4rem;
+    counter-increment: step;
+  }
+
+  .vk-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0.1em;
+    width: 1.7rem;
+    height: 1.7rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--green-700);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+  }
+
+  .vk-steps a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* --------------------------------------------------------- 12. location */
+  .vk-visit {
+    display: grid;
+    gap: 1.5rem;
+    justify-items: start;
+    background: var(--green-050);
+    border-radius: var(--radius);
+    padding: clamp(1.25rem, 1rem + 1.4vw, 2rem);
+  }
+
+  .vk-visit__facts {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    width: 100%;
+    margin: 0;
+  }
+
+  .vk-visit__facts dt {
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.74rem;
+    color: var(--green-600);
+    margin-bottom: 0.2rem;
+  }
+
+  .vk-visit__facts dd {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+
+  .vk-visit__facts a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .vk-map {
+    width: 100%;
+    height: clamp(280px, 34vw, 420px);
+    margin-top: 1.5rem;
+    border: 0;
+    border-radius: var(--radius);
+    display: block;
+  }
+
+  /* ------------------------------------------------------------- 14. cta */
+  .vk-lead {
+    max-width: 62ch;
+    margin: 1rem auto 0;
+  }
+
+  .vk-footlinks {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    font-size: 0.87rem;
+  }
+
+  .vk-footlinks a {
+    color: var(--white);
+    text-decoration: underline;
+  }
+</style>

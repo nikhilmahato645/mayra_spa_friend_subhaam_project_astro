@@ -2,12 +2,848 @@
 /**
  * LOCATION PAGE - /russian-spa-in-karol-bagh/
  *
- * All content for this page lives in src/data/locations.ts under the slug
- * below. Fill in `intro`, `sections` and `faqs` there, then remove this page
- * from src/data/drafts.mjs to publish it (lifts noindex + adds it to the
- * sitemap). Do not put copy in this file - keep every area in one data file.
+ * There is no Karol Bagh branch. The business trades from ONE address, in
+ * Aerocity, and this page says so in the opening section, in the reasons list
+ * and in the first FAQ. See the header of src/data/karol-bagh.ts for the full
+ * rule - it is the same one the Gurgaon page follows.
+ *
+ * WHY IT IS NOT A LocationLayout PAGE
+ * LocationLayout renders the shared outlet skeleton, which reads as though the
+ * area has a branch. Mahipalpur, Aerocity and Gurgaon already have pages
+ * written for them instead; this is the fourth. LocationLayout is untouched
+ * and the six remaining areas still use it.
+ *
+ * AND WHY IT LOOKS DIFFERENT AGAIN
+ * Aerocity leads with a split hero and its own address. Gurgaon leads with the
+ * journey. This one leads with a full-width photograph and an overlapping card,
+ * lays the treatments out as numbered rows rather than a card grid, and prints
+ * the prices as a list rather than the table Aerocity uses. Same brand colours
+ * and type, a different page.
+ *
+ * ALL COPY lives in src/data/karol-bagh.ts. Do not write prose into this file.
+ *
+ * STRUCTURED DATA: BaseLayout already emits DaySpa (carrying the real Aerocity
+ * address) + WebSite + WebPage on every page, so this one adds only what it can
+ * back up with what is visible - breadcrumbs, the FAQ verbatim, and a Service
+ * with Karol Bagh as the area served. No second LocalBusiness, no Karol Bagh
+ * address anywhere in the graph, no rating and no reviews.
  */
-import LocationLayout from '../../layouts/LocationLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import ResponsivePhoto from '../../components/ResponsivePhoto.astro';
+import { site, telHref } from '../../data/site';
+import {
+  karolBaghMeta,
+  karolBaghImages,
+  karolBaghTreatments,
+  karolBaghPrices,
+  karolBaghFacilities,
+  karolBaghReasons,
+  karolBaghSteps,
+  karolBaghFaqs,
+} from '../../data/karol-bagh';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Karol Bagh', href: '/russian-spa-in-karol-bagh/' },
+]);
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(karolBaghFaqs),
+  serviceSchema({
+    name: 'Russian spa and massage for Karol Bagh guests',
+    description: karolBaghMeta.description,
+    url: `${site.url}/russian-spa-in-karol-bagh/`,
+    areaServed: 'Karol Bagh, New Delhi',
+  }),
+];
+
+/* Same embed the contact page builds: the Google Business Profile addressed by
+   its CID, so there is no hand-written latitude or longitude and no API key in
+   the front end. It points at Aerocity, which is where we are. */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
 ---
 
-<LocationLayout slug="russian-spa-in-karol-bagh" />
+<BaseLayout
+  title={karolBaghMeta.title}
+  description={karolBaghMeta.description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  usesUnsplash={false}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ===================================================== 1. HERO ====== -->
+  <!--
+    A full-width band with the copy on a card that overlaps its lower edge -
+    not the split hero Aerocity uses. The photo is the page's Largest
+    Contentful Paint, so ResponsivePhoto gets priority.
+  -->
+  <section class="kb-hero">
+    <div class="kb-hero__band">
+      <ResponsivePhoto
+        photo={karolBaghImages.hero}
+        smallWidth={760}
+        sizes="100vw"
+        priority
+        class="kb-hero__img"
+      />
+    </div>
+
+    <div class="container">
+      <div class="kb-hero__card">
+        <p class="kb-eyebrow">Karol Bagh, Delhi</p>
+        <h1>Russian Spa in Karol Bagh</h1>
+        <p class="kb-hero__sub">Body massage and banya treatments, booked from across Delhi</p>
+        <p class="kb-hero__lead">
+          We run one spa, on Northern Access Road in Aerocity, and guests travel to it from all over
+          the city &mdash; Karol Bagh included. Massage, steam and the traditional Russian banya, all
+          by appointment.
+        </p>
+
+        <div class="kb-actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I am in Karol Bagh and would like to book a massage."
+          />
+          <a class="btn btn--outline" href="/services/">View Massage Services</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 2. LOCAL CONTEXT ==== -->
+  <section class="section" aria-labelledby="local-heading">
+    <div class="container kb-narrow">
+      <h2 id="local-heading">A Massage &amp; Spa Experience for Karol Bagh Guests</h2>
+      <p>
+        Let us be straight about the geography first, because a lot of spa listings are not. There is
+        no branch of ours in Karol Bagh. We have a single address, in Aerocity, and everything below
+        &mdash; the treatments, the prices, the steam rooms &mdash; is there.
+      </p>
+      <p>
+        What that means in practice is a trip across the city rather than a walk around the corner,
+        so it is worth booking a longer session and making the journey count. Most people coming
+        this way pick either a ninety-minute treatment or the banya, which runs in stages and is not
+        something to rush. Every session is in a private room, held for your slot, and the therapist
+        talks the pressure through with you before starting rather than working to a script.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================= 3. TREATMENTS ==== -->
+  <section class="section section--cream" aria-labelledby="menu-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="menu-heading">Massage Services Available</h2>
+        <p class="muted">
+          Six of the treatments guests book most. The rest of the menu, written out in full, is on
+          the services page.
+        </p>
+      </div>
+
+      <ol class="kb-rows">
+        {
+          karolBaghTreatments.map((treatment, index) => (
+            <li class="kb-row">
+              <div class="kb-row__num" aria-hidden="true">{String(index + 1).padStart(2, '0')}</div>
+
+              <div class="kb-row__copy">
+                <h3 class="kb-row__name">{treatment.name}</h3>
+                {treatment.price && (
+                  <p class="kb-row__meta">
+                    <span class="kb-row__price">{treatment.price}</span>
+                    <span class="kb-dot" aria-hidden="true">&middot;</span>
+                    <span>{treatment.duration}</span>
+                  </p>
+                )}
+                <p class="kb-row__text">{treatment.body}</p>
+              </div>
+
+              {treatment.image && (
+                <div class="kb-row__media">
+                  <ResponsivePhoto
+                    photo={treatment.image}
+                    smallWidth={460}
+                    sizes="(min-width: 900px) 300px, 92vw"
+                  />
+                </div>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="kb-centre">
+        <a class="btn btn--outline" href="/services/">Explore All Massage Services</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 4. BANYA ==== -->
+  <section class="section kb-banya" aria-labelledby="banya-heading">
+    <div class="container kb-split">
+      <div class="kb-split__copy">
+        <h2 id="banya-heading">The Russian Banya, and How It Differs</h2>
+        <p>
+          A massage is one therapist working on you for an hour. The banya is not that. It is a
+          bathing ritual built around heat, and it moves in stages.
+        </p>
+        <p>
+          The first stage is simply getting warm, slowly, in the steam. Once you are, the therapist
+          works over you with a birch venik &mdash; a bundle of leafy branches swept rhythmically
+          across the body, carrying the heat and the smell of the birch with it. Then you step out
+          to cool down and sit for a while before going back in. Herbal tea closes it.
+        </p>
+        <p>
+          At <strong>&#8377;2,500 for 60 minutes</strong> it is the least expensive thing we offer,
+          and the one most worth travelling for if you have never tried it.
+        </p>
+      </div>
+
+      <div class="kb-split__media">
+        <ResponsivePhoto
+          photo={karolBaghImages.banya}
+          smallWidth={620}
+          sizes="(min-width: 900px) 520px, 92vw"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 5. FACILITIES ==== -->
+  <section class="section section--cream" aria-labelledby="facilities-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="facilities-heading">Comfortable Spa Facilities</h2>
+        <p class="muted">
+          What is on site. Not all of it belongs to every treatment &mdash; the jacuzzi and steam
+          come with certain packages rather than a standard massage &mdash; so check what your
+          booking includes when you confirm it.
+        </p>
+      </div>
+
+      <ul class="kb-chips">
+        {karolBaghFacilities.map((facility) => <li class="kb-chip">{facility}</li>)}
+      </ul>
+
+      <div class="kb-photos">
+        <ResponsivePhoto
+          photo={karolBaghImages.heater}
+          smallWidth={500}
+          sizes="(min-width: 760px) 48vw, 92vw"
+        />
+        <ResponsivePhoto
+          photo={karolBaghImages.buckets}
+          smallWidth={500}
+          sizes="(min-width: 760px) 48vw, 92vw"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 6. GETTING HERE ===== -->
+  <section class="section" aria-labelledby="journey-heading">
+    <div class="container kb-narrow">
+      <h2 id="journey-heading">Coming From Karol Bagh</h2>
+      <p>
+        The address sits in Aerocity, the hotel and business district attached to Indira Gandhi
+        International Airport, with Mahipalpur next to it. If you are setting out from Karol Bagh
+        you are heading across the city towards the airport side of Delhi.
+      </p>
+      <p>
+        We are not going to tell you how long that takes. It depends on the hour, the route and the
+        traffic, and any figure printed on a page like this would be invented. Check it on the map
+        below before you leave, and give yourself more room than the estimate suggests. If it turns
+        out to be further than you want to travel, the
+        <a href="/russian-spa-in-aerocity/">Aerocity page</a> covers the same spa for anyone already
+        on that side, and <a href="/contact/">contact us</a> if you would rather just ask.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 7. PRICES ==== -->
+  <section class="section section--cream" aria-labelledby="prices-heading">
+    <div class="container kb-narrow">
+      <div class="section__head">
+        <h2 id="prices-heading">Massage Prices</h2>
+        <p class="muted">
+          A selection from the menu. There is no separate rate depending on where you booked from.
+        </p>
+      </div>
+
+      <ul class="kb-prices">
+        {
+          karolBaghPrices.map((row) => (
+            <li class="kb-price">
+              <span class="kb-price__name">{row.name}</span>
+              <span class="kb-price__dur">{row.duration}</span>
+              <span class="kb-price__amt">{row.price}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="kb-offer">
+        <strong>First visit full body massage &mdash; &#8377;1,499.</strong> That price is for a
+        first-time guest booking the full body massage, and nothing else &mdash; the treatments in the
+        list above and the packages are charged at the rates shown.
+      </p>
+
+      <div class="kb-centre">
+        <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== 8. REASONS ==== -->
+  <section class="section" aria-labelledby="reasons-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="reasons-heading">Why Guests Choose Russian Spa</h2>
+      </div>
+
+      <ul class="kb-reasons">
+        {
+          karolBaghReasons.map((reason) => (
+            <li class="kb-reason">
+              <h3 class="kb-reason__title">{reason.title}</h3>
+              <p class="kb-reason__text">{reason.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- =================================================== 9. LOCATION ==== -->
+  <section class="section section--cream" aria-labelledby="where-heading">
+    <div class="container kb-split kb-split--reverse">
+      <div class="kb-split__copy">
+        <h2 id="where-heading">Location &amp; How to Reach Us</h2>
+        <p class="muted">
+          One address, and it is not in Karol Bagh. This is where every booking on this page
+          actually happens.
+        </p>
+
+        <dl class="kb-details">
+          <div>
+            <dt>Address</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd><a href={telHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>WhatsApp</dt>
+            <dd>{site.phone} &mdash; same number, message any time</dd>
+          </div>
+          <div>
+            <dt>Opening hours</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+        </dl>
+
+        <p class="muted kb-small">
+          Book before you travel &mdash; walk-ins depend entirely on what happens to be free. More
+          <a href="/about/">about Russian Spa Mahipalpur</a> if you want the background first.
+        </p>
+      </div>
+
+      <div class="kb-split__media">
+        <ResponsivePhoto
+          photo={karolBaghImages.interior}
+          smallWidth={560}
+          sizes="(min-width: 900px) 520px, 92vw"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 10. MAP ==== -->
+  <section class="section" aria-labelledby="map-heading">
+    <div class="container kb-narrow">
+      <div class="section__head">
+        <h2 id="map-heading">Find Us on the Map</h2>
+        <p class="muted">{site.addressLine}</p>
+      </div>
+
+      <div class="kb-centre">
+        <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Get Directions
+        </a>
+      </div>
+
+      <!--
+        Lazy-loaded so it never competes with the content above it, and the
+        Get Directions link works whether or not the embed ever loads.
+      -->
+      <iframe
+        class="kb-map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1040"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+
+  <!-- ================================================ 11. PLAN A VISIT ==== -->
+  <section class="section section--cream" aria-labelledby="plan-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="plan-heading">Plan Your Visit</h2>
+        <p class="muted">
+          Five steps and a phone. Nothing is held for you until the team writes back to say it is.
+        </p>
+      </div>
+
+      <ol class="kb-steps">
+        {
+          karolBaghSteps.map((item) => (
+            <li class="kb-step">
+              <span class="kb-step__num" aria-hidden="true">{item.step}</span>
+              <h3 class="kb-step__title">{item.title}</h3>
+              <p class="kb-step__text">{item.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="kb-centre kb-centre--gap">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I would like to book an appointment. I am travelling from Karol Bagh."
+        />
+        <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 12. FAQ ==== -->
+  <section class="section" aria-labelledby="faq-heading">
+    <div class="container kb-narrow">
+      <div class="section__head">
+        <h2 id="faq-heading">Karol Bagh Guests &mdash; Frequently Asked Questions</h2>
+      </div>
+      <FAQ faqs={karolBaghFaqs} questionTag="h3" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .kb-narrow {
+    max-width: 860px;
+  }
+
+  .kb-narrow > p {
+    margin-top: 1rem;
+    max-width: 72ch;
+  }
+
+  .kb-centre {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .kb-centre--gap {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .kb-small {
+    font-size: 0.9rem;
+  }
+
+  .kb-dot {
+    color: var(--gold);
+  }
+
+  /* ------------------------------------------------------------- 1. hero */
+  .kb-hero {
+    padding-bottom: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  }
+
+  .kb-hero__band {
+    position: relative;
+    height: clamp(230px, 34vw, 430px);
+    overflow: hidden;
+    background: var(--green-950);
+  }
+
+  .kb-hero__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* The card rides up over the lower edge of the photograph. */
+  .kb-hero__card {
+    position: relative;
+    margin-top: clamp(-5rem, -3rem - 4vw, -2.5rem);
+    padding: clamp(1.5rem, 1.2rem + 2vw, 2.75rem);
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .kb-eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .kb-hero__card h1 {
+    margin: 0;
+  }
+
+  .kb-hero__sub {
+    margin: 0.5rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.02rem, 0.95rem + 0.5vw, 1.3rem);
+    color: var(--green-700);
+  }
+
+  .kb-hero__lead {
+    margin: 1rem 0 0;
+    max-width: 62ch;
+  }
+
+  .kb-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.75rem;
+  }
+
+  /* -------------------------------------------------------- 3. treatments */
+  .kb-rows {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kb-row {
+    display: grid;
+    gap: 1rem;
+    align-items: center;
+    padding: 1.3rem 1.35rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (min-width: 900px) {
+    .kb-row {
+      grid-template-columns: auto 1fr 300px;
+      gap: 1.75rem;
+    }
+  }
+
+  .kb-row__num {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--gold);
+  }
+
+  .kb-row__name {
+    margin: 0;
+    font-size: 1.12rem;
+    color: var(--green-800);
+  }
+
+  .kb-row__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin: 0.3rem 0 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .kb-row__price {
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--green-700);
+  }
+
+  .kb-row__text {
+    margin: 0.55rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  .kb-row__media img {
+    width: 100%;
+    aspect-ratio: 7 / 5;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+  }
+
+  /* ------------------------------------------------- 4 + 9. split bands */
+  .kb-split {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .kb-split {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .kb-split--reverse .kb-split__media {
+      order: 2;
+    }
+  }
+
+  .kb-split__media img {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .kb-split__copy h2 {
+    margin-top: 0;
+  }
+
+  .kb-split__copy p {
+    margin: 1rem 0 0;
+  }
+
+  /* A dark band, so the banya section reads as the feature it is. */
+  .kb-banya {
+    background: radial-gradient(120% 90% at 50% 0%, var(--green-850), var(--green-950) 75%);
+    color: var(--white);
+  }
+
+  .kb-banya h2,
+  .kb-banya strong {
+    color: var(--white);
+  }
+
+  .kb-banya p {
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  /* -------------------------------------------------------- 5. facilities */
+  .kb-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kb-chip {
+    padding: 0.55rem 1.1rem;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--green-800);
+  }
+
+  .kb-photos {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.75rem;
+  }
+
+  @media (min-width: 760px) {
+    .kb-photos {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .kb-photos img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  /* ------------------------------------------------------------ 7. prices */
+  .kb-prices {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .kb-price {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.25rem 1rem;
+    padding: 0.9rem 1.15rem;
+    border-bottom: 1px solid var(--green-100);
+  }
+
+  @media (min-width: 560px) {
+    .kb-price {
+      grid-template-columns: 1fr auto auto;
+      align-items: baseline;
+    }
+  }
+
+  .kb-price:last-child {
+    border-bottom: 0;
+  }
+
+  .kb-price__name {
+    font-weight: 600;
+    color: var(--green-800);
+  }
+
+  .kb-price__dur {
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .kb-price__amt {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--green-700);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .kb-offer {
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.15rem;
+    background: var(--green-050);
+    border-left: 3px solid var(--green-500);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  /* ----------------------------------------------------------- 8. reasons */
+  .kb-reasons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kb-reason {
+    padding-top: 1rem;
+    border-top: 2px solid var(--gold);
+  }
+
+  .kb-reason__title {
+    margin: 0 0 0.4rem;
+    font-size: 1.02rem;
+    color: var(--green-800);
+  }
+
+  .kb-reason__text {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  /* ---------------------------------------------------------- 9. details */
+  .kb-details {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 0 0;
+  }
+
+  .kb-details dt {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .kb-details dd {
+    margin: 0.25rem 0 0;
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .kb-details a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* -------------------------------------------------------------- 10. map */
+  .kb-map {
+    display: block;
+    width: 100%;
+    height: clamp(300px, 38vw, 420px);
+    margin-top: 2rem;
+    border: 0;
+    border-radius: var(--radius);
+  }
+
+  /* ------------------------------------------------------------ 11. steps */
+  .kb-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kb-step {
+    padding: 1.3rem 1.2rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .kb-step__num {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--gold);
+  }
+
+  .kb-step__title {
+    margin: 0.6rem 0 0.35rem;
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  .kb-step__text {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+</style>

@@ -87,7 +87,7 @@ export const facilities = [
   { title: 'Hammam', icon: 'hammam' },
   { title: 'Jacuzzi Bath', icon: 'jacuzzi' },
   { title: 'Steam Bath', icon: 'steam' },
-  { title: 'Souna', icon: 'sauna' },
+  { title: 'Sauna', icon: 'sauna' },
 ];
 
 /** "Our Promise" tick strip. */

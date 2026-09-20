@@ -356,9 +356,8 @@ const isActive = (href: string) =>
     left: 50%;
     transform: translate(-50%, 10px);
     min-width: 250px;
+    /* Flat panel on purpose: no radius, no border, no shadow. */
     background: var(--white);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow);
     padding: 0.4rem;
     opacity: 0;
     visibility: hidden;
@@ -375,7 +374,6 @@ const isActive = (href: string) =>
   .dropdown a {
     display: block;
     padding: 0.5rem 0.85rem;
-    border-radius: var(--radius-sm);
     color: var(--ink-soft);
     font-size: 0.82rem;
     transition: background-color 0.16s ease, color 0.16s ease, padding-left 0.16s ease;

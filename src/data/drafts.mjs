@@ -21,15 +21,20 @@ export const draftPages = [
   // index,follow and appears in the sitemap.
   // '/gallery/' was published once its photos and copy were in place - it now
   // carries index,follow and appears in the sitemap.
-  '/russian-spa-in-mahipalpur/',
-  '/russian-spa-in-aerocity/',
-  '/russian-spa-in-vasant-kunj/',
+  // '/russian-spa-in-mahipalpur/' was published once its copy, photos and FAQs
+  // were written - it now carries index,follow and appears in the sitemap.
+  // '/russian-spa-in-aerocity/' was published once its page was written - it
+  // now carries index,follow and appears in the sitemap.
+  // '/russian-spa-in-vasant-kunj/' was published once its copy, photos and FAQs
+  // were written - it now carries index,follow and appears in the sitemap.
   '/russian-spa-in-dwarka/',
-  '/russian-spa-in-gurgaon/',
+  // '/russian-spa-in-gurgaon/' was published once its page was written - it now
+  // carries index,follow and appears in the sitemap.
   '/russian-spa-in-saket/',
   '/russian-spa-in-hauz-khas/',
   '/russian-spa-in-green-park/',
-  '/russian-spa-in-karol-bagh/',
+  // '/russian-spa-in-karol-bagh/' was published once its page was written - it
+  // now carries index,follow and appears in the sitemap.
   '/russian-spa-in-noida/',
 ];
 

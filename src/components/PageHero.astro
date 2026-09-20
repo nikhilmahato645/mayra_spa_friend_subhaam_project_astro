@@ -2,6 +2,11 @@
 /**
  * Inner page hero: H1 over a photo, with the breadcrumb trail underneath.
  * Used by every page except the home page.
+ *
+ * `breadcrumbs` is optional. Leave it out when the page renders its own
+ * <Breadcrumbs /> ABOVE the hero - the outlet pages do, so the trail sits
+ * directly under the header the way it does on /russian-spa-in-aerocity/.
+ * Passing it here keeps the older placement, underneath the photo.
  */
 import Breadcrumbs from './Breadcrumbs.astro';
 import type { BreadcrumbItem } from '../utils/seo';
@@ -14,8 +19,8 @@ interface Props {
   subtitle?: string;
   /** Background photo. */
   image: SiteImage;
-  /** Breadcrumb trail, already including Home. */
-  breadcrumbs: BreadcrumbItem[];
+  /** Breadcrumb trail, already including Home. Omit to render none here. */
+  breadcrumbs?: BreadcrumbItem[];
 }
 
 const { title, subtitle, image, breadcrumbs } = Astro.props;
@@ -37,7 +42,7 @@ const { title, subtitle, image, breadcrumbs } = Astro.props;
   </div>
 </section>
 
-<Breadcrumbs items={breadcrumbs} />
+{breadcrumbs && <Breadcrumbs items={breadcrumbs} />}
 
 <style>
   .page-hero {

@@ -2,12 +2,1015 @@
 /**
  * LOCATION PAGE - /russian-spa-in-mahipalpur/
  *
- * All content for this page lives in src/data/locations.ts under the slug
- * below. Fill in `intro`, `sections` and `faqs` there, then remove this page
- * from src/data/drafts.mjs to publish it (lifts noindex + adds it to the
- * sitemap). Do not put copy in this file - keep every area in one data file.
+ * The flagship local page: Mahipalpur is the area the business is named after
+ * and the heaviest local search term on the site. Like Aerocity and Gurgaon it
+ * is a written page rather than a LocationLayout wrapper, and all of its copy
+ * lives in src/data/mahipalpur.ts - read the header of that file before
+ * editing anything factual here.
+ *
+ * THE ADDRESS, ONCE MORE: the brand is "Russian Spa Mahipalpur" but the one
+ * trading address in src/data/site.ts is on Northern Access Road in AEROCITY,
+ * which adjoins Mahipalpur. This page prints that address and no other, and
+ * the map points at the real Google listing. Never add a Mahipalpur street
+ * address, a second outlet, or a travel time to any terminal.
+ *
+ * LAYOUT is deliberately unlike its siblings: a banner hero with an
+ * overlapping copy card and a facts bar (neither Aerocity's split hero nor
+ * Vasant Kunj's), and the ten treatments as a priced menu list rather than
+ * Aerocity's photo cards or Vasant Kunj's numbered cards.
  */
-import LocationLayout from '../../layouts/LocationLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import ResponsivePhoto from '../../components/ResponsivePhoto.astro';
+import { site, telHref, mailHref } from '../../data/site';
+import {
+  mahipalpurMeta as meta,
+  mahipalpurImages as photo,
+  mahipalpurTreatments,
+  mahipalpurChooser,
+  mahipalpurPrices,
+  mahipalpurReasons,
+  mahipalpurSteps,
+  mahipalpurFaqs,
+} from '../../data/mahipalpur';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+/* Home -> Russian Spa in Mahipalpur, exactly as the brief asks. */
+const crumbs = breadcrumbTrail([
+  { name: 'Russian Spa in Mahipalpur', href: '/russian-spa-in-mahipalpur/' },
+]);
+
+/*
+ * BaseLayout already emits DaySpa (the LocalBusiness, with the verified
+ * address), WebSite and WebPage on every page, so none of those is repeated
+ * here - a second LocalBusiness node would be a duplicate entity. This page
+ * adds only what is specific to it. The FAQ array is the same object rendered
+ * below, so the markup can never disagree with the visible text, and there is
+ * no aggregateRating, review or award anywhere in the graph.
+ */
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(mahipalpurFaqs),
+  serviceSchema({
+    name: 'Russian spa and body massage in Mahipalpur',
+    description:
+      'Traditional Russian Banya, Swedish, deep tissue, Thai, aromatherapy and hot stone treatments at our Northern Access Road spa serving Mahipalpur, Aerocity and the Delhi Airport area.',
+    url: `${site.url}/russian-spa-in-mahipalpur/`,
+    areaServed: 'Mahipalpur, New Delhi',
+  }),
+];
+
+/* The CID embed used on /contact/ - the real listing, not a dropped pin. */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+
+/* The five photos in the treatment-menu collage. */
+const menuArt = [photo.deepTissue, photo.hotStone, photo.aromatherapy, photo.thai, photo.reflexology];
 ---
 
-<LocationLayout slug="russian-spa-in-mahipalpur" />
+<BaseLayout
+  title={meta.title}
+  description={meta.description}
+  image={photo.hero.src}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  usesUnsplash={false}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ===================================================== 1. HERO ======= -->
+  <!--
+    Banner photo with the copy card pulled up over its lower edge. The photo is
+    this page's Largest Contentful Paint, so it is the one eager image.
+  -->
+  <section class="mhero">
+    <div class="mhero__banner">
+      <ResponsivePhoto
+        photo={photo.hero}
+        smallWidth={760}
+        sizes="100vw"
+        priority
+        class="mhero__img"
+      />
+    </div>
+
+    <div class="container">
+      <div class="mhero__card">
+        <p class="eyebrow">Mahipalpur &middot; Aerocity &middot; New Delhi</p>
+        <h1>Russian Spa in Mahipalpur</h1>
+        <p class="mhero__lead">
+          Ten massage and heat treatments on Northern Access Road, where Aerocity runs on from
+          Mahipalpur beside the airport. Choose a short reflexology visit or a two-hour session
+          for two, in a private room, at a pressure you set with the therapist.
+        </p>
+        <p class="mhero__lead">
+          Visits are by appointment. Tell us what you are after and we will tell you what is free.
+        </p>
+        <div class="mhero__actions">
+          <a class="btn" href="/services/">Explore Our Services</a>
+          <a class="btn btn--outline" href="/pricing/">View Pricing</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------- quick facts bar -->
+  <section class="mfacts">
+    <div class="container mfacts__grid">
+      <div>
+        <p class="mfacts__k">Address</p>
+        <p class="mfacts__v">{site.addressLine}</p>
+      </div>
+      <div>
+        <p class="mfacts__k">Open</p>
+        <p class="mfacts__v">{site.openingHoursLabel}</p>
+      </div>
+      <div>
+        <p class="mfacts__k">Phone</p>
+        <p class="mfacts__v"><a href={telHref}>{site.phone}</a></p>
+      </div>
+      <div>
+        <p class="mfacts__k">Email</p>
+        <p class="mfacts__v"><a href={mailHref}>{site.email}</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================= 2. SPA & MASSAGE LOCALLY == -->
+  <section class="section" aria-labelledby="local-heading">
+    <div class="container mnarrow">
+      <h2 id="local-heading">Spa &amp; Massage in Mahipalpur</h2>
+      <p>
+        Mahipalpur is a place people pass through as much as live in - the hotel strip off NH-8,
+        the businesses along the service road, and the steady traffic to and from the airport.
+        That shapes who walks into a spa here. Some guests have a free afternoon and want an
+        unhurried full body massage; others have a two-hour gap before a flight and want
+        something short that still counts.
+      </p>
+      <p>
+        The menu is built for both. Sessions run from a 45-minute reflexology visit to a
+        120-minute booking for two, so the treatment fits the time you actually have. Alongside
+        the oil and pressure work sits the Traditional Russian Banya, the steam bathing ritual
+        the spa is named after. Every treatment is in a private room, and the pressure, the areas
+        worked on and anything to leave alone are agreed before the session starts. Booking is a
+        message or a call - no membership, nothing to sign up for.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================================== 3. THE TREATMENT MENU ==== -->
+  <!--
+    A priced menu list, not a photo-card grid: ten cards with ten photographs
+    would be the heaviest thing on the page, and a menu is easier to scan on a
+    phone. The five photographs sit above it as a strip instead.
+  -->
+  <section class="section section--cream" id="treatments" aria-labelledby="menu-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="menu-heading">Massage &amp; Spa Services in Mahipalpur</h2>
+        <p>
+          All ten treatments, with the session length and the price each one covers. Longer
+          write-ups for every therapy are on the
+          <a href="/services/">massage services page</a>.
+        </p>
+      </div>
+
+      <ul class="mstrip">
+        {
+          menuArt.map((art) => (
+            <li>
+              <ResponsivePhoto
+                photo={art}
+                smallWidth={460}
+                sizes="(min-width: 1000px) 220px, 45vw"
+                class="mstrip__img"
+              />
+            </li>
+          ))
+        }
+      </ul>
+
+      <ul class="mmenu">
+        {
+          mahipalpurTreatments.map((treatment) => (
+            <li class="mitem">
+              <div class="mitem__head">
+                <h3>{treatment.name}</h3>
+                <p class="mitem__price">
+                  <span>{treatment.price}</span>
+                  <small>{treatment.duration}</small>
+                </p>
+              </div>
+              <p class="mitem__body">{treatment.body}</p>
+              <CTA
+                label="Book Now"
+                message={`Hi, I would like to book the ${treatment.name} (${treatment.duration}) in Mahipalpur.`}
+                variant="outline"
+                small
+              />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================ 4. RUSSIAN BANYA === -->
+  <section class="section" aria-labelledby="banya-heading">
+    <div class="container msplit">
+      <ResponsivePhoto
+        photo={photo.banya}
+        smallWidth={620}
+        sizes="(min-width: 900px) 500px, 92vw"
+        class="msplit__img"
+      />
+      <div>
+        <h2 id="banya-heading">Traditional Russian Banya in Mahipalpur</h2>
+        <p>
+          A banya is the Russian bathing tradition: a heated room, steam, and a rhythm of warming
+          up and cooling down that is followed rather than rushed. It feels different from a
+          massage because you are not on a table for an hour - the session moves through stages,
+          and the pauses between them are part of it.
+        </p>
+        <p>
+          Our session builds the heat gradually so you settle into the steam. Aromatic birch
+          venik work follows, cooling breaks sit between the stages, and herbal tea closes the
+          visit. First time? Expect a warm room and a slow pace, drink water beforehand, and step
+          out whenever you want - nobody will hurry you back in. It runs 60 minutes at ₹2,500,
+          and many guests pair it with a shorter massage rather than booking it alone.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 5. FULL BODY MASSAGE = -->
+  <section class="section section--mint" aria-labelledby="fullbody-heading">
+    <div class="container msplit msplit--reverse">
+      <ResponsivePhoto
+        photo={photo.fullBody}
+        smallWidth={460}
+        sizes="(min-width: 900px) 500px, 92vw"
+        class="msplit__img"
+      />
+      <div>
+        <h2 id="fullbody-heading">Full Body Massage in Mahipalpur</h2>
+        <p>
+          A full body massage is the treatment most people mean when they search for a massage in
+          Mahipalpur, and it is the one most first-time guests book. The session works across the
+          back and shoulders, down the arms, along the legs and finishes at the feet, with the
+          therapist moving in one unbroken sequence rather than concentrating on a single spot.
+        </p>
+        <p>
+          What it feels like is largely up to you. Before anything starts you say how firm you
+          want the pressure, which areas to spend longer on, and whether anything should be
+          skipped - a sore shoulder, a recent knock, an area you would rather not have touched.
+          You can change your mind halfway through; asking for lighter or firmer work is expected,
+          not an interruption. Book it in whichever style suits: Swedish for an easy hour, deep
+          tissue if you want the pressure, aromatherapy for the quietest version.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ 6. CHOOSE YOUR MASSAGE = -->
+  <section class="section" aria-labelledby="choose-heading">
+    <div class="container mnarrow">
+      <div class="section__head">
+        <h2 id="choose-heading">Which Massage Is Right for You?</h2>
+        <p>
+          None of these is better than the others - they simply suit different things. Find the
+          row that sounds like your afternoon.
+        </p>
+      </div>
+
+      <table class="mtable">
+        <caption class="sr-only">Treatments matched to what a guest is looking for</caption>
+        <thead>
+          <tr>
+            <th scope="col">What you are looking for</th>
+            <th scope="col">Treatment</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            mahipalpurChooser.map((row) => (
+              <tr>
+                <th scope="row">{row.want}</th>
+                <td>{row.pick}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================================ 7. NEAR DELHI AIRPORT == -->
+  <section class="section section--cream" aria-labelledby="airport-heading">
+    <div class="container mnarrow">
+      <h2 id="airport-heading">Russian Spa Near Delhi Airport</h2>
+      <p>
+        Our address is <strong>{site.addressLine}</strong> - Aerocity, the hospitality district
+        built beside Indira Gandhi International Airport and directly adjoining Mahipalpur. If
+        you searched for a spa near Delhi Airport, a massage near IGI Airport or a body massage
+        in Aerocity, this is the same place; those areas sit within a few streets of each other,
+        which is why the searches overlap.
+      </p>
+      <p>
+        We are open every day from 9:00 AM to 11:00 PM, late enough for an evening arrival. We do
+        not publish a travel time or a distance from any terminal - it depends on your terminal,
+        the route and the traffic, and a number printed here would be a guess. Use the map below
+        for a live route, or <a href="/contact/">contact us</a> and we will talk it through.
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================== 8. MAHIPALPUR & AEROCITY === -->
+  <section class="section" aria-labelledby="area-heading">
+    <div class="container mnarrow">
+      <h2 id="area-heading">Conveniently Located for Mahipalpur and Aerocity</h2>
+      <p>
+        Mahipalpur Village, the hotel strip along the highway and the Aerocity blocks all sit in
+        the same corner of south-west New Delhi, either side of the airport approach. The spa is
+        on Northern Access Road, on the Aerocity side of that belt - one address, printed on this
+        page and on the map below. There are no separate Mahipalpur and Aerocity outlets.
+      </p>
+      <p>
+        Guests come from the hotels nearby, from offices on this side of the city, and from
+        further out in Delhi NCR. If you are travelling from another area, we also have pages for
+        <a href="/russian-spa-in-aerocity/">Aerocity</a>,
+        <a href="/russian-spa-in-vasant-kunj/">Vasant Kunj</a> and
+        <a href="/russian-spa-in-gurgaon/">Gurgaon</a>, or you can
+        <a href="/about/">read about the spa</a> and
+        <a href="/gallery/">see the gallery</a> before you decide.
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================================================== 9. PRICES ====== -->
+  <section class="section section--cream" aria-labelledby="price-heading">
+    <div class="container mnarrow">
+      <div class="section__head">
+        <h2 id="price-heading">Massage Prices in Mahipalpur</h2>
+        <p>The complete menu. These are the full prices - there is nothing added on arrival.</p>
+      </div>
+
+      <table class="mtable mtable--price">
+        <caption class="sr-only">Treatment prices and session lengths</caption>
+        <thead>
+          <tr>
+            <th scope="col">Treatment</th>
+            <th scope="col">Duration</th>
+            <th scope="col">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            mahipalpurPrices.map((row) => (
+              <tr>
+                <th scope="row">{row.name}</th>
+                <td>{row.duration}</td>
+                <td class="mtable__amount">{row.price}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+
+      <div class="mfirst">
+        <div>
+          <h3>First Visit Massage</h3>
+          <p>
+            A full body massage with a shower, for guests booking with us for the first time. It
+            covers that one appointment; every other treatment is charged at the price above.
+          </p>
+        </div>
+        <p class="price mfirst__price">₹1,499</p>
+      </div>
+
+      <p class="mcentre">
+        <a class="btn btn--outline" href="/pricing/">See Full Pricing</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================= 10. WHAT TO EXPECT ==== -->
+  <section class="section" aria-labelledby="expect-heading">
+    <div class="container msplit">
+      <div>
+        <h2 id="expect-heading">What to Expect During Your Visit</h2>
+        <p>
+          You choose a treatment first - from the menu on this page, or by describing what you
+          are after and letting the team suggest something. Once the appointment is confirmed,
+          arrive at Northern Access Road a few minutes early so you are not starting the session
+          out of breath.
+        </p>
+        <p>
+          Before anything begins there is a short conversation: which treatment, how firm you
+          want the pressure, how long you have, and whether any area should be left alone. Then
+          you are shown to a private room and given time to get ready without anyone waiting on
+          you. During the massage you can speak up at any point - firmer, lighter, longer on the
+          shoulders, a warmer room. Afterwards, take a few minutes before heading out. There is
+          water, and nobody will move you along.
+        </p>
+      </div>
+      <ResponsivePhoto
+        photo={photo.room}
+        smallWidth={620}
+        sizes="(min-width: 900px) 480px, 92vw"
+        class="msplit__img"
+      />
+    </div>
+  </section>
+
+  <!-- ===================================== 11. CLEANLINESS & COMFORT ===== -->
+  <section class="section section--mint" aria-labelledby="care-heading">
+    <div class="container msplit msplit--reverse">
+      <ResponsivePhoto
+        photo={photo.lounge}
+        smallWidth={500}
+        sizes="(min-width: 900px) 480px, 92vw"
+        class="msplit__img"
+      />
+      <div>
+        <h2 id="care-heading">Cleanliness, Privacy &amp; Guest Comfort</h2>
+        <p>
+          Every treatment is given in a private room, and the room is cleaned and reset with
+          fresh linen between guests. Shower facilities are on site, and there is somewhere to
+          sit quietly before and after your session rather than waiting in a corridor.
+        </p>
+        <p>
+          Comfort is mostly a matter of being asked and being listened to. The therapist checks
+          the pressure as they work and adjusts when you say so; you are covered except for the
+          area being worked on; and anything you would rather not have touched is noted before
+          the session, not discovered during it. If something is not right - the room, the
+          temperature, the music, the pressure - saying so is the expected thing to do, and it
+          gets changed.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== 12. WHY GUESTS CHOOSE ==== -->
+  <section class="section" aria-labelledby="why-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="why-heading">Why Guests Choose Our Mahipalpur Location</h2>
+      </div>
+      <ul class="mreasons">
+        {
+          mahipalpurReasons.map((reason) => (
+            <li class="mreason">
+              <h3>{reason.title}</h3>
+              <p>{reason.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================ 13. LOCATION & MAP ===== -->
+  <!--
+    The map is the real Google Business listing, addressed by CID, exactly as
+    on /contact/. It is below the written address, lazy, and titled, so it can
+    never hold up the content above it.
+  -->
+  <section class="section section--cream" aria-labelledby="visit-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="visit-heading">Visit Our Spa in Mahipalpur</h2>
+      </div>
+
+      <div class="mvisit">
+        <dl class="mvisit__facts">
+          <div>
+            <dt>Address</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd><a href={telHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>Email</dt>
+            <dd><a href={mailHref}>{site.email}</a></dd>
+          </div>
+          <div>
+            <dt>Opening hours</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+        </dl>
+
+        <div class="mvisit__actions">
+          <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+            Get Directions
+          </a>
+          <a class="btn btn--outline" href={telHref}>Call Now</a>
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I would like to book a massage at your Mahipalpur location."
+          />
+        </div>
+      </div>
+
+      <iframe
+        class="mmap"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1200"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+
+  <!-- ================================================= 14. HOW TO BOOK === -->
+  <section class="section" aria-labelledby="book-heading">
+    <div class="container mnarrow">
+      <div class="section__head">
+        <h2 id="book-heading">How to Book a Massage in Mahipalpur</h2>
+      </div>
+
+      <ol class="msteps">
+        {
+          mahipalpurSteps.map((step) => (
+            <li class="mstep">
+              <span class="mstep__n" aria-hidden="true">
+                {step.step}
+              </span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="mcentre">
+        <a class="btn btn--outline" href="/contact/">Use the Contact Form</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================================== 15. FAQ ==== -->
+  <section class="section section--cream" aria-labelledby="faq-heading">
+    <div class="container mnarrow">
+      <div class="section__head">
+        <h2 id="faq-heading">Frequently Asked Questions</h2>
+      </div>
+      <FAQ faqs={mahipalpurFaqs} questionTag="h3" />
+    </div>
+  </section>
+
+  <!-- ================================================== CLOSING CTA ====== -->
+  <section class="section section--dark">
+    <div class="container text-center">
+      <h2>Book a Massage in Mahipalpur</h2>
+      <p class="mlead">
+        Send the treatment and the day you have in mind and we will reply with what is free.
+        Not sure which to pick? Tell us how long you have.
+      </p>
+      <div class="mcta">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I would like to book a massage in Mahipalpur."
+        />
+        <a class="btn btn--light" href={telHref}>Call {site.phone}</a>
+      </div>
+      <p class="mfootlinks">
+        <a href="/">Home</a>
+        <span aria-hidden="true">&middot;</span>
+        <a href="/services/">Massage Services</a>
+        <span aria-hidden="true">&middot;</span>
+        <a href="/pricing/">Pricing</a>
+        <span aria-hidden="true">&middot;</span>
+        <a href="/gallery/">Gallery</a>
+        <span aria-hidden="true">&middot;</span>
+        <a href="/contact/">Contact</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ------------------------------------------------------------- 1. hero */
+  .mhero {
+    padding-bottom: var(--section-y);
+  }
+
+  .mhero__banner {
+    /* Full-bleed inside the centred layout. */
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .mhero__banner :global(.mhero__img) {
+    width: 100%;
+    height: clamp(230px, 34vw, 470px);
+    object-fit: cover;
+  }
+
+  /*
+   * The copy card rides up over the lower edge of the banner. The negative
+   * margin is the whole effect, so it is clamped rather than fixed - on a
+   * phone the banner is short and a big overlap would swallow it.
+   */
+  .mhero__card {
+    position: relative;
+    margin-top: clamp(-4.5rem, -3rem - 3vw, -1.75rem);
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg) var(--radius-sm) var(--radius-lg) var(--radius-sm);
+    box-shadow: var(--shadow);
+    padding: clamp(1.4rem, 1rem + 2vw, 2.75rem);
+    max-width: 880px;
+  }
+
+  .mhero__lead {
+    margin-top: 0.9rem;
+    max-width: 68ch;
+  }
+
+  .mhero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 1.6rem;
+  }
+
+  /* --------------------------------------------------------- facts strip */
+  .mfacts {
+    background: var(--green-800);
+    color: rgba(255, 255, 255, 0.92);
+    padding-block: 1.4rem;
+  }
+
+  .mfacts__grid {
+    display: grid;
+    gap: 1.1rem;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+
+  .mfacts__k {
+    font-family: var(--font-display);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: var(--green-100);
+    margin-bottom: 0.15rem;
+  }
+
+  .mfacts__v {
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  .mfacts__v a {
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------ shared: narrow */
+  .mnarrow {
+    max-width: 860px;
+  }
+
+  .mnarrow > h2 {
+    color: var(--green-700);
+    margin-bottom: 1rem;
+  }
+
+  .mnarrow p + p {
+    margin-top: 0.9rem;
+  }
+
+  .mnarrow a:not(.btn) {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------ 3. photo strip */
+  .mstrip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .mstrip :global(.mstrip__img) {
+    width: 100%;
+    height: clamp(120px, 13vw, 180px);
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+  }
+
+  /* ------------------------------------------------------- 3. menu list */
+  .mmenu {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  }
+
+  .mitem {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--green-500);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .mitem__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .mitem__head h3 {
+    color: var(--green-700);
+  }
+
+  .mitem__price {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .mitem__price span {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--gold);
+  }
+
+  .mitem__price small {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .mitem__body {
+    color: var(--muted);
+    flex: 1;
+  }
+
+  /* `align-self` keeps the button at its own width, not the card's. */
+  .mitem :global(.btn) {
+    align-self: flex-start;
+  }
+
+  /* ------------------------------------------------------ split sections */
+  .msplit {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .msplit {
+      grid-template-columns: 1fr 1.1fr;
+    }
+
+    .msplit--reverse > *:first-child {
+      order: 2;
+    }
+  }
+
+  .msplit h2 {
+    color: var(--green-700);
+    margin-bottom: 1rem;
+  }
+
+  .msplit p + p {
+    margin-top: 0.9rem;
+  }
+
+  .msplit :global(.msplit__img) {
+    width: 100%;
+    height: clamp(240px, 30vw, 400px);
+    object-fit: cover;
+    border-radius: var(--radius-lg) var(--radius-sm) var(--radius-lg) var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ---------------------------------------------------------- 6/9. tables */
+  .mtable {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mtable th,
+  .mtable td {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--line);
+    font-weight: 400;
+  }
+
+  .mtable thead th {
+    background: var(--green-800);
+    color: var(--white);
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.76rem;
+  }
+
+  .mtable tbody th {
+    color: var(--ink);
+  }
+
+  .mtable tbody td {
+    color: var(--green-700);
+    font-family: var(--font-display);
+  }
+
+  .mtable tbody tr:last-child th,
+  .mtable tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .mtable--price .mtable__amount {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* -------------------------------------------------------- 9. first visit */
+  .mfirst {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    margin-top: 1.75rem;
+    padding: 1.4rem 1.5rem;
+    background: var(--white);
+    border: 1px dashed var(--gold);
+    border-radius: var(--radius);
+  }
+
+  .mfirst h3 {
+    color: var(--green-700);
+    margin-bottom: 0.3rem;
+  }
+
+  .mfirst p {
+    color: var(--muted);
+    margin: 0;
+    max-width: 56ch;
+  }
+
+  .mfirst__price {
+    font-size: clamp(1.7rem, 1.2rem + 1.6vw, 2.4rem);
+    color: var(--gold);
+  }
+
+  .mcentre {
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  /* ------------------------------------------------------- 12. reasons */
+  .mreasons {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  }
+
+  .mreason {
+    background: var(--green-050);
+    border-radius: var(--radius-sm);
+    padding: 1.2rem 1.3rem;
+  }
+
+  .mreason h3 {
+    color: var(--green-700);
+    margin-bottom: 0.35rem;
+  }
+
+  .mreason p {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* -------------------------------------------------------- 13. location */
+  .mvisit {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: clamp(1.25rem, 1rem + 1.4vw, 2rem);
+  }
+
+  .mvisit__facts {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    margin: 0 0 1.5rem;
+  }
+
+  .mvisit__facts dt {
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    color: var(--green-600);
+    margin-bottom: 0.2rem;
+  }
+
+  .mvisit__facts dd {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+
+  .mvisit__facts a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .mvisit__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .mmap {
+    width: 100%;
+    height: clamp(280px, 34vw, 420px);
+    margin-top: 1.5rem;
+    border: 0;
+    border-radius: var(--radius);
+    display: block;
+  }
+
+  /* ----------------------------------------------------------- 14. steps */
+  .msteps {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .mstep {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.2rem;
+  }
+
+  .mstep__n {
+    flex: none;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    line-height: 1;
+    color: var(--green-100);
+  }
+
+  .mstep h3 {
+    color: var(--green-700);
+    margin-bottom: 0.2rem;
+  }
+
+  .mstep p {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ------------------------------------------------------- closing band */
+  .mlead {
+    max-width: 62ch;
+    margin: 1rem auto 0;
+  }
+
+  .mcta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.85rem;
+    margin-top: 1.75rem;
+  }
+
+  .mfootlinks {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.7rem;
+    font-size: 0.86rem;
+  }
+
+  .mfootlinks a {
+    color: var(--white);
+    text-decoration: underline;
+  }
+</style>

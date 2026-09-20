@@ -1,0 +1,79 @@
+---
+/**
+ * One location photo, served as <picture> with the generated WebP and
+ * small-screen copies.
+ *
+ * WHY THIS EXISTS
+ * The <picture> + <source> + srcset block is eleven lines of markup, and the
+ * outlet pages were repeating it verbatim for every photo - the Aerocity page
+ * alone carries it eight times, twice with variants() called three times over
+ * on the same path. This wraps it once so a page can write:
+ *
+ *   <ResponsivePhoto photo={mahipalpurImages.banya} smallWidth={620}
+ *                    sizes="(min-width: 900px) 520px, 92vw" />
+ *
+ * It only knows about the naming convention that
+ * scripts/optimize-gallery-images.mjs writes (name.webp, name-sm.jpg,
+ * name-sm.webp beside name.jpg). variants() returns the original path in all
+ * four slots for anything that is not a .jpg, so passing a .webp or a remote
+ * URL degrades to a single plain <img> rather than breaking.
+ *
+ * It is NOT retrofitted onto the existing Aerocity, Gurgaon or Vasant Kunj
+ * pages here - those work, and rewriting them is a separate change.
+ */
+import { variants, srcSet } from '../utils/image';
+import type { SiteImage } from '../utils/image';
+
+interface Props {
+  /** The photo, from a page's image manifest. */
+  photo: SiteImage;
+  /**
+   * Width of the generated narrow copy for this section folder - it must match
+   * the section's entry in SMALL_WIDTH in the optimiser script, otherwise the
+   * browser is told a width the file does not have.
+   */
+  smallWidth: number;
+  /** The `sizes` attribute. Always pass one; the default is a poor guess. */
+  sizes?: string;
+  /** Eager + high priority for the one above-the-fold hero image. */
+  priority?: boolean;
+  /** Extra class on the <img>. */
+  class?: string;
+}
+
+const {
+  photo,
+  smallWidth,
+  sizes = '100vw',
+  priority = false,
+  class: className = '',
+} = Astro.props;
+
+const art = variants(photo.src);
+/* True when the optimiser produced no variants (non-.jpg source). */
+const plain = art.webp === photo.src;
+---
+
+<picture>
+  {
+    !plain && (
+      <source
+        type="image/webp"
+        srcset={srcSet(art.webpSmall, art.webp, smallWidth, photo.width)}
+        sizes={sizes}
+      />
+    )
+  }
+  <img
+    class={className}
+    src={photo.src}
+    srcset={plain ? undefined : srcSet(art.jpgSmall, photo.src, smallWidth, photo.width)}
+    sizes={plain ? undefined : sizes}
+    alt={photo.alt}
+    width={photo.width}
+    height={photo.height}
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : undefined}
+    decoding={priority ? undefined : 'async'}
+  />
+</picture>

@@ -3,9 +3,10 @@
 ├── russian-spa-in-vasant-kunj/
 ├── russian-spa-in-gurgaon/
 ├── russian-spa-in-dwarka/
+├── russian-spa-in-karol-bagh/
+
 ├── russian-spa-in-saket/
 ├── russian-spa-in-hauz-khas/
-├── russian-spa-in-karol-bagh/
 ├── russian-spa-in-defence-colony/
 ├── russian-spa-in-lajpat-nagar/
 ├── russian-spa-in-south-extension/
@@ -13,3 +14,18 @@
 ├── russian-spa-in-malviya-nagar/
 ├── russian-spa-in-noida/
 └── russian-spa-in-connaught-place/
+
+
+
+now see teh deisn of the home page now make
+ teh location based now make the page 1 
+ russian-spa-in-aerocity/ and teh page 
+ asets us etake online images first 
+ download and public\images\locations 
+ make teh aerocitu folder and store  -> 
+ more sectional based folder ok like galalry 
+ folder ok.         and  as per the giveen
+  content write the content ok verify teh
+   content shoudk not copy paset form teh
+    other site if some mistake than you can
+     make teh correct tion ok.
