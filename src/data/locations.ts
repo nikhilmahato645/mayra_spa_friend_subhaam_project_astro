@@ -117,7 +117,9 @@ export const primeLocations: PrimeLocation[] = [
     name: 'Spa in Connaught Place',
     description:
       'Looking for a relaxing spa in Connaught Place? Step away from the busy streets of CP and enjoy a peaceful massage experience with Thai, Aroma and Couples Massage therapies. Our trained therapists provide personalized treatments in clean, comfortable and calming spa rooms, making it easy to unwind and refresh after a busy day in Delhi.',
-    href: '/contact/',
+    /* Points at the Connaught Place search-intent page now that it exists -
+       it was /contact/ only because the page had not been written yet. */
+    href: '/russian-spa-in-connaught-place/',
     image: 'primeConnaughtPlace',
   },
   {
@@ -131,7 +133,7 @@ export const primeLocations: PrimeLocation[] = [
     name: 'Spa in Malviya Nagar',
     description:
       'Looking for a relaxing spa in Malviya Nagar? Take a break from your busy routine and enjoy Thai, Aroma and Full Body Massage therapies designed for relaxation and comfort. Our trained therapists provide personalized treatments in clean, comfortable and hygienic spa rooms, helping you release everyday tension and feel refreshed.',
-    href: '/contact/',
+    href: '/russian-spa-in-malviya-nagar/',
     image: 'primeMalviyaNagar',
   },
   {
@@ -145,7 +147,7 @@ export const primeLocations: PrimeLocation[] = [
     name: 'Spa in Defence Colony',
     description:
       'Looking for a relaxing spa in Defence Colony? Enjoy Thai, Ayurvedic-inspired and other relaxing massage therapies in a clean, comfortable environment. Our trained therapists provide personalized treatments focused on relaxation and well-being. Conveniently located for South Delhi guests, we offer flexible appointments for a refreshing break.',
-    href: '/contact/',
+    href: '/russian-spa-in-defence-colony/',
     image: 'primeDefenceColony',
   },
 ];

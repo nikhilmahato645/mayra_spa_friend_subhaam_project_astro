@@ -1,0 +1,1397 @@
+---
+/**
+ * LOCATION PAGE - /russian-spa-in-malviya-nagar/
+ *
+ * A SERVICE-AREA PAGE, NOT A BRANCH PAGE
+ *
+ * The business has one address, in Aerocity (see `site.address`). Malviya
+ * Nagar is a target area, so this page targets that search intent while
+ * saying plainly where we actually are. The map points at the real Google
+ * Business Profile, the address block shows the real address, and there is no
+ * second LocalBusiness in the structured data. See the header comment in
+ * src/data/malviya-nagar.ts for the full list of what must never appear here.
+ *
+ * HOW THE LAYOUT DIFFERS FROM THE OTHER LOCATION PAGES
+ *
+ * Aerocity opens with a split hero, then narrow prose, photographed treatment
+ * cards, a banya split-band, a facilities list beside photos, a price table
+ * and numbered step cards. Defence Colony runs a stacked hero, a sticky
+ * at-a-glance card, numbered text tiles, a dark banya band, an icon grid and
+ * leader-dot price rows. This page is built differently again:
+ *   - a hero whose two columns sit on top of a full-width facts bar;
+ *   - the intro followed by a three-family menu strip with vertical rules;
+ *   - treatment cards labelled by family, with a gold rule across the top;
+ *   - the banya on a mint band, its four stages as a horizontal timeline;
+ *   - the preference section as a hairline-separated checklist panel;
+ *   - the nearby areas as outline pills, and the local-search block as its
+ *     own bordered note rather than a sidebar;
+ *   - facilities as horizontal icon rows in two columns;
+ *   - prices as a two-column ledger, not a table and not leader dots;
+ *   - booking steps as a compact two-column numbered list.
+ * Same brand colours, type and components. Different page.
+ *
+ * ALL COPY lives in src/data/malviya-nagar.ts. Do not write prose into this
+ * file.
+ *
+ * IMAGES: five remote Unsplash photos (hence usesUnsplash), in a combination
+ * and order used on no other page. See the images note in the data file.
+ *
+ * STRUCTURED DATA: BaseLayout already emits DaySpa + WebSite + WebPage for
+ * every page, so this one adds only what is visible on it - breadcrumbs, the
+ * FAQ verbatim, and a Service whose areaServed is Malviya Nagar. No second
+ * LocalBusiness, no Malviya Nagar address, no rating, no reviews.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import { site, telHref } from '../../data/site';
+import {
+  malviyaNagarMeta,
+  malviyaNagarImages,
+  malviyaNagarFamilies,
+  malviyaNagarTreatments,
+  malviyaNagarBanyaStages,
+  malviyaNagarPrices,
+  malviyaNagarFacilities,
+  malviyaNagarChoices,
+  malviyaNagarExpectations,
+  malviyaNagarSteps,
+  malviyaNagarFaqs,
+} from '../../data/malviya-nagar';
+import { srcSet } from '../../utils/image';
+import type { SiteImage } from '../../utils/image';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Malviya Nagar', href: '/russian-spa-in-malviya-nagar/' },
+]);
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(malviyaNagarFaqs),
+  serviceSchema({
+    name: 'Russian spa and body massage for Malviya Nagar guests',
+    description: malviyaNagarMeta.description,
+    url: `${site.url}/russian-spa-in-malviya-nagar/`,
+    areaServed: 'Malviya Nagar, New Delhi',
+  }),
+];
+
+/*
+ * The same embed the contact, Aerocity and Defence Colony pages build: the
+ * Google Business Profile addressed by its CID. No hand-written latitude or
+ * longitude, no API key in the front end, and the pin is the real address -
+ * there is no Malviya Nagar pin to place.
+ */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+
+/**
+ * Responsive art for a REMOTE photo.
+ *
+ * `variants()` in src/utils/image.ts only does anything for a local gallery
+ * .jpg - it hands a remote URL straight back, which would leave every phone
+ * downloading the full-width file. The Unsplash CDN resizes on demand from
+ * the w= and h= parameters `stock()` already put in the URL, so asking it for
+ * a narrow copy means rewriting those two numbers. Delete this and go back to
+ * `variants()` once these become localImage() calls.
+ */
+const SMALL_WIDTH = 740;
+
+function remoteArt(photo: SiteImage) {
+  const small = photo.src
+    .replace(/([?&]w=)\d+/, `$1${SMALL_WIDTH}`)
+    .replace(/([?&]h=)\d+/, `$1${Math.round((photo.height / photo.width) * SMALL_WIDTH)}`);
+  return { small, set: srcSet(small, photo.src, SMALL_WIDTH, photo.width) };
+}
+
+/** Named once, in one place, rather than sprinkled through the prose. */
+const nearbyAreas = [
+  'Malviya Nagar',
+  'Saket',
+  'Hauz Khas',
+  'Green Park',
+  'Greater Kailash',
+  'Panchsheel Park',
+  'Vasant Kunj',
+  'Chhatarpur',
+];
+
+/** Inline SVG paths for the facilities rows, keyed by `icon` in the data. */
+const facilityIcons: Record<string, string> = {
+  room: 'M4 21V9l8-6 8 6v12h-6v-7h-4v7Z',
+  shower: 'M6 22V8a4 4 0 0 1 8 0h6M9 13v1m3 2v1m3-5v1m-6 6v1m6 2v1',
+  steam: 'M7 18c0-2 2-2 2-4s-2-2-2-4 2-2 2-4m4 12c0-2 2-2 2-4s-2-2-2-4 2-2 2-4M4 21h16',
+  sauna: 'M3 20h18M5 20V9h14v11M5 13h14M9 4h2m2 0h2',
+  hammam: 'M12 3v6m-7 3h14a0 0 0 0 1 0 0 7 7 0 0 1-14 0ZM7 20l1-2m9 2-1-2',
+  jacuzzi: 'M4 12h16v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4ZM8 12V6a2 2 0 0 1 4 0M2 12h20',
+};
+
+/** Ten prices, split down the middle for the two-column ledger. */
+const priceColumns = [
+  malviyaNagarPrices.slice(0, 5),
+  malviyaNagarPrices.slice(5),
+];
+
+const hero = malviyaNagarImages.hero;
+const heroArt = remoteArt(hero);
+const banyaArt = remoteArt(malviyaNagarImages.banya);
+const roomArt = remoteArt(malviyaNagarImages.room);
+const oilsArt = remoteArt(malviyaNagarImages.oils);
+const loungeArt = remoteArt(malviyaNagarImages.lounge);
+---
+
+<BaseLayout
+  title={malviyaNagarMeta.title}
+  description={malviyaNagarMeta.description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ===================================================== 1. HERO ====== -->
+  <!--
+    Two columns of copy and photo sitting on a full-width facts bar. The
+    photo is the Largest Contentful Paint, so it loads eagerly with
+    fetchpriority; everything below the fold is lazy.
+  -->
+  <section class="mn-hero">
+    <div class="container mn-hero__grid">
+      <div class="mn-hero__copy">
+        <p class="mn-hero__eyebrow">South Delhi service area</p>
+        <h1>Russian Spa in Malviya Nagar</h1>
+        <p class="mn-hero__sub">Body Massage &amp; Spa Services Near Malviya Nagar</p>
+        <p class="mn-hero__lead">
+          Searching for a massage around Malviya Nagar? Read through the treatments below, then
+          message or call to see what is free. Everything runs by appointment, and the address you
+          come to is our Aerocity one &mdash; set out in full further down this page.
+        </p>
+
+        <div class="mn-hero__actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I am in Malviya Nagar and would like to book a massage appointment."
+          />
+          <a class="btn btn--outline" href="#treatments-heading">Explore Massage Services</a>
+        </div>
+      </div>
+
+      <div class="mn-hero__media">
+        <!--
+          No <picture>/<source type="image/webp"> here: the CDN carries
+          auto=format and negotiates webp or avif from the Accept header, so
+          declaring a type would be a claim about bytes we do not control. A
+          plain srcset is both accurate and enough.
+        -->
+        <img
+          src={hero.src}
+          srcset={heroArt.set}
+          sizes="(min-width: 1000px) 560px, 92vw"
+          alt={hero.alt}
+          width={hero.width}
+          height={hero.height}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+
+    <div class="container">
+      <dl class="mn-facts">
+        <div>
+          <dt>Where we are</dt>
+          <dd>Aerocity, New Delhi &mdash; one address, no Malviya Nagar branch</dd>
+        </div>
+        <div>
+          <dt>Open</dt>
+          <dd>{site.openingHoursLabel}</dd>
+        </div>
+        <div>
+          <dt>Booking</dt>
+          <dd><a href={telHref}>{site.phone}</a> &mdash; call or WhatsApp</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ================================================ 2. INTRODUCTION ==== -->
+  <section class="section" aria-labelledby="intro-heading">
+    <div class="container mn-narrow">
+      <h2 id="intro-heading">Massage &amp; Spa Services Near Malviya Nagar</h2>
+      <p>
+        Malviya Nagar keeps long hours. Between the market lanes, the offices and the students
+        around it, the people who search from here tend to want one of two things: an hour where
+        nobody needs anything from them, or firm work on a back that has spent the week hunched
+        over a screen. The menu covers both, and you choose which before the session starts.
+      </p>
+      <p>
+        Whichever you pick, it happens in a private room at an agreed time. Nothing here is
+        walk-in: message or call, say roughly when suits you, and the team replies with the slots
+        that are genuinely open. Guests come to us from across South Delhi, so the earlier you
+        ask, the more choice of times you get.
+      </p>
+
+      <ul class="mn-families" aria-label="The three kinds of session on the menu">
+        {
+          malviyaNagarFamilies.map((family) => (
+            <li>
+              <h3>{family.name}</h3>
+              <p>{family.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================= 3. TREATMENTS ==== -->
+  <!--
+    Family-labelled cards under a gold rule. Aerocity photographs half its
+    treatment cards and Defence Colony numbers its; this page labels by the
+    three families introduced above, which is what ties the two sections.
+  -->
+  <section class="section section--cream" aria-labelledby="treatments-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="treatments-heading">Popular Massage Treatments</h2>
+        <p class="muted">
+          Six of the sessions guests book most often, grouped the same way as above. The rest of
+          the menu is on the services page.
+        </p>
+      </div>
+
+      <ul class="mn-cards">
+        {
+          malviyaNagarTreatments.map((treatment) => (
+            <li class="mn-card">
+              <p class="mn-card__family">{treatment.family}</p>
+              <h3 class="mn-card__name">{treatment.name}</h3>
+              <p class="mn-card__meta">
+                <span class="mn-card__price">{treatment.price}</span>
+                <span class="mn-card__dot" aria-hidden="true">
+                  &middot;
+                </span>
+                <span>{treatment.duration}</span>
+              </p>
+              <p class="mn-card__text">{treatment.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="mn-centre">
+        <a class="btn btn--outline" href="/services/">View All Massage Services</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 4. BANYA ==== -->
+  <!--
+    A mint band with the ritual laid out as a horizontal timeline. Aerocity
+    runs the banya as a light split; Defence Colony as a dark band with a
+    vertical list.
+  -->
+  <section class="section section--mint" aria-labelledby="banya-heading">
+    <div class="container mn-banya">
+      <div class="mn-banya__media">
+        <img
+          src={malviyaNagarImages.banya.src}
+          srcset={banyaArt.set}
+          sizes="(min-width: 960px) 440px, 92vw"
+          alt={malviyaNagarImages.banya.alt}
+          width={malviyaNagarImages.banya.width}
+          height={malviyaNagarImages.banya.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      <div class="mn-banya__copy">
+        <h2 id="banya-heading">Traditional Russian Banya Near Malviya Nagar</h2>
+        <p>
+          The banya is the part of the menu people ask about most, usually because they expect a
+          massage and it is not one. There is no table and no oil. It is a bathing ritual built
+          around heat, taken in rounds, with time out of the heat written into it.
+        </p>
+        <p>
+          The difference from a massage is the shape of the hour. A massage is one continuous
+          session on a table; the banya moves you between hot and cool several times, and the
+          pauses matter as much as the heat. It is also the least expensive treatment we offer, at
+          <strong>₹2,500 for 60 minutes</strong>.
+        </p>
+      </div>
+    </div>
+
+    <div class="container">
+      <ol class="mn-stages">
+        {
+          malviyaNagarBanyaStages.map((stage) => (
+            <li class="mn-stage">
+              <span class="mn-stage__num" aria-hidden="true">
+                {stage.stage}
+              </span>
+              <h3 class="mn-stage__title">{stage.title}</h3>
+              <p class="mn-stage__text">{stage.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================== 5. YOUR PREFERENCE == -->
+  <!--
+    A checklist of what the GUEST decides. Nothing here claims anything about
+    therapist training or certification - the project verifies none.
+  -->
+  <section class="section" aria-labelledby="preference-heading">
+    <div class="container mn-choose">
+      <div class="mn-choose__intro">
+        <h2 id="preference-heading">A Massage Experience Built Around Your Preference</h2>
+        <p>
+          The couple of minutes before the session begins do more for the hour than anything else.
+          That is when you say what you actually want, which is far easier than lying there hoping
+          the pressure changes on its own. Raise any of these at the start, or partway through if
+          something is not right.
+        </p>
+        <p class="muted mn-small">
+          Not sure which treatment fits? Describe what is bothering you when you book, and the team
+          will point you at something sensible rather than the longest thing on the list.
+        </p>
+      </div>
+
+      <ul class="mn-choices">
+        {
+          malviyaNagarChoices.map((choice) => (
+            <li class="mn-choice">
+              <h3 class="mn-choice__title">{choice.title}</h3>
+              <p class="mn-choice__text">{choice.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== 6. NEARBY AREAS == -->
+  <section class="section section--cream" aria-labelledby="nearby-heading">
+    <div class="container mn-narrow">
+      <h2 id="nearby-heading">Convenient for Malviya Nagar and Nearby South Delhi</h2>
+      <p>
+        South Delhi runs into itself. The colonies either side of Malviya Nagar share the same few
+        arterial roads, and most of our guests from this side of the city book a time rather than
+        chance a walk-in on a weekday evening.
+      </p>
+      <p>
+        Guests travelling from Malviya Nagar and nearby South Delhi neighbourhoods can contact us
+        to check availability, directions and appointment options. We run no branch in any of them
+        &mdash; every treatment takes place at the one Aerocity address, and how long the journey
+        takes depends entirely on your route and the hour you set off.
+      </p>
+
+      <ul class="mn-areas" aria-label="Areas guests travel from">
+        {nearbyAreas.map((area) => <li>{area}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================== 7. LOCAL SEARCH ====== -->
+  <section class="section" aria-labelledby="search-heading">
+    <div class="container mn-narrow">
+      <article class="mn-note">
+        <h2 id="search-heading">Spa Near Malviya Nagar &amp; South Delhi</h2>
+        <p>
+          A search for a spa near Malviya Nagar, a body massage in South Delhi or a massage near
+          Saket turns up plenty of businesses, several of them genuinely based in those colonies.
+          We are not one of those. Russian Spa Mahipalpur works from a single address in Aerocity,
+          the hotel district beside Indira Gandhi International Airport, and South Delhi guests
+          travel across to us.
+        </p>
+        <p>
+          That is worth knowing before you plan the trip rather than after. To confirm a time, a
+          treatment or the route, <a href="/contact/">contact us</a> directly, or read more
+          <a href="/about/">about our spa</a> first.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================== 8. FACILITIES ==== -->
+  <!--
+    Horizontal icon rows in two columns, with one photograph beside them.
+    Aerocity lists facilities in bordered cards beside two photos; Defence
+    Colony stacks icon above name in a six-up grid.
+  -->
+  <section class="section section--cream" aria-labelledby="facilities-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="facilities-heading">Spa Facilities</h2>
+        <p class="muted">
+          What is on site. Not every facility forms part of every treatment &mdash; the steam room
+          and the jacuzzi come with certain packages &mdash; so check what your booking includes
+          when you confirm it.
+        </p>
+      </div>
+
+      <div class="mn-fac-wrap">
+        <ul class="mn-facs">
+          {
+            malviyaNagarFacilities.map((facility) => (
+              <li class="mn-fac">
+                <span class="mn-fac__icon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d={facilityIcons[facility.icon]} />
+                  </svg>
+                </span>
+                <div class="mn-fac__body">
+                  <h3 class="mn-fac__name">{facility.name}</h3>
+                  <p class="mn-fac__text">{facility.body}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+
+        <img
+          class="mn-fac-photo"
+          src={malviyaNagarImages.room.src}
+          srcset={roomArt.set}
+          sizes="(min-width: 1000px) 360px, 92vw"
+          alt={malviyaNagarImages.room.alt}
+          width={malviyaNagarImages.room.width}
+          height={malviyaNagarImages.room.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== 9. PRICES ==== -->
+  <!--
+    A two-column ledger: five rows each side, price right-aligned against a
+    hairline. Aerocity uses a table, Defence Colony leader dots.
+  -->
+  <section class="section" aria-labelledby="prices-heading">
+    <div class="container mn-prices">
+      <div class="mn-prices__copy">
+        <h2 id="prices-heading">Massage Prices Near Malviya Nagar</h2>
+        <p class="muted">
+          The full individual menu. These are the same figures quoted when you book &mdash; there
+          is no separate rate by area, and nothing is added for travelling in.
+        </p>
+
+        <div class="mn-ledger">
+          {
+            priceColumns.map((column) => (
+              <ul class="mn-ledger__col">
+                {column.map((row) => (
+                  <li class="mn-row">
+                    <span class="mn-row__name">
+                      {row.name}
+                      <span class="mn-row__time">{row.duration}</span>
+                    </span>
+                    <span class="mn-row__price">{row.price}</span>
+                  </li>
+                ))}
+              </ul>
+            ))
+          }
+        </div>
+
+        <p class="mn-offer">
+          <strong>First visit full body massage &mdash; ₹1,499.</strong> An introductory price for
+          the full body massage on a first visit only. It does not apply to the treatments listed
+          above or to the packages, which are charged as shown.
+        </p>
+
+        <div class="mn-centre mn-centre--gap">
+          <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+          <a class="btn btn--outline" href="/gallery/">View Spa Gallery</a>
+        </div>
+      </div>
+
+      <div class="mn-prices__media">
+        <img
+          src={malviyaNagarImages.oils.src}
+          srcset={oilsArt.set}
+          sizes="(min-width: 1040px) 340px, 92vw"
+          alt={malviyaNagarImages.oils.alt}
+          width={malviyaNagarImages.oils.width}
+          height={malviyaNagarImages.oils.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== 10. EXPECT ==== -->
+  <section class="section section--cream" aria-labelledby="expect-heading">
+    <div class="container mn-narrow">
+      <h2 id="expect-heading">What Visitors Can Expect</h2>
+      <ul class="mn-ticks">
+        {malviyaNagarExpectations.map((point) => <li>{point}</li>)}
+      </ul>
+      <p class="muted mn-small">
+        None of the above is a ranking, an award or a claim about anyone else. It is simply what
+        this spa offers and what it charges.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================== 11. LOCATION ==== -->
+  <section class="section" aria-labelledby="visit-heading">
+    <div class="container mn-visit">
+      <div class="mn-visit__copy">
+        <h2 id="visit-heading">Location &amp; Directions</h2>
+        <p>
+          This page serves visitors searching for spa and massage services near Malviya Nagar.
+          Malviya Nagar is an area we serve, not an address we hold &mdash; please check the
+          verified address below before you travel.
+        </p>
+
+        <dl class="mn-details">
+          <div>
+            <dt>Address</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd><a href={telHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>WhatsApp</dt>
+            <dd>{site.phone} &mdash; same number, message any time</dd>
+          </div>
+          <div>
+            <dt>Opening hours</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+          <div>
+            <dt>Directions</dt>
+            <dd>
+              <a href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+                Open the route in Google Maps
+              </a>
+            </dd>
+          </div>
+        </dl>
+
+        <p class="muted mn-small">
+          Please book before you set off. Walk-ins depend entirely on what happens to be free when
+          you arrive.
+        </p>
+      </div>
+
+      <div class="mn-visit__media">
+        <img
+          src={malviyaNagarImages.lounge.src}
+          srcset={loungeArt.set}
+          sizes="(min-width: 960px) 440px, 92vw"
+          alt={malviyaNagarImages.lounge.alt}
+          width={malviyaNagarImages.lounge.width}
+          height={malviyaNagarImages.lounge.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 12. MAP ==== -->
+  <!--
+    Below the main content and lazy-loaded, so it never competes with the copy
+    above it. The text address and the Get Directions link work whether or not
+    the embed ever loads. The pin is the real business location - there is no
+    Malviya Nagar pin to place.
+  -->
+  <section class="section section--cream" aria-labelledby="map-heading">
+    <div class="container mn-narrow">
+      <div class="section__head">
+        <h2 id="map-heading">Find the Spa</h2>
+        <p class="muted">{site.addressLine}</p>
+      </div>
+
+      <div class="mn-centre">
+        <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Get Directions
+        </a>
+      </div>
+
+      <iframe
+        class="mn-map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1040"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+
+  <!-- ====================================================== 13. BOOK ==== -->
+  <section class="section" aria-labelledby="book-heading">
+    <div class="container mn-narrow">
+      <h2 id="book-heading">How to Book Your Massage</h2>
+      <p>
+        Five steps, no account and no deposit. Your slot is yours once the team confirms it, not
+        when you send the message.
+      </p>
+
+      <ol class="mn-steps">
+        {
+          malviyaNagarSteps.map((item) => (
+            <li class="mn-step">
+              <span class="mn-step__num" aria-hidden="true">
+                {item.step}
+              </span>
+              <div>
+                <h3 class="mn-step__title">{item.title}</h3>
+                <p class="mn-step__text">{item.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="mn-centre mn-centre--gap">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I would like to check availability for a massage appointment. I am travelling from Malviya Nagar."
+        />
+        <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 14. FAQ ==== -->
+  <section class="section section--cream" aria-labelledby="faq-heading">
+    <div class="container mn-narrow">
+      <div class="section__head">
+        <h2 id="faq-heading">Malviya Nagar &amp; South Delhi &mdash; Common Questions</h2>
+      </div>
+      <FAQ faqs={malviyaNagarFaqs} questionTag="h3" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .mn-narrow {
+    max-width: 880px;
+  }
+
+  .mn-narrow > h2,
+  .mn-narrow > p {
+    max-width: 74ch;
+  }
+
+  .mn-narrow > p {
+    margin-top: 1rem;
+  }
+
+  .mn-small {
+    font-size: 0.9rem;
+  }
+
+  .mn-centre {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .mn-centre--gap {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  /* ------------------------------------------------------------- 1. hero */
+  .mn-hero {
+    padding-top: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+    padding-bottom: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  .mn-hero__grid {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3.25rem);
+    align-items: center;
+  }
+
+  @media (min-width: 1000px) {
+    .mn-hero__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .mn-hero__eyebrow {
+    margin: 0 0 0.55rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .mn-hero h1 {
+    margin: 0;
+  }
+
+  .mn-hero__sub {
+    margin: 0.55rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
+    color: var(--green-700);
+  }
+
+  .mn-hero__lead {
+    margin: 1.1rem 0 0;
+    max-width: 56ch;
+  }
+
+  .mn-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.8rem;
+  }
+
+  .mn-hero__media img {
+    width: 100%;
+    aspect-ratio: 16 / 11;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  /* The bar the two hero columns sit on - this page's signature device. */
+  .mn-facts {
+    display: grid;
+    gap: 1px;
+    margin: clamp(1.75rem, 1.2rem + 2vw, 2.75rem) 0 0;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  @media (min-width: 760px) {
+    .mn-facts {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .mn-facts > div {
+    padding: 1.1rem 1.25rem;
+    background: var(--white);
+  }
+
+  .mn-facts dt {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .mn-facts dd {
+    margin: 0.35rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .mn-facts a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------------ 2. intro */
+  .mn-families {
+    display: grid;
+    gap: 1.25rem;
+    margin: 2.25rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 820px) {
+    .mn-families {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .mn-families > li + li {
+      border-left: 1px solid var(--line);
+      padding-left: 1.6rem;
+      margin-left: 1.6rem;
+    }
+  }
+
+  .mn-families h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  .mn-families p {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+
+  /* ------------------------------------------------------- 3. treatments */
+  .mn-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mn-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 1.4rem 1.3rem 1.5rem;
+    background: var(--white);
+    border-top: 3px solid var(--gold);
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mn-card__family {
+    margin: 0;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .mn-card__name {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--green-800);
+  }
+
+  .mn-card__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .mn-card__price {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--green-700);
+  }
+
+  .mn-card__dot {
+    color: var(--gold);
+  }
+
+  .mn-card__text {
+    margin: 0.2rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  /* ------------------------------------------------------------ 4. banya */
+  .mn-banya {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3rem);
+    align-items: center;
+  }
+
+  @media (min-width: 960px) {
+    .mn-banya {
+      grid-template-columns: 0.85fr 1.15fr;
+    }
+  }
+
+  .mn-banya__media img {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .mn-banya__copy h2 {
+    margin-top: 0;
+  }
+
+  .mn-banya__copy p {
+    margin: 1rem 0 0;
+  }
+
+  /* The four stages, as a horizontal timeline under the band. */
+  .mn-stages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin: clamp(2rem, 1.4rem + 2vw, 3rem) 0 0;
+    padding: 1.6rem 0 0;
+    border-top: 1px solid var(--green-100);
+    list-style: none;
+  }
+
+  .mn-stage {
+    position: relative;
+    padding-top: 0.9rem;
+  }
+
+  /* The dot that sits the item on the rule above it. */
+  .mn-stage::before {
+    content: '';
+    position: absolute;
+    top: -1.85rem;
+    left: 0;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  .mn-stage__num {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.14em;
+    color: var(--gold);
+  }
+
+  .mn-stage__title {
+    margin: 0.3rem 0 0.35rem;
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  .mn-stage__text {
+    margin: 0;
+    font-size: 0.87rem;
+    line-height: 1.65;
+  }
+
+  /* ------------------------------------------------------- 5. preference */
+  .mn-choose {
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
+    align-items: start;
+  }
+
+  @media (min-width: 980px) {
+    .mn-choose {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .mn-choose__intro h2 {
+    margin-top: 0;
+  }
+
+  .mn-choose__intro p {
+    margin: 1rem 0 0;
+  }
+
+  /* A hairline-separated panel, not a grid of cards. */
+  .mn-choices {
+    margin: 0;
+    padding: 0.4rem 1.4rem;
+    list-style: none;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mn-choice {
+    padding: 1rem 0;
+  }
+
+  .mn-choice + .mn-choice {
+    border-top: 1px solid var(--line);
+  }
+
+  .mn-choice__title {
+    margin: 0 0 0.25rem;
+    font-size: 0.95rem;
+    color: var(--green-800);
+  }
+
+  .mn-choice__text {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+
+  /* ------------------------------------------------------ 6. nearby areas */
+  .mn-areas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mn-areas li {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--green-800);
+    border: 1px solid var(--green-100);
+    border-radius: 999px;
+    background: var(--white);
+  }
+
+  /* ------------------------------------------------------- 7. local note */
+  .mn-note {
+    padding: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+    background: var(--green-050);
+    border-left: 3px solid var(--green-500);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  .mn-note h2 {
+    margin: 0;
+  }
+
+  .mn-note p {
+    margin: 1rem 0 0;
+    font-size: 0.95rem;
+  }
+
+  .mn-note a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------- 8. facilities */
+  .mn-fac-wrap {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    align-items: start;
+  }
+
+  @media (min-width: 1000px) {
+    .mn-fac-wrap {
+      grid-template-columns: 1fr 340px;
+    }
+  }
+
+  .mn-facs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+    gap: 1.1rem 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Icon beside the text, not above it. */
+  .mn-fac {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+  }
+
+  .mn-fac__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--green-700);
+    background: var(--white);
+    border: 1px solid var(--green-100);
+  }
+
+  .mn-fac__name {
+    margin: 0 0 0.2rem;
+    font-size: 0.97rem;
+    color: var(--green-800);
+  }
+
+  .mn-fac__text {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+
+  .mn-fac-photo {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ----------------------------------------------------------- 9. prices */
+  .mn-prices {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 2.75rem);
+    align-items: start;
+  }
+
+  @media (min-width: 1040px) {
+    .mn-prices {
+      grid-template-columns: 1fr 340px;
+    }
+  }
+
+  .mn-prices__copy h2 {
+    margin-top: 0;
+  }
+
+  .mn-prices__copy > p {
+    margin: 1rem 0 0;
+  }
+
+  .mn-ledger {
+    display: grid;
+    gap: 0 2.5rem;
+    margin-top: 1.75rem;
+  }
+
+  @media (min-width: 680px) {
+    .mn-ledger {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .mn-ledger__col {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mn-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mn-row__name {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.93rem;
+    color: var(--green-800);
+    font-weight: 500;
+  }
+
+  .mn-row__time {
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .mn-row__price {
+    flex: none;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--green-700);
+    white-space: nowrap;
+  }
+
+  .mn-offer {
+    margin: 1.75rem 0 0;
+    padding: 1rem 1.15rem;
+    background: var(--green-050);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  .mn-prices__media img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (min-width: 1040px) {
+    .mn-prices__media img {
+      aspect-ratio: 3 / 4;
+    }
+  }
+
+  /* ---------------------------------------------------------- 10. expect */
+  .mn-ticks {
+    display: grid;
+    gap: 0.7rem;
+    margin: 1.75rem 0 1.25rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 720px) {
+    .mn-ticks {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem 2rem;
+    }
+  }
+
+  .mn-ticks li {
+    position: relative;
+    padding-left: 1.6rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .mn-ticks li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.42em;
+    width: 0.55rem;
+    height: 0.3rem;
+    border-left: 2px solid var(--green-500);
+    border-bottom: 2px solid var(--green-500);
+    transform: rotate(-45deg);
+  }
+
+  /* -------------------------------------------------------- 11. location */
+  .mn-visit {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3rem);
+    align-items: center;
+  }
+
+  @media (min-width: 960px) {
+    .mn-visit {
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+  }
+
+  .mn-visit__copy h2 {
+    margin-top: 0;
+  }
+
+  .mn-visit__copy > p {
+    margin: 1rem 0 0;
+  }
+
+  .mn-visit__media img {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .mn-details {
+    display: grid;
+    gap: 1rem;
+    margin: 1.6rem 0 0;
+  }
+
+  @media (min-width: 620px) {
+    .mn-details {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .mn-details dt {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .mn-details dd {
+    margin: 0.25rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .mn-details a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------------- 12. map */
+  .mn-map {
+    display: block;
+    width: 100%;
+    height: clamp(300px, 38vw, 420px);
+    margin-top: 2rem;
+    border: 0;
+    border-radius: var(--radius);
+  }
+
+  /* ----------------------------------------------------------- 13. steps */
+  .mn-steps {
+    display: grid;
+    gap: 1rem 2.25rem;
+    margin: 1.9rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 760px) {
+    .mn-steps {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .mn-step {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+  }
+
+  .mn-step__num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--white);
+    background: var(--green-700);
+  }
+
+  .mn-step__title {
+    margin: 0.25rem 0 0.25rem;
+    font-size: 0.97rem;
+    color: var(--green-800);
+  }
+
+  .mn-step__text {
+    margin: 0;
+    font-size: 0.87rem;
+    line-height: 1.65;
+  }
+</style>

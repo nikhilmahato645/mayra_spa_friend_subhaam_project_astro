@@ -1,13 +1,1196 @@
 ---
 /**
- * LOCATION PAGE - /russian-spa-in-noida/
+ * NOIDA LANDING PAGE - /russian-spa-in-noida/
  *
- * All content for this page lives in src/data/locations.ts under the slug
- * below. Fill in `intro`, `sections` and `faqs` there, then remove this page
- * from src/data/drafts.mjs to publish it (lifts noindex + adds it to the
- * sitemap). Do not put copy in this file - keep every area in one data file.
+ * WHY THIS IS NOT A LocationLayout PAGE
+ *
+ * The remaining stub areas render the shared LocationLayout from their entry
+ * in src/data/locations.ts. Noida is written out in full instead, for the same
+ * reason Gurgaon is: there is no outlet there, so the page has to do a job the
+ * shared skeleton does not - target Noida search intent while saying plainly,
+ * more than once, that the spa is in Aerocity. LocationLayout is untouched and
+ * the other stub pages still use it.
+ *
+ * HOW THIS PAGE IS DIFFERENT TO LOOK AT
+ *   - a dark green banded hero with the photo overlapping its lower edge,
+ *     where every other page on the site opens on a light split hero;
+ *   - treatments as a numbered two column LIST, not a grid of photo cards;
+ *   - prices as a leader-dot list, not the <table> the Aerocity and Gurgaon
+ *     pages use;
+ *   - facilities as an icon grid;
+ *   - a gold-ruled disclosure panel that exists on no other page;
+ *   - its own `nd-` class prefix, so nothing here can collide with the
+ *     `ahero`/`tcard`/`kb-`/`sk-`/`hk`/`d` classes the other pages own.
+ *
+ * ALL COPY lives in src/data/noida.ts, including the notes on what may and may
+ * not be claimed here. Do not write prose into this file.
+ *
+ * STRUCTURED DATA: BaseLayout already emits DaySpa + WebSite + WebPage on
+ * every page, and its DaySpa carries the real Aerocity address. This page adds
+ * only what is visible on it - breadcrumbs, the FAQ verbatim, and a Service
+ * whose areaServed is Noida (an area served, which is true, not an address).
+ * No second LocalBusiness, no rating, no reviews.
  */
-import LocationLayout from '../../layouts/LocationLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import { site, telHref } from '../../data/site';
+import {
+  noidaMeta,
+  noidaImages,
+  noidaTreatments,
+  noidaStages,
+  noidaAreas,
+  noidaFacilities,
+  noidaPrices,
+  noidaPoints,
+  noidaSteps,
+  noidaFaqs,
+} from '../../data/noida';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Noida', href: '/russian-spa-in-noida/' },
+]);
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(noidaFaqs),
+  serviceSchema({
+    name: 'Russian spa and body massage for guests near Noida',
+    description: noidaMeta.description,
+    url: `${site.url}/russian-spa-in-noida/`,
+    areaServed: 'Noida',
+  }),
+];
+
+/*
+ * The same embed the contact and Aerocity pages build: the Google Business
+ * Profile addressed by its CID. No hand written latitude or longitude, no API
+ * key in the front end, and it can only ever resolve to the real address.
+ */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+
+/* Facility icons. Kept here rather than in the data file - the data file
+   stores a key, this is the drawing. All 24x24, all single path. */
+const icons: Record<string, string> = {
+  door: 'M6 2h12v20H6zm2 2v16h8V4zm6 7h1.5v2H14z',
+  drop: 'M12 2.7 7.8 7.9a6 6 0 1 0 8.4 0zm0 3.1 2.8 3.5a4 4 0 1 1-5.6 0z',
+  steam: 'M7 21v-6a5 5 0 0 1 10 0v6h-2v-6a3 3 0 0 0-6 0v6zm1-13c0-1.3 1-1.8 1-2.8S8 3.5 8 2.5h1.6c0 1 1 1.6 1 2.7S9.6 7 9.6 8zm4.8 0c0-1.3 1-1.8 1-2.8s-1-1.7-1-2.7h1.6c0 1 1 1.6 1 2.7s-1 1.5-1 2.8z',
+  flame: 'M12 2c3 3.4 4.5 6 4.5 8a4.5 4.5 0 0 1-9 0c0-1 .4-2 1.2-3.1.2 1.3.8 2 1.6 2.2-.3-2.4.2-4.7 1.7-7.1zM5 20h14v2H5z',
+  basin: 'M3 11h18v2a7 7 0 0 1-7 7h-4a7 7 0 0 1-7-7zm2 2v.1A5 5 0 0 0 10 18h4a5 5 0 0 0 5-4.9V13zm6-9h2v6h-2z',
+  waves: 'M2 8c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 5-2v2c-2.5 0-2.5 2-5 2s-2.5-2-5-2-2.5 2-5 2-2.5-2-5-2zm0 7c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 5-2v2c-2.5 0-2.5 2-5 2s-2.5-2-5-2-2.5 2-5 2-2.5-2-5-2z',
+};
+
+const hero = noidaImages.hero;
 ---
 
-<LocationLayout slug="russian-spa-in-noida" />
+<BaseLayout
+  title={noidaMeta.title}
+  description={noidaMeta.description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  bareTitle
+>
+  <!-- ===================================================== 1. HERO ====== -->
+  <!--
+    A dark band with the photograph hanging off its lower edge. The image is
+    the Largest Contentful Paint, so it is eager and high priority; the
+    breadcrumb sits inside the band in its light variant.
+  -->
+  <section class="nd-hero">
+    <div class="nd-hero__band">
+      <Breadcrumbs items={crumbs} light />
+      <div class="container nd-hero__inner">
+        <p class="nd-hero__eyebrow">Noida &amp; Delhi NCR &middot; by appointment</p>
+        <h1>Russian Spa in Noida</h1>
+        <p class="nd-hero__sub">Body Massage &amp; Spa Services Near Noida</p>
+        <p class="nd-hero__lead">
+          Searching for a massage or a spa session around Noida? Have a look through the treatment
+          styles below &mdash; oil work, clothed stretching and the traditional Russian banya
+          &mdash; then message us to check what is free. Our one spa is in Aerocity, New Delhi, and
+          the address and map are further down this page.
+        </p>
+        <div class="nd-hero__actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I am searching from Noida and would like to book a massage. What is available?"
+          />
+          <a class="btn btn--light" href="#treatments">Explore Massage Services</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <picture class="nd-hero__media">
+        <img
+          src={hero.src}
+          alt={hero.alt}
+          width={hero.width}
+          height={hero.height}
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        />
+      </picture>
+    </div>
+  </section>
+
+  <!-- ============================================= 2. NOIDA INTRO ======= -->
+  <section class="section" aria-labelledby="intro-heading">
+    <div class="container nd-intro">
+      <div class="nd-intro__copy">
+        <h2 id="intro-heading">Massage &amp; Spa Services for Guests Coming From Noida</h2>
+        <p>
+          Noida sends us a particular kind of guest: someone finishing a long day in one of the
+          office sectors, or driving back across the river, who would rather book an hour than spend
+          an evening deciding. So the menu is built around choice of style. Take a light, flowing
+          session with oil, ask for slow and firm work through the shoulders, stay clothed for
+          assisted stretching, or skip the table altogether and take a heat ritual instead.
+        </p>
+        <p>
+          Sessions run from 45 minutes to two hours, so an appointment can be sized to the journey
+          rather than the other way round. Every treatment is in a private room with fresh linen put
+          out for it, and everything is booked in advance. Guests travelling from Noida, Greater
+          Noida and the wider NCR are welcome to message first and ask what the team would suggest.
+        </p>
+      </div>
+
+      <aside class="nd-facts" aria-label="Key details">
+        <dl>
+          <div><dt>Spa location</dt><dd>Aerocity, New Delhi</dd></div>
+          <div><dt>Open</dt><dd>{site.openingHoursLabel.replace('Open all days, ', 'Every day, ')}</dd></div>
+          <div><dt>Sessions</dt><dd>45 to 120 minutes</dd></div>
+          <div><dt>Treatments</dt><dd>Ten, from ₹2,200</dd></div>
+          <div><dt>Booking</dt><dd><a href={telHref}>{site.phone}</a></dd></div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================================================ 3. TREATMENTS ===== -->
+  <section class="section section--cream" id="treatments" aria-labelledby="treatments-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="treatments-heading">Massage Treatments to Explore</h2>
+        <p class="muted">
+          Six of the styles guests ask about most. Each one is set out in full, with the rest of the
+          menu, on the services page.
+        </p>
+      </div>
+
+      <ol class="nd-list">
+        {
+          noidaTreatments.map((treatment) => (
+            <li class="nd-item">
+              <span class="nd-item__index" aria-hidden="true">
+                {treatment.index}
+              </span>
+              <div class="nd-item__main">
+                <h3>{treatment.name}</h3>
+                <p class="nd-item__text">{treatment.body}</p>
+              </div>
+              <p class="nd-item__meta">
+                <span class="nd-item__price">{treatment.price}</span>
+                <span class="nd-item__dur">{treatment.duration}</span>
+              </p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="nd-centre">
+        <a class="btn btn--outline" href="/services/">View All Massage Services</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 4. BANYA ===== -->
+  <section class="section section--dark nd-banya" aria-labelledby="banya-heading">
+    <div class="container nd-banya__grid">
+      <div class="nd-banya__media">
+        <img
+          src={noidaImages.banya.src}
+          alt={noidaImages.banya.alt}
+          width={noidaImages.banya.width}
+          height={noidaImages.banya.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div class="nd-banya__copy">
+        <h2 id="banya-heading">Traditional Russian Banya Near Noida</h2>
+        <p>
+          The banya is where the Russian in our name comes from, and the first thing to understand
+          is that it is not a massage. Nobody works along your back on a table for an hour. It is a
+          bathing ritual, run in stages, and the heat is what carries it.
+        </p>
+        <p>
+          You start by warming through in the dry heat and letting it build &mdash; the part most
+          first-timers try to rush. Once you are properly warm, the therapist works over you with a
+          birch venik, a bundle of leafy branches swept rhythmically across the skin so the heat and
+          the scent move with it. Cooling breaks are built into the middle rather than tacked on at
+          the end, so you step out, come back down, and go in again. Herbal tea closes it.
+        </p>
+        <p>
+          It suits anyone after something slower and more involved than an hour face-down, and at
+          <strong> ₹2,500 for 60 minutes</strong> it is the least expensive treatment we offer.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 5. THE SESSION ====== -->
+  <section class="section" aria-labelledby="session-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="session-heading">What a Full Body Massage Session Involves</h2>
+        <p class="muted">
+          A full body session works the back, shoulders, arms, legs and feet in turn at a pressure
+          settled on before it starts. Here is how the appointment itself runs.
+        </p>
+      </div>
+
+      <div class="nd-flow">
+        <ol class="nd-stages">
+          {
+            noidaStages.map((stage) => (
+              <li class="nd-stage">
+                <h3 class="nd-stage__label">{stage.label}</h3>
+                <p>{stage.body}</p>
+              </li>
+            ))
+          }
+        </ol>
+
+        <img
+          class="nd-flow__shot"
+          src={noidaImages.session.src}
+          alt={noidaImages.session.alt}
+          width={noidaImages.session.width}
+          height={noidaImages.session.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      <p class="nd-note">
+        Pressure is the thing worth speaking up about: firm need not mean uncomfortable, and a
+        therapist adjusts as soon as you say so. If you are booking for two,
+        <a href="/pricing/">view massage pricing</a> for what the couple&rsquo;s package includes.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================= 6. NOIDA AREAS === -->
+  <section class="section section--mint" aria-labelledby="areas-heading">
+    <div class="container nd-areas">
+      <div>
+        <h2 id="areas-heading">Travelling From Noida and Greater Noida</h2>
+        <p>
+          Guests reach us from across Noida, and the route matters more than the sector. Some come
+          over the DND, some take the Chilla road, and people on the southern side tend to join the
+          Expressway and come round. All of it lands in the same place: Aerocity, on the western
+          edge of Delhi beside the airport.
+        </p>
+        <p>
+          These are the areas our Noida guests most often set out from &mdash; they are places
+          people travel <em>from</em>, not addresses of ours. We have no premises in any of them,
+          and we do not publish a driving time for any of them either, because the honest answer
+          changes hour by hour. Message the team to check availability and to confirm the route
+          before you leave.
+        </p>
+      </div>
+
+      <ul class="nd-areas__list">
+        {noidaAreas.map((area) => <li>{area}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================ 7. NEAR NOIDA PANEL === -->
+  <section class="section section--tight" aria-labelledby="near-heading">
+    <div class="container">
+      <div class="nd-panel">
+        <h2 id="near-heading">Spa Near Noida &amp; Greater Noida</h2>
+        <p>
+          If you searched for a spa near Noida, a body massage near Noida or a Russian spa near
+          Greater Noida, this page is written for you &mdash; but it is not a page for a Noida
+          outlet, because there is not one. Russian Spa Mahipalpur trades from a single address:
+        </p>
+        <p class="nd-panel__address">{site.addressLine}</p>
+        <p>
+          That is the address on the map below and the only one there is &mdash; nothing here is
+          meant to suggest a second branch across the river. What the page does give you is what is
+          worth knowing before deciding the trip is worth making. You can also
+          <a href="/about/">read about our spa</a> or <a href="/gallery/">view the spa gallery</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================= 8. FACILITIES ==== -->
+  <section class="section section--cream" aria-labelledby="facilities-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="facilities-heading">Spa Facilities</h2>
+        <p class="muted">
+          Six things you will find on site. Two of them are tied to a particular booking rather than
+          offered with everything, and those are marked, so ask if one of them is the reason you are
+          coming.
+        </p>
+      </div>
+
+      <div class="nd-fac-wrap">
+        <ul class="nd-facs">
+          {
+            noidaFacilities.map((facility) => (
+              <li class="nd-fac">
+                <span class="nd-fac__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                    <path d={icons[facility.icon]} />
+                  </svg>
+                </span>
+                <h3 class="nd-fac__name">{facility.name}</h3>
+                <p class="nd-fac__text">{facility.body}</p>
+                {facility.note && <p class="nd-fac__note">{facility.note}</p>}
+              </li>
+            ))
+          }
+        </ul>
+
+        <img
+          class="nd-fac-shot"
+          src={noidaImages.steam.src}
+          alt={noidaImages.steam.alt}
+          width={noidaImages.steam.width}
+          height={noidaImages.steam.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== 9. PRICES ==== -->
+  <section class="section" aria-labelledby="prices-heading">
+    <div class="container nd-narrow">
+      <div class="section__head">
+        <h2 id="prices-heading">Massage Prices</h2>
+        <p class="muted">
+          The full menu. These are the figures quoted when you book &mdash; there is no separate
+          rate for guests arriving from Noida.
+        </p>
+      </div>
+
+      <ul class="nd-prices">
+        {
+          noidaPrices.map((row) => (
+            <li class="nd-price">
+              <span class="nd-price__name">{row.name}</span>
+              <span class="nd-price__rule" aria-hidden="true" />
+              <span class="nd-price__dur">{row.duration}</span>
+              <span class="nd-price__fig">{row.price}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="nd-offer">
+        <strong>First visit full body massage &mdash; ₹1,499.</strong> An introductory price
+        attached to that single treatment, and only on a first visit. Everything in the list above,
+        and both packages, stay at the figures shown against them.
+      </p>
+
+      <p class="nd-centre">
+        <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================================================== 10. POINTS ==== -->
+  <section class="section section--mint" aria-labelledby="points-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="points-heading">Why Visitors Consider This Spa</h2>
+      </div>
+
+      <ul class="nd-points">
+        {
+          noidaPoints.map((point) => (
+            <li class="nd-point">
+              <h3>{point.title}</h3>
+              <p>{point.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== 11. LOCATION ==== -->
+  <section class="section" aria-labelledby="visit-heading">
+    <div class="container nd-narrow">
+      <h2 id="visit-heading">Location &amp; Directions</h2>
+      <p>
+        This page is for guests searching for spa and massage services near Noida. Please check the
+        verified address below before setting off &mdash; the spa is in Aerocity, New Delhi, not in
+        Noida, and it is the only place we operate from.
+      </p>
+
+      <dl class="nd-details">
+        <div><dt>Address</dt><dd>{site.addressLine}</dd></div>
+        <div><dt>Phone</dt><dd><a href={telHref}>{site.phone}</a></dd></div>
+        <div><dt>WhatsApp</dt><dd>{site.phone} &mdash; same number, message any time</dd></div>
+        <div><dt>Opening hours</dt><dd>{site.openingHoursLabel}</dd></div>
+      </dl>
+
+      <p class="muted nd-small">
+        Book before you travel rather than after you arrive. For anything this page does not answer,
+        <a href="/contact/">contact us</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================================= 12. MAP ==== -->
+  <section class="section section--cream" aria-labelledby="map-heading">
+    <div class="container nd-narrow">
+      <div class="section__head">
+        <h2 id="map-heading">Find the Spa</h2>
+        <p class="muted">{site.addressLine}</p>
+      </div>
+
+      <p class="nd-centre">
+        <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Get Directions
+        </a>
+      </p>
+
+      <!--
+        Lazy-loaded and placed below the content, so it never competes with the
+        page for bandwidth, and the Get Directions link above works whether or
+        not the embed ever loads.
+      -->
+      <iframe
+        class="nd-map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1040"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+
+  <!-- =================================================== 13. BOOKING ==== -->
+  <section class="section" aria-labelledby="book-heading">
+    <div class="container nd-book">
+      <div class="nd-book__copy">
+        <h2 id="book-heading">How to Book Your Massage</h2>
+        <ol class="nd-steps">
+          {
+            noidaSteps.map((item) => (
+              <li class="nd-step">
+                <span class="nd-step__num" aria-hidden="true">
+                  {item.step}
+                </span>
+                <div>
+                  <h3 class="nd-step__title">{item.title}</h3>
+                  <p class="nd-step__text">{item.body}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="nd-book__actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I would like to book a massage appointment. I am travelling from Noida."
+          />
+          <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+        </div>
+      </div>
+
+      <img
+        class="nd-book__shot"
+        src={noidaImages.towels.src}
+        alt={noidaImages.towels.alt}
+        width={noidaImages.towels.width}
+        height={noidaImages.towels.height}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- ======================================================= 14. FAQ ==== -->
+  <section class="section section--cream" aria-labelledby="faq-heading">
+    <div class="container nd-narrow">
+      <div class="section__head">
+        <h2 id="faq-heading">Noida Guests &mdash; Frequently Asked Questions</h2>
+      </div>
+      <FAQ faqs={noidaFaqs} questionTag="h3" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nd-narrow {
+    max-width: 860px;
+  }
+
+  .nd-narrow > h2,
+  .nd-narrow > p {
+    max-width: 72ch;
+  }
+
+  .nd-narrow > p {
+    margin-top: 1rem;
+  }
+
+  .nd-centre {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .nd-small {
+    font-size: 0.9rem;
+  }
+
+  /* --------------------------------------------------------------- 1. hero */
+  .nd-hero {
+    padding-bottom: clamp(1.5rem, 1rem + 2vw, 3rem);
+  }
+
+  .nd-hero__band {
+    background: var(--green-800);
+    color: rgba(255, 255, 255, 0.86);
+    padding-bottom: clamp(4rem, 3rem + 7vw, 8.5rem);
+  }
+
+  .nd-hero__inner {
+    padding-top: clamp(1.75rem, 1.2rem + 2.4vw, 3.25rem);
+    max-width: 780px;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .nd-hero__eyebrow {
+    margin: 0 0 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .nd-hero h1 {
+    margin: 0;
+    color: var(--white);
+  }
+
+  .nd-hero__sub {
+    margin: 0.55rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .nd-hero__lead {
+    margin: 1.1rem auto 0;
+    max-width: 62ch;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .nd-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.9rem;
+  }
+
+  /* The photo hangs off the lower edge of the band. */
+  .nd-hero__media {
+    display: block;
+    margin-top: clamp(-7rem, -4.5rem - 5vw, -3rem);
+  }
+
+  .nd-hero__media img {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 640px) {
+    .nd-hero__media img {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  /* -------------------------------------------------------------- 2. intro */
+  .nd-intro {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+  }
+
+  @media (min-width: 900px) {
+    .nd-intro {
+      grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .nd-intro__copy h2 {
+    margin-top: 0;
+  }
+
+  .nd-intro__copy p {
+    margin-top: 1rem;
+  }
+
+  .nd-facts {
+    background: var(--green-050);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold);
+    border-radius: var(--radius);
+    padding: clamp(1.1rem, 0.9rem + 0.8vw, 1.6rem);
+  }
+
+  .nd-facts dl {
+    margin: 0;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .nd-facts div + div {
+    border-top: 1px solid var(--line);
+    padding-top: 0.85rem;
+  }
+
+  .nd-facts dt {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .nd-facts dd {
+    margin: 0.2rem 0 0;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* --------------------------------------------------------- 3. treatments */
+  .nd-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+
+  @media (min-width: 920px) {
+    .nd-list {
+      grid-template-columns: 1fr 1fr;
+      column-gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+    }
+  }
+
+  .nd-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.35rem 1rem;
+    padding: 1.35rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nd-item__index {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gold);
+    padding-top: 0.2rem;
+  }
+
+  .nd-item__main h3 {
+    margin: 0;
+    color: var(--green-700);
+  }
+
+  .nd-item__text {
+    margin: 0.5rem 0 0;
+    font-size: 0.9rem;
+  }
+
+  .nd-item__meta {
+    grid-column: 2;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 0.7rem 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .nd-item__price {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--green-700);
+  }
+
+  .nd-item__dur::before {
+    content: '/ ';
+  }
+
+  /* --------------------------------------------------------------- 4. banya */
+  .nd-banya__grid {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3.25rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .nd-banya__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    }
+  }
+
+  .nd-banya__media img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  .nd-banya__copy p {
+    margin-top: 1rem;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .nd-banya__copy h2 {
+    margin: 0;
+  }
+
+  /* ------------------------------------------------------------- 5. session */
+  .nd-flow {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.5vw, 2.75rem);
+  }
+
+  @media (min-width: 980px) {
+    .nd-flow {
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+
+  .nd-stages {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .nd-stages {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .nd-stage {
+    position: relative;
+    padding-left: 1.1rem;
+    border-left: 2px solid var(--green-100);
+  }
+
+  .nd-stage::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 0.35rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  .nd-stage__label {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--green-700);
+  }
+
+  .nd-stage p {
+    margin: 0.45rem 0 0;
+    font-size: 0.88rem;
+  }
+
+  .nd-flow__shot {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  .nd-note {
+    max-width: 78ch;
+    margin: clamp(1.5rem, 1.2rem + 1vw, 2.25rem) auto 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  /* --------------------------------------------------------------- 6. areas */
+  .nd-areas {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+  }
+
+  @media (min-width: 900px) {
+    .nd-areas {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .nd-areas h2 {
+    margin-top: 0;
+  }
+
+  .nd-areas p {
+    margin-top: 1rem;
+  }
+
+  .nd-areas__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.1rem 1rem;
+  }
+
+  .nd-areas__list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--green-700);
+  }
+
+  /* --------------------------------------------------------------- 7. panel */
+  .nd-panel {
+    max-width: 900px;
+    margin-inline: auto;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--gold);
+    border-radius: var(--radius);
+    padding: clamp(1.4rem, 1.1rem + 1.6vw, 2.5rem);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .nd-panel h2 {
+    margin-top: 0;
+  }
+
+  .nd-panel p {
+    margin-top: 1rem;
+  }
+
+  .nd-panel__address {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--green-700);
+  }
+
+  /* ---------------------------------------------------------- 8. facilities */
+  .nd-fac-wrap {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.5vw, 2.75rem);
+  }
+
+  @media (min-width: 1000px) {
+    .nd-fac-wrap {
+      grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+
+  .nd-facs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+
+  .nd-fac {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 1.1rem;
+  }
+
+  .nd-fac__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--green-050);
+    color: var(--green-700);
+  }
+
+  .nd-fac__name {
+    margin: 0.7rem 0 0;
+    font-size: 0.95rem;
+    color: var(--green-700);
+  }
+
+  .nd-fac__text {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+  }
+
+  .nd-fac__note {
+    margin: 0.55rem 0 0;
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .nd-fac-shot {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  /* -------------------------------------------------------------- 9. prices */
+  .nd-prices {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .nd-price {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.7rem 0;
+  }
+
+  .nd-price + .nd-price {
+    border-top: 1px solid var(--line);
+  }
+
+  .nd-price__name {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .nd-price__rule {
+    border-bottom: 1px dotted var(--line);
+    transform: translateY(-0.25rem);
+  }
+
+  .nd-price__dur {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .nd-price__fig {
+    min-width: 4.5rem;
+    text-align: right;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--green-700);
+  }
+
+  @media (max-width: 520px) {
+    .nd-price {
+      grid-template-columns: 1fr auto;
+      gap: 0.2rem 0.6rem;
+    }
+
+    .nd-price__rule {
+      display: none;
+    }
+
+    .nd-price__dur {
+      grid-column: 1;
+    }
+  }
+
+  .nd-offer {
+    margin-top: 1.75rem;
+    background: var(--green-050);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.15rem;
+    font-size: 0.88rem;
+  }
+
+  /* -------------------------------------------------------------- 10. points */
+  .nd-points {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(1rem, 0.8rem + 1vw, 1.75rem);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .nd-point h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--green-700);
+  }
+
+  .nd-point p {
+    margin: 0.4rem 0 0;
+    font-size: 0.88rem;
+  }
+
+  /* ------------------------------------------------------------ 11. details */
+  .nd-details {
+    margin: 1.75rem 0 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .nd-details div {
+    display: grid;
+    gap: 0.15rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  @media (min-width: 620px) {
+    .nd-details div {
+      grid-template-columns: 170px minmax(0, 1fr);
+      gap: 1rem;
+    }
+  }
+
+  .nd-details dt {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 0.15rem;
+  }
+
+  .nd-details dd {
+    margin: 0;
+  }
+
+  /* ----------------------------------------------------------------- 12. map */
+  .nd-map {
+    display: block;
+    width: 100%;
+    height: clamp(280px, 40vw, 420px);
+    margin-top: 2rem;
+    border: 0;
+    border-radius: var(--radius);
+  }
+
+  /* ------------------------------------------------------------- 13. booking */
+  .nd-book {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+  }
+
+  @media (min-width: 980px) {
+    .nd-book {
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+
+  .nd-book__copy h2 {
+    margin-top: 0;
+  }
+
+  .nd-steps {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .nd-step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.9rem;
+    align-items: start;
+  }
+
+  .nd-step__num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--green-700);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .nd-step__title {
+    margin: 0.2rem 0 0;
+    font-size: 0.98rem;
+    color: var(--green-700);
+  }
+
+  .nd-step__text {
+    margin: 0.3rem 0 0;
+    font-size: 0.87rem;
+  }
+
+  .nd-book__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.9rem;
+  }
+
+  .nd-book__shot {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  @media (max-width: 979px) {
+    .nd-book__shot {
+      aspect-ratio: 16 / 9;
+    }
+  }
+</style>

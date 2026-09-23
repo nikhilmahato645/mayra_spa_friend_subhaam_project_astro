@@ -1,0 +1,1417 @@
+---
+/**
+ * LOCATION PAGE - /russian-spa-in-lajpat-nagar/
+ *
+ * A SERVICE-AREA PAGE, NOT A BRANCH PAGE
+ *
+ * The business has one address, in Aerocity (see `site.address`). Lajpat Nagar
+ * is a target area, so this page targets that search intent while stating
+ * plainly where we actually are. The map points at the real Google Business
+ * Profile, the address block shows the real address, and there is no second
+ * LocalBusiness anywhere in the structured data. The header comment in
+ * src/data/lajpat-nagar.ts lists everything that must never appear here.
+ *
+ * HOW THE LAYOUT DIFFERS FROM THE OTHER LOCATION PAGES
+ *
+ * Aerocity runs a split hero and photographed treatment cards; Mahipalpur a
+ * banner hero with an overlapping card and a priced menu; Defence Colony a
+ * stacked hero, a sticky glance card, numbered text cards, a dark banya band,
+ * leader-dot prices and a horizontal step rail. This page is built to a
+ * different plan again:
+ *   - a dark hero band with the copy beside a tall photo that drops past the
+ *     band's lower edge, and a three-item fact strip under the buttons;
+ *   - the intro as a heading column beside its prose, not centred and not
+ *     paired with a card;
+ *   - treatments on two tiers - three large photographed cards over three
+ *     compact text tiles;
+ *   - the banya as a LIGHT section with a vertical stage timeline beside the
+ *     photo, where every other page runs it as a dark band;
+ *   - the comfort section built from the phrases a guest might actually say;
+ *   - the two local-search blocks as a pair of side-by-side articles;
+ *   - facilities as the dark band instead, over a wide photo;
+ *   - prices as a chip grid, then the first-visit rate called out separately;
+ *   - booking steps stacked in a card beside the CTA photo.
+ * Same brand colours, type, components and tokens. Different page.
+ *
+ * ALL COPY lives in src/data/lajpat-nagar.ts. Do not write prose into here.
+ *
+ * IMAGES: eight local files under public/images/locations/lajpat-nagar/,
+ * generated into WebP and narrow copies by `npm run images`, hence
+ * usesUnsplash={false} - this page loads nothing from the Unsplash CDN.
+ *
+ * STRUCTURED DATA: BaseLayout already emits DaySpa + WebSite + WebPage on
+ * every page, so this one adds only what is visible on it - breadcrumbs, the
+ * FAQ verbatim, and a Service whose areaServed is Lajpat Nagar. No second
+ * LocalBusiness, no Lajpat Nagar address, no rating, no reviews.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import { site, telHref } from '../../data/site';
+import {
+  lajpatNagarMeta,
+  lajpatNagarImages,
+  lajpatNagarFeatured,
+  lajpatNagarTreatments,
+  lajpatNagarBanyaStages,
+  lajpatNagarPrompts,
+  lajpatNagarAreas,
+  lajpatNagarFacilities,
+  lajpatNagarPrices,
+  lajpatNagarExpectations,
+  lajpatNagarSteps,
+  lajpatNagarFaqs,
+} from '../../data/lajpat-nagar';
+import { variants, srcSet } from '../../utils/image';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Lajpat Nagar', href: '/russian-spa-in-lajpat-nagar/' },
+]);
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(lajpatNagarFaqs),
+  serviceSchema({
+    name: 'Russian spa and body massage for Lajpat Nagar guests',
+    description: lajpatNagarMeta.description,
+    url: `${site.url}/russian-spa-in-lajpat-nagar/`,
+    areaServed: 'Lajpat Nagar, New Delhi',
+  }),
+];
+
+/*
+ * The same embed the contact and Aerocity pages build: the Google Business
+ * Profile addressed by its CID, so the pin is always the real address and no
+ * latitude, longitude or API key is written into the front end. It is never a
+ * Lajpat Nagar pin.
+ */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+
+/** Inline SVG paths for the facilities grid, keyed by `icon` in the data. */
+const facilityIcons: Record<string, string> = {
+  room: 'M4 21V9l8-6 8 6v12h-6v-7h-4v7Z',
+  shower: 'M6 22V8a4 4 0 0 1 8 0h6M9 13v1m3 2v1m3-5v1m-6 6v1m6 2v1',
+  steam: 'M7 18c0-2 2-2 2-4s-2-2-2-4 2-2 2-4m4 12c0-2 2-2 2-4s-2-2-2-4 2-2 2-4M4 21h16',
+  sauna: 'M3 20h18M5 20V9h14v11M5 13h14M9 4h2m2 0h2',
+  hammam: 'M12 3v6m-7 3h14a0 0 0 0 1 0 0 7 7 0 0 1-14 0ZM7 20l1-2m9 2-1-2',
+  jacuzzi: 'M4 12h16v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4ZM8 12V6a2 2 0 0 1 4 0M2 12h20',
+};
+
+const hero = lajpatNagarImages.hero;
+const heroArt = variants(hero.src);
+const banya = lajpatNagarImages.banya;
+const banyaArt = variants(banya.src);
+const oils = lajpatNagarImages.oils;
+const oilsArt = variants(oils.src);
+const facilityPhoto = lajpatNagarImages.facilities;
+const facilityArt = variants(facilityPhoto.src);
+const booking = lajpatNagarImages.booking;
+const bookingArt = variants(booking.src);
+---
+
+<BaseLayout
+  title={lajpatNagarMeta.title}
+  description={lajpatNagarMeta.description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  usesUnsplash={false}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ====================================================== 1. HERO ====== -->
+  <!--
+    Dark band, copy beside a tall photo that drops past the band's lower edge.
+    That photo is the Largest Contentful Paint, so it is eager and carries
+    fetchpriority; every other image on the page is lazy.
+  -->
+  <section class="ln-hero">
+    <div class="container ln-hero__grid">
+      <div class="ln-hero__copy">
+        <p class="eyebrow eyebrow--light">South Delhi service area</p>
+        <h1>Russian Spa in Lajpat Nagar</h1>
+        <p class="ln-hero__sub">Body Massage &amp; Spa Services in Lajpat Nagar</p>
+        <p class="ln-hero__lead">
+          Searching around Lajpat Nagar for somewhere to book a massage? Read through the
+          treatments below, then message or ring to find out what is free. Every session is by
+          appointment, and the address you travel to is our Aerocity one, set out in full further
+          down.
+        </p>
+
+        <div class="ln-hero__actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I am searching from Lajpat Nagar and would like to book a massage appointment."
+          />
+          <a class="btn btn--light" href="#treatments-heading">Explore Massage Services</a>
+        </div>
+
+        <ul class="ln-hero__facts">
+          <li>Open all days, 9 AM &ndash; 11 PM</li>
+          <li>Appointment only</li>
+          <li>One address, in Aerocity</li>
+        </ul>
+      </div>
+
+      <picture class="ln-hero__media">
+        <source
+          type="image/webp"
+          srcset={srcSet(heroArt.webpSmall, heroArt.webp, 760, 1600)}
+          sizes="(min-width: 980px) 480px, 92vw"
+        />
+        <img
+          src={hero.src}
+          srcset={srcSet(heroArt.jpgSmall, hero.src, 760, 1600)}
+          sizes="(min-width: 980px) 480px, 92vw"
+          alt={hero.alt}
+          width={hero.width}
+          height={hero.height}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </picture>
+    </div>
+  </section>
+
+  <!-- ===================================================== 2. INTRO ====== -->
+  <!-- Heading column beside its prose - not centred, and not paired with a card. -->
+  <section class="section ln-intro" aria-labelledby="intro-heading">
+    <div class="container ln-intro__grid">
+      <div class="ln-intro__head">
+        <h2 id="intro-heading">Massage &amp; Spa Services in Lajpat Nagar</h2>
+        <p class="ln-intro__note">
+          The neighbourhood runs across four numbered blocks; the search that brings people here
+          rarely does.
+        </p>
+      </div>
+
+      <div class="ln-intro__body">
+        <p>
+          Lajpat Nagar keeps long hours, so the appointment people book from here is usually one
+          carved out of an already full day. What you do with it is the real choice: an oil massage
+          on a table, clothed bodywork on a mat, or a heat session that is not a massage at all.
+        </p>
+        <p>
+          Sessions run from 45 minutes to two hours, and the short ones exist precisely because not
+          everyone has an afternoon going spare. Pressure, style and the areas you want time spent
+          on are settled with the therapist beforehand, in a private room kept for your session
+          alone.
+        </p>
+        <p>
+          Nothing here is walk-in. Message or call with a rough window and the team comes back with
+          what is genuinely open. Guests reach us from across South Delhi; the address is in
+          Aerocity, printed in full lower down this page.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================ 3. TREATMENTS ====== -->
+  <!--
+    Two tiers: three photographed cards, then three compact text tiles. The
+    photos here are the only ones on the page that repeat a subject type, and
+    each shows a different kind of work.
+  -->
+  <section class="section section--cream" aria-labelledby="treatments-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="treatments-heading">Massage Treatments Near Lajpat Nagar</h2>
+        <p>
+          Six of the ten treatments on the menu. Prices and session lengths are the same whichever
+          day you come.
+        </p>
+      </div>
+
+      <div class="ln-cards">
+        {
+          lajpatNagarFeatured.map((item) => {
+            const art = variants(item.image.src);
+            return (
+              <article class="ln-card">
+                <picture class="ln-card__media">
+                  <source
+                    type="image/webp"
+                    srcset={srcSet(art.webpSmall, art.webp, 460, 1000)}
+                    sizes="(min-width: 980px) 360px, (min-width: 640px) 45vw, 92vw"
+                  />
+                  <img
+                    src={item.image.src}
+                    srcset={srcSet(art.jpgSmall, item.image.src, 460, 1000)}
+                    sizes="(min-width: 980px) 360px, (min-width: 640px) 45vw, 92vw"
+                    alt={item.image.alt}
+                    width={item.image.width}
+                    height={item.image.height}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </picture>
+                <div class="ln-card__body">
+                  <h3>{item.name}</h3>
+                  <p class="ln-card__meta">
+                    <span class="ln-card__price">{item.price}</span>
+                    <span aria-hidden="true">&middot;</span>
+                    <span>{item.duration}</span>
+                  </p>
+                  <p class="ln-card__text">{item.body}</p>
+                </div>
+              </article>
+            );
+          })
+        }
+      </div>
+
+      <div class="ln-tiles">
+        {
+          lajpatNagarTreatments.map((item) => (
+            <article class="ln-tile">
+              <h3>{item.name}</h3>
+              <p class="ln-card__meta">
+                <span class="ln-card__price">{item.price}</span>
+                <span aria-hidden="true">&middot;</span>
+                <span>{item.duration}</span>
+              </p>
+              <p class="ln-card__text">{item.body}</p>
+            </article>
+          ))
+        }
+      </div>
+
+      <p class="ln-row">
+        <a class="btn btn--outline" href="/services/">View All Massage Services</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 4. BANYA ====== -->
+  <!-- Deliberately a LIGHT section: every other location page runs this dark. -->
+  <section class="section ln-banya" aria-labelledby="banya-heading">
+    <div class="container ln-banya__grid">
+      <picture class="ln-banya__media">
+        <source
+          type="image/webp"
+          srcset={srcSet(banyaArt.webpSmall, banyaArt.webp, 620, 1100)}
+          sizes="(min-width: 980px) 440px, 92vw"
+        />
+        <img
+          src={banya.src}
+          srcset={srcSet(banyaArt.jpgSmall, banya.src, 620, 1100)}
+          sizes="(min-width: 980px) 440px, 92vw"
+          alt={banya.alt}
+          width={banya.width}
+          height={banya.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
+
+      <div class="ln-banya__copy">
+        <h2 id="banya-heading">Traditional Russian Banya Near Lajpat Nagar</h2>
+        <p>
+          A banya is a sequence rather than a single event, which is what surprises people who book
+          one expecting a massage. You go into the heat gradually and let the steam settle around
+          you. After a while the birch venik comes into it &mdash; bundled branches worked over the
+          body in rhythm, filling the room with the smell of warm birch.
+        </p>
+        <p>
+          Then you come out, cool down, sit for a bit, and go back in. The pauses matter as much as
+          the heat does, and herbal tea is served at the end. The difference from a massage is
+          simple: on a table, someone works on you while you lie still. In the banya you are part
+          of it, moving between hot and cool and deciding when you have had enough of each.
+        </p>
+
+        <ol class="ln-stages">
+          {
+            lajpatNagarBanyaStages.map((stage) => (
+              <li class="ln-stages__item">
+                <h3 class="ln-stages__title">{stage.title}</h3>
+                <p class="ln-stages__text">{stage.body}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 5. COMFORT ====== -->
+  <!-- Built from the phrases a guest might actually say, not from claims about us. -->
+  <section class="section section--mint" aria-labelledby="comfort-heading">
+    <div class="container ln-comfort">
+      <div class="ln-comfort__copy">
+        <h2 id="comfort-heading">A Comfortable Massage Experience</h2>
+        <p>
+          Nothing about a session is fixed before you arrive. The therapist asks a few questions
+          first, and the more specific your answers, the closer the hour lands to what you had in
+          mind.
+        </p>
+        <p>
+          Pressure is worth being blunt about &mdash; &ldquo;light&rdquo; and &ldquo;firm&rdquo;
+          mean different things to different people, and it can be changed part-way through. Style
+          matters too: oil on a table and clothed Thai work on a mat feel nothing alike. Beyond
+          that, name the areas you want time spent on, mention anything sore that should be left
+          alone, and say whether you would rather chat or have the room stay quiet. Length is part
+          of the choice as well &mdash; 45 minutes and two hours are different afternoons.
+        </p>
+
+        <ul class="ln-says" aria-label="Things guests tell the therapist before a session">
+          {lajpatNagarPrompts.map((line) => <li class="ln-says__item">&ldquo;{line}&rdquo;</li>)}
+        </ul>
+      </div>
+
+      <picture class="ln-comfort__media">
+        <source
+          type="image/webp"
+          srcset={srcSet(oilsArt.webpSmall, oilsArt.webp, 620, 1000)}
+          sizes="(min-width: 980px) 420px, 92vw"
+        />
+        <img
+          src={oils.src}
+          srcset={srcSet(oilsArt.jpgSmall, oils.src, 620, 1000)}
+          sizes="(min-width: 980px) 420px, 92vw"
+          alt={oils.alt}
+          width={oils.width}
+          height={oils.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
+    </div>
+  </section>
+
+  <!-- ============================================ 6. NEARBY AREAS ====== -->
+  <section class="section" aria-labelledby="nearby-heading">
+    <div class="container ln-nearby">
+      <div class="ln-nearby__copy">
+        <h2 id="nearby-heading">Convenient for Lajpat Nagar and Nearby South Delhi Areas</h2>
+        <p>
+          Lajpat Nagar sits among some of the longest-established parts of South Delhi. Defence
+          Colony is on one side, Andrews Ganj and South Extension a little further round, East of
+          Kailash and New Friends Colony to the south, Jangpura towards the river and Greater
+          Kailash beyond the ring road. Amar Colony and the numbered blocks of Lajpat Nagar I to IV
+          fill in the rest.
+        </p>
+        <p>
+          We do not run a branch in any of them. There is one spa and one address, in Aerocity.
+          Guests travelling from nearby South Delhi neighbourhoods can contact us to check
+          availability, directions and appointment options, and settle on a time that suits the
+          journey rather than fights it.
+        </p>
+      </div>
+
+      <ul class="ln-areas" aria-label="South Delhi areas guests travel from">
+        {lajpatNagarAreas.map((area) => <li class="ln-areas__item">{area}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========================================= 7 + 8. LOCAL SEARCH ====== -->
+  <!-- The two short search-intent blocks, side by side rather than stacked. -->
+  <section class="section section--cream" aria-label="Local search">
+    <div class="container ln-search">
+      <article class="ln-search__block">
+        <h2>Spa Near South Extension &amp; Lajpat Nagar</h2>
+        <p>
+          Searches like <em>spa near Lajpat Nagar</em>, <em>massage near South Extension</em> and
+          <em>body massage in South Delhi</em> come down to the same two questions: where is it,
+          and can I get a slot. The answer to the first is Aerocity &mdash; one spa, one address,
+          no second outlet in South Delhi. The second is a message away.
+        </p>
+        <p class="ln-search__link">
+          <a href="/contact/">Contact Us</a> to confirm the location and availability.
+        </p>
+      </article>
+
+      <article class="ln-search__block">
+        <h2>Spa Near Delhi Airport</h2>
+        <p>
+          That same address sits on the airport side of the city, in Aerocity near IGI Airport
+          &mdash; which is why the spa turns up in searches for a spa near Delhi Airport as often
+          as for one near Lajpat Nagar. Flying in, flying out or putting a layover to use, the menu
+          is the one described on this page.
+        </p>
+        <p>
+          We publish no journey time from Lajpat Nagar, from the terminals or from anywhere else,
+          because your route and the hour decide it. The map further down is the honest version.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================ 9. FACILITIES ====== -->
+  <!-- The dark band of this page - other location pages spend it on the banya. -->
+  <section class="section section--dark ln-facilities" aria-labelledby="facilities-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="facilities-heading">Spa Facilities</h2>
+        <p>
+          Everything listed here is on site. Not all of it belongs to every treatment &mdash; where
+          something comes with a package rather than a standard massage, it says so.
+        </p>
+      </div>
+
+      <picture class="ln-facilities__media">
+        <source
+          type="image/webp"
+          srcset={srcSet(facilityArt.webpSmall, facilityArt.webp, 500, 1000)}
+          sizes="(min-width: 1080px) 1040px, 92vw"
+        />
+        <img
+          src={facilityPhoto.src}
+          srcset={srcSet(facilityArt.jpgSmall, facilityPhoto.src, 500, 1000)}
+          sizes="(min-width: 1080px) 1040px, 92vw"
+          alt={facilityPhoto.alt}
+          width={facilityPhoto.width}
+          height={facilityPhoto.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
+
+      <ul class="ln-facilities__grid">
+        {
+          lajpatNagarFacilities.map((facility) => (
+            <li class="ln-facility">
+              <svg
+                viewBox="0 0 24 24"
+                width="26"
+                height="26"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d={facilityIcons[facility.icon]} />
+              </svg>
+              <h3>{facility.name}</h3>
+              <p>{facility.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================================================== 10. PRICES ====== -->
+  <section class="section" aria-labelledby="prices-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="prices-heading">Massage Prices in Lajpat Nagar</h2>
+        <p>The full treatment list, with the session length each rate covers.</p>
+      </div>
+
+      <ul class="ln-prices">
+        {
+          lajpatNagarPrices.map((item) => (
+            <li class="ln-price">
+              <span class="ln-price__name">{item.name}</span>
+              <span class="ln-price__figure">{item.price}</span>
+              <span class="ln-price__time">{item.duration}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="ln-first">
+        <div>
+          <p class="ln-first__label">First visit</p>
+          <p class="ln-first__price">First Visit Full Body Massage &mdash; ₹1,499</p>
+          <p class="ln-first__note">
+            A first-appointment rate for the full body massage only. Every other treatment is
+            charged at the price listed above.
+          </p>
+        </div>
+        <a class="btn" href="/pricing/">View Full Pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 11. EXPECT ====== -->
+  <section class="section section--cream" aria-labelledby="expect-heading">
+    <div class="container ln-expect">
+      <div class="ln-expect__head">
+        <h2 id="expect-heading">What Guests Can Expect</h2>
+        <p class="muted">
+          Plainly stated, and nothing that is not already published elsewhere on this site.
+          <a href="/about/">About Our Spa</a> covers the rest, and you can
+          <a href="/gallery/">View Spa Gallery</a> for a look at the place.
+        </p>
+      </div>
+
+      <ul class="ln-ticks">
+        {
+          lajpatNagarExpectations.map((line) => (
+            <li>
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+                <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+              </svg>
+              <span>{line}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================ 12 + 13. LOCATION ====== -->
+  <!--
+    The real address, the real hours and the real Google listing. The map is
+    below the written address, lazy-loaded so it never holds up the page, and
+    it carries a title for screen readers. It is never a Lajpat Nagar pin.
+  -->
+  <section class="section section--mint" aria-labelledby="where-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="where-heading">Location &amp; Directions</h2>
+        <p>
+          Lajpat Nagar is an area we serve, not one we have premises in. This is where the spa
+          actually is.
+        </p>
+      </div>
+
+      <div class="ln-where">
+        <dl class="ln-where__list">
+          <div>
+            <dt>Address</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd><a href={telHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>WhatsApp</dt>
+            <dd>{site.phone}</dd>
+          </div>
+          <div>
+            <dt>Opening hours</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+          <div>
+            <dt>Directions</dt>
+            <dd>
+              Open the listing below in Google Maps and it will route you from wherever you are
+              starting. We publish no fixed travel time, because there is not an honest one to
+              give.
+            </dd>
+          </div>
+        </dl>
+
+        <div class="ln-where__actions">
+          <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+            Get Directions
+          </a>
+          <CTA
+            label="Book on WhatsApp"
+            variant="outline"
+            message="Hi, I would like to check directions and availability for a massage appointment."
+          />
+        </div>
+      </div>
+
+      <iframe
+        class="ln-map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1040"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+
+  <!-- ===================================================== 14. BOOK ====== -->
+  <section class="section" aria-labelledby="book-heading">
+    <div class="container ln-book">
+      <picture class="ln-book__media">
+        <source
+          type="image/webp"
+          srcset={srcSet(bookingArt.webpSmall, bookingArt.webp, 620, 1200)}
+          sizes="(min-width: 980px) 440px, 92vw"
+        />
+        <img
+          src={booking.src}
+          srcset={srcSet(bookingArt.jpgSmall, booking.src, 620, 1200)}
+          sizes="(min-width: 980px) 440px, 92vw"
+          alt={booking.alt}
+          width={booking.width}
+          height={booking.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
+
+      <div class="ln-book__copy">
+        <h2 id="book-heading">How to Book Your Massage</h2>
+        <p class="muted">
+          Five steps, no account and no deposit. The slot is yours once the team confirms it, not
+          before.
+        </p>
+
+        <ol class="ln-steps">
+          {
+            lajpatNagarSteps.map((item) => (
+              <li class="ln-steps__item">
+                <span class="ln-steps__num" aria-hidden="true">
+                  {item.step}
+                </span>
+                <div>
+                  <h3 class="ln-steps__title">{item.title}</h3>
+                  <p class="ln-steps__text">{item.body}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="ln-book__actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I would like to book a massage appointment. I am travelling from Lajpat Nagar."
+          />
+          <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== 15. FAQ ====== -->
+  <section class="section section--cream" aria-labelledby="faq-heading">
+    <div class="container ln-narrow">
+      <div class="section__head">
+        <h2 id="faq-heading">Lajpat Nagar &amp; South Delhi &mdash; Common Questions</h2>
+      </div>
+      <FAQ faqs={lajpatNagarFaqs} questionTag="h3" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ------------------------------------------------------------ 1. hero */
+
+  .ln-hero {
+    background: var(--green-900);
+    color: rgba(255, 255, 255, 0.86);
+    padding-block: clamp(2.25rem, 1.6rem + 2.6vw, 4rem);
+    /* The photo drops past the band, so the band cannot clip it. */
+    margin-bottom: clamp(0rem, -2rem + 6vw, 3.25rem);
+  }
+
+  .ln-hero__grid {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+    align-items: center;
+  }
+
+  @media (min-width: 980px) {
+    .ln-hero__grid {
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
+      align-items: start;
+    }
+  }
+
+  .ln-hero h1 {
+    color: var(--white);
+  }
+
+  .ln-hero__sub {
+    font-family: var(--font-serif);
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.45rem);
+    color: rgba(255, 255, 255, 0.92);
+    margin-top: 0.85rem;
+  }
+
+  .ln-hero__lead {
+    margin-top: 0.9rem;
+    max-width: 56ch;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .ln-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .ln-hero__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.4rem;
+    margin-top: 1.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .ln-hero__media {
+    display: block;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .ln-hero__media img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+
+  @media (min-width: 980px) {
+    .ln-hero__media {
+      /* Drops below the dark band into the section that follows. */
+      margin-bottom: clamp(-3.25rem, -6vw, 0rem);
+    }
+  }
+
+  /* ----------------------------------------------------------- 2. intro */
+
+  .ln-intro__grid {
+    display: grid;
+    gap: clamp(1.25rem, 0.9rem + 1.8vw, 2.75rem);
+  }
+
+  @media (min-width: 900px) {
+    .ln-intro__grid {
+      grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+    }
+  }
+
+  .ln-intro__head h2 {
+    color: var(--green-700);
+  }
+
+  .ln-intro__note {
+    margin-top: 0.9rem;
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--muted);
+    border-left: 3px solid var(--green-100);
+    padding-left: 0.9rem;
+  }
+
+  /* ------------------------------------------------------ 3. treatments */
+
+  .ln-cards {
+    display: grid;
+    gap: clamp(1rem, 0.75rem + 1vw, 1.6rem);
+  }
+
+  @media (min-width: 640px) {
+    .ln-cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .ln-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ln-card__media img {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+
+  .ln-card__body {
+    padding: 1.15rem 1.25rem 1.4rem;
+  }
+
+  .ln-card__body h3 {
+    color: var(--green-800);
+  }
+
+  .ln-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .ln-card__price {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--green-700);
+  }
+
+  .ln-card__text {
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .ln-tiles {
+    display: grid;
+    gap: clamp(1rem, 0.75rem + 1vw, 1.6rem);
+    margin-top: clamp(1rem, 0.75rem + 1vw, 1.6rem);
+  }
+
+  @media (min-width: 640px) {
+    .ln-tiles {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .ln-tile {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--green-500);
+    border-radius: var(--radius-sm);
+    padding: 1.2rem 1.25rem 1.35rem;
+  }
+
+  .ln-tile h3 {
+    color: var(--green-800);
+  }
+
+  .ln-row {
+    display: flex;
+    justify-content: center;
+    margin-top: clamp(1.5rem, 1.1rem + 1.4vw, 2.4rem);
+  }
+
+  /* ----------------------------------------------------------- 4. banya */
+
+  .ln-banya__grid {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.2vw, 3rem);
+    align-items: start;
+  }
+
+  @media (min-width: 980px) {
+    .ln-banya__grid {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    }
+  }
+
+  .ln-banya__media {
+    display: block;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ln-banya__media img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+
+  @media (min-width: 980px) {
+    .ln-banya__media {
+      position: sticky;
+      top: 140px;
+    }
+  }
+
+  .ln-banya__copy h2 {
+    color: var(--green-700);
+    margin-bottom: 0.9rem;
+  }
+
+  /* The stage timeline - a connected vertical rail, unique to this page. */
+  .ln-stages {
+    margin-top: 1.8rem;
+    display: grid;
+    gap: 1.1rem;
+    border-left: 2px solid var(--green-100);
+    padding-left: 1.4rem;
+  }
+
+  .ln-stages__item {
+    position: relative;
+  }
+
+  .ln-stages__item::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.4rem - 6px);
+    top: 0.45rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green-500);
+  }
+
+  .ln-stages__title {
+    font-size: 0.95rem;
+    color: var(--green-800);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .ln-stages__text {
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  /* --------------------------------------------------------- 5. comfort */
+
+  .ln-comfort {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.2vw, 3rem);
+    align-items: center;
+  }
+
+  @media (min-width: 980px) {
+    .ln-comfort {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    }
+  }
+
+  .ln-comfort__copy h2 {
+    color: var(--green-700);
+    margin-bottom: 0.9rem;
+  }
+
+  .ln-says {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  .ln-says__item {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    font-family: var(--font-serif);
+    font-size: 0.9rem;
+    color: var(--green-800);
+  }
+
+  .ln-comfort__media {
+    display: block;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ln-comfort__media img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  /* ---------------------------------------------------------- 6. nearby */
+
+  .ln-nearby {
+    display: grid;
+    gap: clamp(1.25rem, 0.9rem + 1.8vw, 2.5rem);
+  }
+
+  @media (min-width: 900px) {
+    .ln-nearby {
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+      align-items: start;
+    }
+  }
+
+  .ln-nearby__copy h2 {
+    color: var(--green-700);
+    margin-bottom: 0.9rem;
+  }
+
+  .ln-areas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-content: start;
+  }
+
+  .ln-areas__item {
+    border: 1px dashed var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    background: var(--green-050);
+  }
+
+  /* -------------------------------------------------- 7 + 8. local search */
+
+  .ln-search {
+    display: grid;
+    gap: clamp(1.25rem, 0.9rem + 1.6vw, 2.25rem);
+  }
+
+  @media (min-width: 900px) {
+    .ln-search {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .ln-search__block {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    padding: clamp(1.2rem, 0.9rem + 1vw, 1.9rem);
+  }
+
+  .ln-search__block h2 {
+    color: var(--green-700);
+    font-size: clamp(1.15rem, 1rem + 0.7vw, 1.55rem);
+    margin-bottom: 0.8rem;
+  }
+
+  .ln-search__block em {
+    font-style: normal;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .ln-search__link a {
+    color: var(--green-700);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------ 9. facilities */
+
+  .ln-facilities__media {
+    display: block;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: clamp(1.25rem, 0.9rem + 1.4vw, 2.25rem);
+  }
+
+  .ln-facilities__media img {
+    width: 100%;
+    aspect-ratio: 21 / 8;
+    object-fit: cover;
+  }
+
+  .ln-facilities__grid {
+    display: grid;
+    gap: clamp(0.9rem, 0.7rem + 0.9vw, 1.5rem);
+  }
+
+  @media (min-width: 620px) {
+    .ln-facilities__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 960px) {
+    .ln-facilities__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .ln-facility {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-sm);
+    padding: 1.15rem 1.2rem 1.3rem;
+  }
+
+  .ln-facility svg {
+    color: var(--green-500);
+    margin-bottom: 0.7rem;
+  }
+
+  .ln-facility h3 {
+    font-size: 1rem;
+  }
+
+  .ln-facility p {
+    margin-top: 0.35rem;
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  /* --------------------------------------------------------- 10. prices */
+
+  .ln-prices {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  @media (min-width: 680px) {
+    .ln-prices {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1040px) {
+    .ln-prices {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .ln-price {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 0.2rem 0.75rem;
+    background: var(--green-050);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+  }
+
+  .ln-price__name {
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    color: var(--green-800);
+  }
+
+  .ln-price__figure {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--green-700);
+  }
+
+  .ln-price__time {
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .ln-first {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    margin-top: clamp(1.25rem, 0.9rem + 1.4vw, 2.25rem);
+    padding: clamp(1.2rem, 0.9rem + 1.1vw, 1.9rem);
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .ln-first__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--green-600);
+  }
+
+  .ln-first__price {
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 0.95rem + 0.7vw, 1.5rem);
+    color: var(--green-800);
+    margin-top: 0.3rem;
+  }
+
+  .ln-first__note {
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    max-width: 58ch;
+  }
+
+  /* --------------------------------------------------------- 11. expect */
+
+  .ln-expect {
+    display: grid;
+    gap: clamp(1.25rem, 0.9rem + 1.6vw, 2.5rem);
+  }
+
+  @media (min-width: 900px) {
+    .ln-expect {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      align-items: start;
+    }
+  }
+
+  .ln-expect__head h2 {
+    color: var(--green-700);
+    margin-bottom: 0.8rem;
+  }
+
+  .ln-expect__head a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .ln-ticks {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  @media (min-width: 640px) {
+    .ln-ticks {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .ln-ticks li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .ln-ticks svg {
+    flex: none;
+    margin-top: 0.25rem;
+    color: var(--green-500);
+  }
+
+  /* ------------------------------------------------- 12 + 13. location */
+
+  .ln-where {
+    display: grid;
+    gap: clamp(1.25rem, 0.9rem + 1.4vw, 2.25rem);
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: clamp(1.2rem, 0.9rem + 1.1vw, 2rem);
+  }
+
+  @media (min-width: 900px) {
+    .ln-where {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+      align-items: center;
+    }
+  }
+
+  .ln-where__list {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .ln-where__list dt {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--green-600);
+  }
+
+  .ln-where__list dd {
+    margin: 0.25rem 0 0;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+
+  .ln-where__list a {
+    color: var(--green-700);
+    font-weight: 600;
+  }
+
+  .ln-where__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+
+  .ln-map {
+    display: block;
+    width: 100%;
+    height: clamp(280px, 38vw, 420px);
+    margin-top: clamp(1.25rem, 0.9rem + 1.4vw, 2.25rem);
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--green-100);
+  }
+
+  /* ----------------------------------------------------------- 14. book */
+
+  .ln-book {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.2vw, 3rem);
+    align-items: start;
+  }
+
+  @media (min-width: 980px) {
+    .ln-book {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    }
+  }
+
+  .ln-book__media {
+    display: block;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ln-book__media img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+
+  .ln-book__copy h2 {
+    color: var(--green-700);
+    margin-bottom: 0.7rem;
+  }
+
+  .ln-steps {
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 1.5rem;
+  }
+
+  .ln-steps__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    background: var(--green-050);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 1rem;
+  }
+
+  .ln-steps__num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--green-700);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+  }
+
+  .ln-steps__title {
+    font-size: 0.98rem;
+    color: var(--green-800);
+  }
+
+  .ln-steps__text {
+    margin-top: 0.2rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .ln-book__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  /* ------------------------------------------------------------ 15. faq */
+
+  .ln-narrow {
+    max-width: 880px;
+  }
+</style>

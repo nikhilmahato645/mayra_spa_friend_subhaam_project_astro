@@ -1,0 +1,1160 @@
+---
+/**
+ * LOCATION PAGE - /russian-spa-in-connaught-place/
+ *
+ * WHY THIS ONE IS NOT A LocationLayout PAGE
+ *
+ * The thin /russian-spa-in-<area>/ pages render the shared LocationLayout from
+ * their entry in src/data/locations.ts. Connaught Place is a search-intent
+ * page with its own copy, so - like Aerocity, Gurgaon and Karol Bagh - it is
+ * written out here. LocationLayout is untouched and the other pages still use
+ * it.
+ *
+ * THERE IS NO CONNAUGHT PLACE BRANCH. The address, the map and the structured
+ * data all point at the one real location in Aerocity. See the header comment
+ * in src/data/connaught-place.ts for what may and may not be claimed here.
+ *
+ * LAYOUT: deliberately unlike the Aerocity page, which opens on a split hero
+ * and runs image cards, a white banya band and a price table. This one opens
+ * on a centred hero with a facts strip above a wide photo, then a two-column
+ * intro with a sticky aside, text-only treatment cards, a DARK banya band, a
+ * preference section, an area chip list, icon facility tiles, a two-column
+ * price list rather than a table, a tick list, an address panel, a numbered
+ * booking rail and the FAQ. Same brand colours, type and buttons throughout.
+ *
+ * IMAGES: five remote stock photos. `variants()` is not used - it only has
+ * something to return for local gallery .jpg files, so a plain <img> with
+ * width, height and lazy loading is both honest and smaller.
+ *
+ * STRUCTURED DATA: BaseLayout already emits DaySpa + WebSite + WebPage for
+ * every page, so this one adds only what is visible on it - breadcrumbs, the
+ * FAQ verbatim, and a Service whose areaServed is the area this page is
+ * written for. No second LocalBusiness, no rating, no reviews.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import { site, telHref } from '../../data/site';
+import {
+  connaughtPlaceMeta,
+  connaughtPlaceImages,
+  connaughtPlaceTreatments,
+  connaughtPlacePrices,
+  connaughtPlaceFacilities,
+  connaughtPlaceNearby,
+  connaughtPlaceExpect,
+  connaughtPlaceSteps,
+  connaughtPlaceFaqs,
+} from '../../data/connaught-place';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Connaught Place', href: '/russian-spa-in-connaught-place/' },
+]);
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(connaughtPlaceFaqs),
+  serviceSchema({
+    name: 'Russian spa and body massage for Connaught Place guests',
+    description: connaughtPlaceMeta.description,
+    url: `${site.url}/russian-spa-in-connaught-place/`,
+    areaServed: 'Connaught Place, New Delhi',
+  }),
+];
+
+/*
+ * The same embed the contact and Aerocity pages build: the Google Business
+ * Profile addressed by its CID, so there is no hand-written latitude or
+ * longitude anywhere and no API key in the front end. It points at the REAL
+ * address in Aerocity - never at a pin dropped in Connaught Place.
+ */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+
+/** Line icons for the facility tiles, keyed by `icon` in the data file. */
+const facilityIcons: Record<string, string> = {
+  room: 'M4 4h16a1 1 0 0 1 1 1v14h-2v-4H5v4H3V5a1 1 0 0 1 1-1m1 9h14V6H5zm2-5h4v3H7z',
+  shower:
+    'M12 2a5 5 0 0 0-5 5v2H5v2h14V9h-2V7a5 5 0 0 0-5-5m-3 5a3 3 0 0 1 6 0v2H9zM7 14h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zM7 18h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z',
+  steam:
+    'M8 3c1.5 1.5 1.5 3 0 4.5S6.5 10 8 11.5M12 3c1.5 1.5 1.5 3 0 4.5s-1.5 2.5 0 4M16 3c1.5 1.5 1.5 3 0 4.5s-1.5 2.5 0 4M4 15h16v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z',
+  hammam: 'M4 12a8 8 0 0 1 16 0v1H4zm-1 3h18v2H3zm2 4h14v2H5zM11 3h2v3h-2z',
+  jacuzzi:
+    'M5 11V6a2 2 0 0 1 4 0v1H7v2h4V6a4 4 0 0 0-8 0v5H2v2h20v-2zM3 15h18v3a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z',
+  sauna: 'M3 4h18v2H3zm0 4h18v2H3zm0 4h18v2H3zm2 4h14v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z',
+};
+
+const hero = connaughtPlaceImages.hero;
+---
+
+<BaseLayout
+  title={connaughtPlaceMeta.title}
+  description={connaughtPlaceMeta.description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ====================================================== 1. HERO ===== -->
+  <!--
+    Centred copy, a facts strip, then a wide photo beneath it - not the split
+    hero the Aerocity page opens on. The photo is this page's Largest
+    Contentful Paint, so it stays eager with a high fetch priority.
+  -->
+  <section class="cphero">
+    <div class="container cphero__inner">
+      <p class="cphero__eyebrow">Search area &middot; Connaught Place, Central Delhi</p>
+      <h1>Russian Spa in Connaught Place</h1>
+      <p class="cphero__sub">Body Massage &amp; Spa Services Near Connaught Place</p>
+      <p class="cphero__lead">
+        Looking for a massage around Connaught Place? This page sets out the treatments you can
+        choose between, what each one costs and how long it runs. The spa itself works from a
+        single address in Aerocity, and guests reach it from across Central Delhi &mdash; message
+        or call to check what is free before you travel.
+      </p>
+
+      <div class="cphero__actions">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I am searching from Connaught Place and would like to book a massage."
+        />
+        <a class="btn btn--outline" href="#treatments-heading">Explore Massage Services</a>
+      </div>
+
+      <ul class="cpfacts">
+        <li><span>Where we are</span>Aerocity, New Delhi 110037</li>
+        <li><span>Open</span>Every day, 9:00 AM &ndash; 11:00 PM</li>
+        <li><span>Booking</span>WhatsApp or {site.phone}</li>
+      </ul>
+    </div>
+
+    <div class="container container--wide">
+      <img
+        class="cphero__photo"
+        src={hero.src}
+        alt={hero.alt}
+        width={hero.width}
+        height={hero.height}
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+  </section>
+
+  <!-- =============================================== 2. INTRODUCTION ==== -->
+  <section class="section" aria-labelledby="intro-heading">
+    <div class="container cpintro">
+      <div class="cpintro__copy">
+        <h2 id="intro-heading">Massage &amp; Spa Services Near Connaught Place</h2>
+        <p>
+          Connaught Place is where a lot of Delhi works, shops and eats, and very little of it is
+          restful. The menu here is built around the two things people ask for after a day in that
+          part of town: bodywork, and heat. Bodywork covers everything from a light Swedish hour to
+          firm deep tissue, clothed Thai stretching on a mat, and warmed stones worked along the
+          back. Heat means the Russian banya, which is a bathing ritual rather than a treatment on
+          a table.
+        </p>
+        <p>
+          Which suits you depends less on the name than on what you want from the hour. Come with a
+          sore shoulder and the answer differs from coming simply to switch off, so say which it is
+          when you get in touch. Every session is in a private room, by appointment, so the room and
+          the therapist are held for your slot.
+        </p>
+        <p class="cpintro__links">
+          <a href="/services/">Explore Massage Services</a> &middot;
+          <a href="/pricing/">View Massage Pricing</a> &middot;
+          <a href="/about/">About Our Spa</a>
+        </p>
+      </div>
+
+      <aside class="cpaside" aria-label="Spa at a glance">
+        <h3 class="cpaside__title">At a glance</h3>
+        <dl>
+          <div>
+            <dt>Address</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>Phone &amp; WhatsApp</dt>
+            <dd><a href={telHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>Hours</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+          <div>
+            <dt>First visit</dt>
+            <dd>Full body massage &mdash; ₹1,499</dd>
+          </div>
+        </dl>
+        <p class="cpaside__note">
+          No branch inside Connaught Place. One address, shown above and on the map further down.
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================================================== 3. TREATMENTS === -->
+  <section class="section section--cream" aria-labelledby="treatments-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="treatments-heading">Treatments You Can Explore</h2>
+        <p class="muted">
+          Six of the sessions booked most often, with the price and the length of each. The rest of
+          the menu, written out in full, sits on the services page.
+        </p>
+      </div>
+
+      <ul class="cpcards">
+        {
+          connaughtPlaceTreatments.map((treatment, index) => (
+            <li class="cpcard">
+              <span class="cpcard__index" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3>{treatment.name}</h3>
+              <p class="cpcard__meta">
+                <span class="cpcard__price">{treatment.price}</span>
+                <span class="cpcard__dot" aria-hidden="true">
+                  &middot;
+                </span>
+                <span>{treatment.duration}</span>
+              </p>
+              <p class="cpcard__text">{treatment.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="centre-row">
+        <a class="btn btn--outline" href="/services/">View All Massage Services</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 4. BANYA === -->
+  <!-- A dark band. Nothing else on this page uses one, and the Aerocity banya
+       section is a plain white split - so the two never read as the same block. -->
+  <section class="section section--dark" aria-labelledby="banya-heading">
+    <div class="container cpband">
+      <div class="cpband__copy">
+        <p class="eyebrow eyebrow--light">The ritual</p>
+        <h2 id="banya-heading">Traditional Russian Banya Near Connaught Place</h2>
+        <p>
+          The banya is the reason the word Russian is in our name, and it is worth saying plainly
+          that it is not a massage. Nobody works along your back for an hour. It is a bathing
+          ritual, run in rounds rather than as one continuous treatment, and the heat does most of
+          the work.
+        </p>
+        <p>
+          You start in the steam and let it build, which is the part most people cut short. Once you
+          are properly warm, the therapist works over you with a birch venik &mdash; a bundle of
+          leafy branches swept in rhythm, carrying the heat and the scent across the skin. A cooling
+          break follows, then another round. Herbal tea closes it.
+        </p>
+        <p>
+          So it asks more of you than a table massage does, and gives back something different. At
+          <strong>₹2,500 for 60 minutes</strong> it is also the least expensive treatment we offer.
+        </p>
+      </div>
+
+      <div class="cpband__media">
+        <img
+          src={connaughtPlaceImages.banya.src}
+          alt={connaughtPlaceImages.banya.alt}
+          width={connaughtPlaceImages.banya.width}
+          height={connaughtPlaceImages.banya.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 5. PREFERENCE === -->
+  <section class="section" aria-labelledby="preference-heading">
+    <div class="container cpsplit">
+      <div class="cpsplit__media">
+        <img
+          src={connaughtPlaceImages.session.src}
+          alt={connaughtPlaceImages.session.alt}
+          width={connaughtPlaceImages.session.width}
+          height={connaughtPlaceImages.session.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      <div class="cpsplit__copy">
+        <h2 id="preference-heading">A Session Designed Around Your Preference</h2>
+        <p>
+          Two people booking the same treatment rarely want the same hour from it. That is settled
+          before anything starts: the therapist asks how firm you want the pressure, whether any
+          area is sore or best left alone, and whether you would rather talk or lie quietly. None of
+          it is fixed once the session is under way either &mdash; if the pressure tips past useful,
+          or you are too warm, or you would rather more time went on the shoulders, say so and it
+          changes.
+        </p>
+        <p>
+          Every treatment takes place in a private room, reset between guests, and appointments are
+          spaced so yours is not rushed to fit the next one in. Turning up a few minutes early is
+          worth it: that conversation is what the rest of the session is built on.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== 6. NEARBY === -->
+  <section class="section section--cream" aria-labelledby="nearby-heading">
+    <div class="container narrow">
+      <h2 id="nearby-heading">Convenient for Connaught Place and Central Delhi</h2>
+      <p>
+        Guests arrive here from a wide spread of the city rather than from one neighbourhood, and
+        Central Delhi is a steady part of that. Some are working in and around CP and want the
+        session at the end of the day; some are staying nearby and have an afternoon free; some are
+        simply looking for a banya and there are not many of those in Delhi.
+      </p>
+      <p>
+        We have no outlet in any of the areas below &mdash; there is one spa and it is in Aerocity.
+        What the list says is where people travel in from. Anyone coming from Connaught Place or
+        another part of Central Delhi can contact us to check current availability and directions
+        before setting off, which is the sensible order to do it in.
+      </p>
+
+      <ul class="cpchips">
+        {connaughtPlaceNearby.map((area) => <li>{area}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================= 7. CENTRAL DELHI ===== -->
+  <section class="section" aria-labelledby="central-heading">
+    <div class="container narrow">
+      <h2 id="central-heading">Spa Near Central Delhi</h2>
+      <p>
+        A search for a spa near Connaught Place or a massage near Central Delhi usually means
+        somewhere reachable rather than somewhere on a particular street. That is the honest way to
+        read this page. Our address is Block - Asset No. 6, 6, Northern Access Rd, Aerocity, New
+        Delhi 110037 &mdash; on the airport side of the city, not in CP &mdash; and plenty of the
+        people who book have come from Central Delhi to get here.
+      </p>
+      <p>
+        Whether that trip is worth making is your call, and it is easier to make with the real
+        address in front of you than with a page pretending to be around the corner. The map and
+        the directions link sit further down. If something is not answered here,
+        <a href="/contact/">contact us</a> or have a look through the
+        <a href="/gallery/">spa gallery</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================== 8. FACILITIES === -->
+  <section class="section section--cream" aria-labelledby="facilities-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="facilities-heading">Spa Facilities</h2>
+        <p class="muted">
+          What is on site. Not every facility forms part of every booking &mdash; some belong to a
+          particular package rather than to a standard massage &mdash; so check what yours includes
+          when you confirm it.
+        </p>
+      </div>
+
+      <div class="cpfacgrid">
+        <ul class="cpfacs">
+          {
+            connaughtPlaceFacilities.map((facility) => (
+              <li class="cpfac">
+                <span class="cpfac__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                    <path d={facilityIcons[facility.icon]} />
+                  </svg>
+                </span>
+                <h3 class="cpfac__name">{facility.name}</h3>
+                <p class="cpfac__note">{facility.note}</p>
+              </li>
+            ))
+          }
+        </ul>
+
+        <img
+          class="cpfacgrid__photo"
+          src={connaughtPlaceImages.facilities.src}
+          alt={connaughtPlaceImages.facilities.alt}
+          width={connaughtPlaceImages.facilities.width}
+          height={connaughtPlaceImages.facilities.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== 9. PRICES === -->
+  <!-- A two-column list of rows, not the table the Aerocity page uses. -->
+  <section class="section" aria-labelledby="prices-heading">
+    <div class="container cpprice">
+      <div class="cpprice__head">
+        <h2 id="prices-heading">Massage Prices Near Connaught Place</h2>
+        <p class="muted">
+          The full treatment list, cheapest first. These are the figures quoted when you book
+          &mdash; there is no separate rate for anyone travelling in from Central Delhi.
+        </p>
+
+        <p class="cpprice__offer">
+          <strong>First visit full body massage &mdash; ₹1,499.</strong> An introductory price for a
+          full body massage on a first visit only. It does not apply to the treatments listed
+          alongside, or to the packages, which are priced as shown.
+        </p>
+
+        <img
+          class="cpprice__photo"
+          src={connaughtPlaceImages.stones.src}
+          alt={connaughtPlaceImages.stones.alt}
+          width={connaughtPlaceImages.stones.width}
+          height={connaughtPlaceImages.stones.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      <div class="cpprice__list">
+        <ul>
+          {
+            connaughtPlacePrices.map((row) => (
+              <li class="prow">
+                <span class="prow__name">{row.name}</span>
+                <span class="prow__time">{row.duration}</span>
+                <span class="prow__price">{row.price}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="centre-row">
+          <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== 10. EXPECT === -->
+  <section class="section section--cream" aria-labelledby="expect-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="expect-heading">What Visitors Can Expect</h2>
+      </div>
+      <ul class="cpticks">
+        {connaughtPlaceExpect.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================ 11. LOCATION + MAP ==== -->
+  <section class="section" aria-labelledby="map-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="map-heading">Location &amp; Directions</h2>
+        <p class="muted">
+          This page is written for guests searching for spa services near Connaught Place. The
+          verified business location is below, and the map points at it.
+        </p>
+      </div>
+
+      <div class="cpaddr">
+        <dl class="details">
+          <div>
+            <dt>Address</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd><a href={telHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>WhatsApp</dt>
+            <dd>{site.phone} &mdash; same number, message any time</dd>
+          </div>
+          <div>
+            <dt>Opening hours</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+        </dl>
+
+        <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Get Directions
+        </a>
+      </div>
+
+      <!--
+        Lazy-loaded and kept below the content, so it never competes with the
+        text above it. The Get Directions link works whether or not the embed
+        ever loads.
+      -->
+      <iframe
+        class="map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1040"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+
+  <!-- ===================================================== 12. BOOKING == -->
+  <section class="section section--cream" aria-labelledby="book-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="book-heading">How to Book Your Massage</h2>
+        <p class="muted">
+          Five steps and no account anywhere. Pick a treatment, get in touch, and the team tells you
+          what is actually open &mdash; your slot counts as booked once they confirm it, not when
+          you send the message. It is worth agreeing a time that allows for the journey rather than
+          one that only just works.
+        </p>
+      </div>
+
+      <ol class="cprail">
+        {
+          connaughtPlaceSteps.map((item) => (
+            <li class="cprail__item">
+              <span class="cprail__num" aria-hidden="true">
+                {item.step}
+              </span>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="centre-row centre-row--gap">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I would like to book a massage appointment. I am travelling from Connaught Place."
+        />
+        <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= 13. FAQ == -->
+  <section class="section" aria-labelledby="faq-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="faq-heading">Connaught Place Spa &mdash; Frequently Asked Questions</h2>
+      </div>
+      <FAQ faqs={connaughtPlaceFaqs} questionTag="h3" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .narrow {
+    max-width: 860px;
+  }
+
+  .narrow > h2,
+  .narrow > p {
+    max-width: 72ch;
+  }
+
+  .narrow > p {
+    margin-top: 1rem;
+  }
+
+  .centre-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .centre-row--gap {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  /* --------------------------------------------------------------- 1. hero */
+  .cphero {
+    padding-top: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+  }
+
+  .cphero__inner {
+    max-width: 780px;
+    text-align: center;
+  }
+
+  .cphero__eyebrow {
+    margin: 0 0 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .cphero h1 {
+    margin: 0;
+  }
+
+  .cphero__sub {
+    margin: 0.55rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.02rem, 0.92rem + 0.6vw, 1.3rem);
+    color: var(--green-700);
+  }
+
+  .cphero__lead {
+    margin: 1.1rem auto 0;
+    max-width: 62ch;
+  }
+
+  .cphero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.75rem;
+  }
+
+  .cpfacts {
+    display: grid;
+    gap: 0.85rem;
+    margin: 2rem 0 0;
+    padding: 1.1rem 1.25rem;
+    list-style: none;
+    background: var(--green-050);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+    text-align: left;
+  }
+
+  @media (min-width: 700px) {
+    .cpfacts {
+      grid-template-columns: repeat(3, 1fr);
+      text-align: center;
+    }
+  }
+
+  .cpfacts li {
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+
+  .cpfacts span {
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .cphero__photo {
+    width: 100%;
+    margin-top: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  /* ---------------------------------------------------------- 2. intro */
+  .cpintro {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+  }
+
+  @media (min-width: 900px) {
+    .cpintro {
+      grid-template-columns: 1.6fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .cpintro__copy h2 {
+    margin-top: 0;
+  }
+
+  .cpintro__copy p {
+    margin: 1rem 0 0;
+  }
+
+  .cpintro__links {
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  .cpintro__links a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .cpaside {
+    padding: 1.4rem 1.4rem 1.5rem;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-top: 3px solid var(--gold);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (min-width: 900px) {
+    .cpaside {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+
+  .cpaside__title {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    color: var(--green-800);
+  }
+
+  .cpaside dl {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+  }
+
+  .cpaside dt {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .cpaside dd {
+    margin: 0.2rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .cpaside dd a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .cpaside__note {
+    margin: 1.2rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  /* ----------------------------------------------------- 3. treatments */
+  .cpcards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cpcard {
+    position: relative;
+    padding: 1.4rem 1.35rem 1.5rem;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .cpcard__index {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+  }
+
+  .cpcard h3 {
+    margin: 0.35rem 0 0;
+    font-size: 1.1rem;
+    color: var(--green-800);
+  }
+
+  .cpcard__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin: 0.45rem 0 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .cpcard__price {
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--green-700);
+  }
+
+  .cpcard__dot {
+    color: var(--gold);
+  }
+
+  .cpcard__text {
+    margin: 0.75rem 0 0;
+    font-size: 0.91rem;
+    line-height: 1.7;
+  }
+
+  /* ---------------------------------------------------------- 4. banya */
+  .cpband {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3.25rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .cpband {
+      grid-template-columns: 1.15fr 1fr;
+    }
+  }
+
+  .cpband__copy h2 {
+    margin: 0.35rem 0 0;
+  }
+
+  .cpband__copy p {
+    margin: 1rem 0 0;
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  .cpband__media img {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+
+  /* ----------------------------------------------------- 5. preference */
+  .cpsplit {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 3vw, 3.25rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .cpsplit {
+      grid-template-columns: 1fr 1.2fr;
+    }
+  }
+
+  .cpsplit__media img {
+    width: 100%;
+    aspect-ratio: 9 / 8;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .cpsplit__copy h2 {
+    margin-top: 0;
+  }
+
+  .cpsplit__copy p {
+    margin: 1rem 0 0;
+  }
+
+  /* --------------------------------------------------------- 6. chips */
+  .cpchips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cpchips li {
+    padding: 0.42rem 0.95rem;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: var(--green-800);
+  }
+
+  /* ---------------------------------------------------- 8. facilities */
+  .cpfacgrid {
+    display: grid;
+    gap: clamp(1.25rem, 1rem + 2vw, 2.25rem);
+  }
+
+  @media (min-width: 900px) {
+    .cpfacgrid {
+      grid-template-columns: 1.5fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .cpfacs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cpfac {
+    padding: 1.15rem 1.1rem;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .cpfac__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--green-050);
+    color: var(--green-700);
+  }
+
+  .cpfac__name {
+    margin: 0.7rem 0 0.25rem;
+    font-size: 0.98rem;
+    color: var(--green-800);
+  }
+
+  .cpfac__note {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .cpfacgrid__photo {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  /* -------------------------------------------------------- 9. prices */
+  .cpprice {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+  }
+
+  @media (min-width: 900px) {
+    .cpprice {
+      grid-template-columns: 1fr 1.15fr;
+      align-items: start;
+    }
+  }
+
+  .cpprice__head h2 {
+    margin-top: 0;
+  }
+
+  .cpprice__head p {
+    margin: 0.75rem 0 0;
+  }
+
+  .cpprice__offer {
+    padding: 1rem 1.1rem;
+    background: var(--green-050);
+    border-left: 3px solid var(--green-500);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  .cpprice__photo {
+    width: 100%;
+    margin-top: 1.5rem;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  .cpprice__list ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .prow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.15rem 1rem;
+    padding: 0.8rem 1.1rem;
+    border-bottom: 1px solid var(--green-100);
+  }
+
+  .prow:last-child {
+    border-bottom: 0;
+  }
+
+  .prow__name {
+    font-weight: 600;
+    color: var(--green-800);
+  }
+
+  .prow__time {
+    grid-column: 1;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .prow__price {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    color: var(--green-700);
+    white-space: nowrap;
+  }
+
+  /* -------------------------------------------------------- 10. ticks */
+  .cpticks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cpticks li {
+    position: relative;
+    padding: 0.7rem 0.9rem 0.7rem 2.3rem;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .cpticks li::before {
+    content: '';
+    position: absolute;
+    top: 1.15rem;
+    left: 1rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  /* ------------------------------------------------- 11. address + map */
+  .cpaddr {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1.5rem 1.4rem;
+    background: var(--green-050);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+  }
+
+  @media (min-width: 760px) {
+    .cpaddr {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+  }
+
+  .details {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+  }
+
+  @media (min-width: 560px) {
+    .details {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .details dt {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .details dd {
+    margin: 0.25rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .details a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  .map {
+    display: block;
+    width: 100%;
+    height: clamp(300px, 38vw, 420px);
+    margin-top: 1.75rem;
+    border: 0;
+    border-radius: var(--radius);
+  }
+
+  /* ------------------------------------------------------ 12. booking */
+  .cprail {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cprail__item {
+    padding: 1.2rem 1.15rem 1.3rem;
+    background: var(--white);
+    border-top: 3px solid var(--green-100);
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  .cprail__num {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    line-height: 1;
+    color: var(--gold);
+  }
+
+  .cprail__item h3 {
+    margin: 0.55rem 0 0.35rem;
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  .cprail__item p {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+</style>

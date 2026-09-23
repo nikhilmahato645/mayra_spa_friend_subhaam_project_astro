@@ -2,12 +2,952 @@
 /**
  * LOCATION PAGE - /russian-spa-in-saket/
  *
- * All content for this page lives in src/data/locations.ts under the slug
- * below. Fill in `intro`, `sections` and `faqs` there, then remove this page
- * from src/data/drafts.mjs to publish it (lifts noindex + adds it to the
- * sitemap). Do not put copy in this file - keep every area in one data file.
+ * There is no Saket branch. The business trades from ONE address, in Aerocity,
+ * and this page says so in the hero, in the local sections, in the reasons list
+ * and in the first FAQ. See the header of src/data/saket.ts for the full rule -
+ * it is the same one the Gurgaon and Karol Bagh pages follow.
+ *
+ * WHY IT IS NOT A LocationLayout PAGE
+ * LocationLayout renders the shared outlet skeleton, which reads as though the
+ * area has a branch of its own. Mahipalpur, Aerocity, Vasant Kunj, Gurgaon and
+ * Karol Bagh already have written pages instead; this is the sixth.
+ * LocationLayout is untouched and the remaining areas still use it.
+ *
+ * AND WHY IT LOOKS DIFFERENT AGAIN
+ * Aerocity leads with a split hero, Gurgaon with the journey, Karol Bagh with a
+ * full-width photograph and an overlapping card. This one opens with an
+ * asymmetric hero - copy on a tinted panel, photograph offset beside it - lays
+ * the treatments out as a three-up card grid with a price pill in the corner,
+ * runs the banya as a dark full-bleed band, and prints the prices as a
+ * two-column table rather than the single list Karol Bagh uses. Same brand
+ * colours, same type, a different page.
+ *
+ * ALL COPY lives in src/data/saket.ts. Do not write prose into this file.
+ *
+ * STRUCTURED DATA: BaseLayout already emits DaySpa (carrying the real Aerocity
+ * address) + WebSite + WebPage on every page, so this one adds only what the
+ * visible page can back up - breadcrumbs, the FAQ verbatim, and a Service whose
+ * areaServed is Saket. No second LocalBusiness, no Saket address anywhere in
+ * the graph, no rating and no reviews.
  */
-import LocationLayout from '../../layouts/LocationLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import ResponsivePhoto from '../../components/ResponsivePhoto.astro';
+import { site, telHref } from '../../data/site';
+import {
+  saketMeta,
+  saketImages,
+  saketTreatments,
+  saketPrices,
+  saketFacilities,
+  saketNearby,
+  saketReasons,
+  saketSteps,
+  saketFaqs,
+} from '../../data/saket';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Saket', href: '/russian-spa-in-saket/' },
+]);
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(saketFaqs),
+  serviceSchema({
+    name: 'Russian spa and body massage for Saket guests',
+    description: saketMeta.description,
+    url: `${site.url}/russian-spa-in-saket/`,
+    areaServed: 'Saket, South Delhi',
+  }),
+];
+
+/* The same embed the contact page builds: the Google Business Profile addressed
+   by its CID, so there is no hand-written latitude or longitude and no API key
+   in the front end. It points at Aerocity, which is where we are. */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+
+/* Half the price rows in each column of the table on wide screens. */
+const half = Math.ceil(saketPrices.length / 2);
+const priceColumns = [saketPrices.slice(0, half), saketPrices.slice(half)];
 ---
 
-<LocationLayout slug="russian-spa-in-saket" />
+<BaseLayout
+  title={saketMeta.title}
+  description={saketMeta.description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ====================================================== 1. HERO ===== -->
+  <!--
+    Asymmetric: the copy sits on a tinted panel, the photograph is offset
+    beside it and drops below the panel on a phone. The photo is the page's
+    Largest Contentful Paint, so it loads eagerly at high priority.
+  -->
+  <section class="sk-hero">
+    <div class="container sk-hero__inner">
+      <div class="sk-hero__panel">
+        <p class="sk-eyebrow">Saket &amp; South Delhi</p>
+        <h1>Russian Spa in Saket</h1>
+        <p class="sk-hero__sub">Body Massage &amp; Spa Services in Saket</p>
+        <p class="sk-hero__lead">
+          Looking for a massage around Saket? Pick from Swedish, deep tissue, Thai, hot stone and
+          the traditional Russian banya. The spa itself is in Aerocity, on the airport side of the
+          city, and every session runs by appointment &mdash; message or call to check what is free
+          on the day you want.
+        </p>
+
+        <div class="sk-actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I am searching from Saket and would like to book a massage."
+          />
+          <a class="btn btn--outline" href="/services/">Explore Massage Services</a>
+        </div>
+      </div>
+
+      <div class="sk-hero__media">
+        <ResponsivePhoto
+          photo={saketImages.hero}
+          smallWidth={760}
+          sizes="(min-width: 960px) 52vw, 100vw"
+          priority
+          class="sk-hero__img"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ 2. WHAT IS ON OFFER === -->
+  <section class="section" aria-labelledby="intro-heading">
+    <div class="container sk-measure">
+      <h2 id="intro-heading">Massage &amp; Spa Services in Saket</h2>
+      <p>
+        Saket sits in the middle of South Delhi, so anyone searching there has a choice of
+        neighbourhoods rather than one obvious place to go. Worth knowing before you pick: the
+        styles on a spa menu are genuinely different from one another. An oil massage at light
+        pressure, a firm session that stays on one stubborn area, a clothed Thai session on a mat,
+        and a heat ritual with no table at all are four separate experiences.
+      </p>
+      <p>
+        All four are on the menu here, at lengths from 45 minutes to two hours, each in a private
+        room, with the pressure settled between you and the therapist before anything begins. The
+        spa is not in Saket itself &mdash; it is in Aerocity, a drive from most of South Delhi
+        &mdash; so book ahead rather than turning up. Everything on this page can be booked over
+        <a href="/contact/">WhatsApp or the phone</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- =================================================== 3. TREATMENTS == -->
+  <section class="section section--cream" aria-labelledby="menu-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="menu-heading">Massage Treatments Available Near Saket</h2>
+        <p class="muted">
+          Six of the treatments guests book most often. The full menu, written out properly, is on
+          the services page.
+        </p>
+      </div>
+
+      <ul class="sk-cards">
+        {
+          saketTreatments.map((treatment) => (
+            <li class="card sk-card">
+              <div class="sk-card__top">
+                <h3 class="sk-card__name">{treatment.name}</h3>
+                <p class="sk-card__pill">
+                  <span class="sk-card__price">{treatment.price}</span>
+                  <span class="sk-card__dur">{treatment.duration}</span>
+                </p>
+              </div>
+              <p class="sk-card__text">{treatment.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="sk-centre">
+        <a class="btn btn--outline" href="/services/">View All Massage Services</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 4. BANYA === -->
+  <section class="section section--dark sk-banya" aria-labelledby="banya-heading">
+    <div class="container sk-banya__inner">
+      <div class="sk-banya__media">
+        <ResponsivePhoto
+          photo={saketImages.banya}
+          smallWidth={620}
+          sizes="(min-width: 900px) 480px, 92vw"
+        />
+      </div>
+
+      <div class="sk-banya__copy">
+        <p class="sk-eyebrow sk-eyebrow--light">The one that is not a massage</p>
+        <h2 id="banya-heading">Traditional Russian Banya Near Saket</h2>
+        <p>
+          A massage is one therapist working on you for an hour on a table. The banya is a bathing
+          ritual, and it moves in stages rather than running straight through.
+        </p>
+        <p>
+          It opens slowly, letting the body settle into the steam instead of rushing the heat. Once
+          you have warmed through, the therapist works over you with a birch venik &mdash; a bundle
+          of leafy branches swept rhythmically across the body, carrying the warmth and the smell of
+          birch with it. Then you step out to cool down and sit quietly before going back in. Herbal
+          tea closes the session.
+        </p>
+        <p>
+          That sequence is the whole point. At <strong>&#8377;2,500 for 60 minutes</strong> the
+          banya is the least expensive treatment on the menu, and the one most worth crossing town
+          for if you have never tried it.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================ 5. CHOOSING ONE === -->
+  <section class="section" aria-labelledby="choose-heading">
+    <div class="container sk-split">
+      <div class="sk-split__copy">
+        <h2 id="choose-heading">Choose a Massage That Fits Your Visit</h2>
+        <p>
+          Start with pressure. If you want to switch off and drift, Swedish or aromatherapy is the
+          right end of the menu; if a specific knot has been nagging for weeks, deep tissue is the
+          one that will reach it, and it is not meant to be uniformly comfortable. Thai sits apart
+          from both &mdash; clothed, oil-free, and closer to being stretched than rubbed.
+        </p>
+        <p>
+          Then think about time. Forty-five minutes suits a focused session; ninety gives the
+          therapist room to work slowly, which firm treatments need. If you are drawn to traditional
+          Russian bathing rather than a table at all, book the banya instead.
+        </p>
+        <p>
+          Whatever you pick, say what you want at the start and speak up during the session. The
+          therapist adjusts pressure on the spot, and a session eased off halfway through is a far
+          better hour than one endured in silence.
+        </p>
+      </div>
+
+      <div class="sk-split__media">
+        <ResponsivePhoto
+          photo={saketImages.oils}
+          smallWidth={480}
+          sizes="(min-width: 900px) 400px, 92vw"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 6. NEARBY AREAS ===== -->
+  <section class="section section--mint" aria-labelledby="nearby-heading">
+    <div class="container sk-measure">
+      <h2 id="nearby-heading">Convenient for Saket and Nearby South Delhi Areas</h2>
+
+      <ul class="sk-chips">
+        {saketNearby.map((area) => <li class="sk-chip">{area}</li>)}
+      </ul>
+
+      <p>
+        Guests reach the spa from right across the southern half of the city, and the address on
+        this page is the same one for every neighbourhood listed above &mdash; there is no second
+        outlet in any of them, and this page is not pretending otherwise. Practically, that means a
+        drive rather than a walk.
+      </p>
+      <p>
+        We do not publish travel times or distances, because they depend on your starting point,
+        your route and the hour, and any figure printed here would be invented. Guests travelling
+        from nearby South Delhi neighbourhoods can contact us to check availability, directions and
+        the most convenient appointment option &mdash; and if you are already closer to the airport
+        side, the <a href="/russian-spa-in-vasant-kunj/">Vasant Kunj page</a> covers the same spa
+        from that direction.
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================================== 7. SPA NEAR SAKET / S DELHI = -->
+  <section class="section" aria-labelledby="near-heading">
+    <div class="container sk-split sk-split--reverse">
+      <div class="sk-split__copy">
+        <h2 id="near-heading">Spa Near Saket and South Delhi</h2>
+        <p>
+          A search for a spa near Saket rarely stays inside Saket. Most people widen it across South
+          Delhi, because the difference between one neighbourhood and the next is usually a few
+          minutes of driving and the treatment menu matters more than the postcode.
+        </p>
+        <p>
+          That is the honest position here. Searches for a body massage near Saket land on this
+          page, and the spa behind it is in Aerocity rather than Saket itself. Nothing about the
+          treatments, the prices or the facilities changes with the search that brought you &mdash;
+          only the journey does. If the address suits you, everything on this page is bookable
+          today; if it does not, better to know now than at the door.
+        </p>
+      </div>
+
+      <div class="sk-split__media">
+        <ResponsivePhoto
+          photo={saketImages.calm}
+          smallWidth={480}
+          sizes="(min-width: 900px) 400px, 92vw"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================ 8. NEAR AIRPORT === -->
+  <section class="section section--cream" aria-labelledby="airport-heading">
+    <div class="container sk-measure">
+      <h2 id="airport-heading">Spa Near Delhi Airport</h2>
+      <p>
+        Aerocity is the hotel and business district attached to Indira Gandhi International Airport,
+        with Mahipalpur beside it. That puts the spa on the airport side of the city rather than the
+        Saket side &mdash; useful to know whichever direction you are coming from.
+      </p>
+      <p>
+        For anyone flying in or out of IGI, or staying in an Aerocity hotel, it is the near end of
+        South Delhi rather than the far one. For anyone starting in Saket, it is a trip across town.
+        We deliberately do not print minutes from any terminal, because that number changes with the
+        hour and we would only be guessing. Check the map below, and allow more time than the
+        estimate suggests.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================== 9. FACILITIES === -->
+  <section class="section" aria-labelledby="facilities-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="facilities-heading">Spa Facilities</h2>
+        <p class="muted">
+          What is on site. Not all of it belongs to every booking &mdash; the steam bath and jacuzzi
+          come with particular packages rather than a standard massage &mdash; so check what yours
+          includes when you confirm it.
+        </p>
+      </div>
+
+      <div class="sk-facilities">
+        <ul class="sk-fac-list">
+          {
+            saketFacilities.map((facility) => (
+              <li class="sk-fac">
+                <h3 class="sk-fac__title">{facility.title}</h3>
+                <p class="sk-fac__text">{facility.body}</p>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="sk-facilities__media">
+          <ResponsivePhoto
+            photo={saketImages.facilities}
+            smallWidth={480}
+            sizes="(min-width: 1000px) 320px, 92vw"
+          />
+          <p class="muted sk-small">
+            More of the rooms and the spa itself on the
+            <a href="/gallery/">spa gallery</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== 10. PRICES === -->
+  <section class="section section--cream" aria-labelledby="prices-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="prices-heading">Massage Prices Near Saket</h2>
+        <p class="muted">
+          The full treatment list and what each session runs to. There is no separate rate depending
+          on where you searched from.
+        </p>
+      </div>
+
+      <div class="sk-prices">
+        {
+          priceColumns.map((column) => (
+            <ul class="sk-price-col">
+              {column.map((row) => (
+                <li class="sk-price">
+                  <span class="sk-price__name">{row.name}</span>
+                  <span class="sk-price__dur">{row.duration}</span>
+                  <span class="sk-price__amt">{row.price}</span>
+                </li>
+              ))}
+            </ul>
+          ))
+        }
+      </div>
+
+      <p class="sk-offer">
+        <strong>First Visit Full Body Massage &mdash; &#8377;1,499.</strong> That price is for a
+        first-time guest booking the full body massage, and that treatment only &mdash; everything
+        in the list above is charged at the rate shown beside it.
+      </p>
+
+      <div class="sk-centre">
+        <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================== 11. REASONS === -->
+  <section class="section" aria-labelledby="reasons-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="reasons-heading">Why Guests Consider This Spa Near Saket</h2>
+      </div>
+
+      <ul class="sk-reasons">
+        {
+          saketReasons.map((reason) => (
+            <li class="sk-reason">
+              <h3 class="sk-reason__title">{reason.title}</h3>
+              <p class="sk-reason__text">{reason.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- =================================================== 12. LOCATION === -->
+  <section class="section section--cream" aria-labelledby="where-heading">
+    <div class="container sk-measure">
+      <h2 id="where-heading">Location &amp; Directions</h2>
+      <p class="muted">
+        One address, and it is not in Saket. This is where every booking made from this page
+        actually happens.
+      </p>
+
+      <dl class="sk-details">
+        <div>
+          <dt>Address</dt>
+          <dd>{site.addressLine}</dd>
+        </div>
+        <div>
+          <dt>Phone</dt>
+          <dd><a href={telHref}>{site.phone}</a></dd>
+        </div>
+        <div>
+          <dt>WhatsApp</dt>
+          <dd>{site.phone} &mdash; same number, message any time</dd>
+        </div>
+        <div>
+          <dt>Opening hours</dt>
+          <dd>{site.openingHoursLabel}</dd>
+        </div>
+      </dl>
+
+      <div class="sk-centre">
+        <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Get Directions
+        </a>
+      </div>
+
+      <!--
+        Lazy-loaded so it never competes with the content above it, and the
+        Get Directions link works whether or not the embed ever loads.
+      -->
+      <iframe
+        class="sk-map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1040"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+      <p class="muted sk-small">
+        Book before you travel &mdash; walk-ins depend entirely on what happens to be free. There is
+        more <a href="/about/">about our spa</a> if you would rather read the background first.
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================================================== 13. BOOKING === -->
+  <section class="section" aria-labelledby="book-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="book-heading">How to Book Your Massage Near Saket</h2>
+        <p class="muted">
+          Five steps and a phone. Nothing is held for you until the team writes back to say it is.
+        </p>
+      </div>
+
+      <ol class="sk-steps">
+        {
+          saketSteps.map((item) => (
+            <li class="sk-step">
+              <span class="sk-step__num" aria-hidden="true">
+                {item.step}
+              </span>
+              <h3 class="sk-step__title">{item.title}</h3>
+              <p class="sk-step__text">{item.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="sk-actions sk-actions--centre">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I would like to book a massage session. I am travelling from South Delhi."
+        />
+        <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 14. FAQ === -->
+  <section class="section section--cream" aria-labelledby="faq-heading">
+    <div class="container sk-measure">
+      <div class="section__head">
+        <h2 id="faq-heading">Saket Spa Questions, Answered</h2>
+      </div>
+
+      <FAQ faqs={saketFaqs} questionTag="h3" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ------------------------------------------------------------------ hero */
+  .sk-hero {
+    background: linear-gradient(180deg, var(--green-050) 0%, var(--white) 100%);
+    padding-block: clamp(1.5rem, 1rem + 2vw, 3rem) clamp(2rem, 1.4rem + 2.4vw, 3.5rem);
+  }
+
+  .sk-hero__inner {
+    display: grid;
+    gap: clamp(1.25rem, 0.8rem + 1.6vw, 2.25rem);
+    align-items: center;
+  }
+
+  @media (min-width: 960px) {
+    .sk-hero__inner {
+      grid-template-columns: 1fr 1.1fr;
+    }
+  }
+
+  .sk-hero__panel {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--green-700);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: clamp(1.25rem, 0.9rem + 1.4vw, 2.25rem);
+  }
+
+  .sk-hero__panel h1 {
+    margin: 0.35rem 0 0.5rem;
+  }
+
+  .sk-hero__sub {
+    font-family: var(--font-serif);
+    font-size: clamp(1rem, 0.94rem + 0.4vw, 1.25rem);
+    color: var(--green-700);
+    margin: 0 0 0.9rem;
+  }
+
+  .sk-hero__lead {
+    color: var(--ink-soft);
+    margin: 0 0 0.75rem;
+  }
+
+  .sk-hero__media :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    display: block;
+  }
+
+  /* ------------------------------------------------------------- utilities */
+  .sk-eyebrow {
+    font-family: var(--font-display);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: var(--green-600);
+    margin: 0;
+  }
+
+  .sk-eyebrow--light {
+    color: var(--green-100);
+  }
+
+  .sk-measure {
+    max-width: 62ch;
+  }
+
+  .sk-measure h2 {
+    margin-bottom: 0.75rem;
+  }
+
+  .sk-centre {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.75rem;
+  }
+
+  .sk-small {
+    font-size: 0.85rem;
+    margin-top: 1rem;
+  }
+
+  .sk-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .sk-actions--centre {
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  /* ------------------------------------------------------ treatment cards */
+  .sk-cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  }
+
+  .sk-card {
+    padding: 1.35rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .sk-card__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.6rem;
+  }
+
+  .sk-card__name {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--green-800);
+    margin: 0;
+  }
+
+  .sk-card__pill {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    background: var(--green-050);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    white-space: nowrap;
+  }
+
+  .sk-card__price {
+    font-family: var(--font-display);
+    color: var(--green-700);
+    font-size: 0.95rem;
+  }
+
+  .sk-card__dur {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .sk-card__text {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+  }
+
+  /* ------------------------------------------------------------ the banya */
+  .sk-banya__inner {
+    display: grid;
+    gap: clamp(1.25rem, 0.9rem + 1.6vw, 2.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .sk-banya__inner {
+      grid-template-columns: 0.85fr 1fr;
+    }
+  }
+
+  .sk-banya__media :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius);
+  }
+
+  .sk-banya__copy p {
+    color: var(--green-100);
+  }
+
+  /* --------------------------------------------------- generic split rows */
+  .sk-split {
+    display: grid;
+    gap: clamp(1.25rem, 0.9rem + 1.6vw, 2.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .sk-split {
+      grid-template-columns: 1.35fr 1fr;
+    }
+
+    .sk-split--reverse .sk-split__media {
+      order: -1;
+    }
+  }
+
+  .sk-split__copy h2 {
+    margin-bottom: 0.75rem;
+  }
+
+  .sk-split__media :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* -------------------------------------------------------- area chips */
+  .sk-chips {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .sk-chip {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.82rem;
+    color: var(--green-800);
+  }
+
+  /* ---------------------------------------------------------- facilities */
+  .sk-facilities {
+    display: grid;
+    gap: clamp(1.25rem, 0.9rem + 1.4vw, 2.25rem);
+  }
+
+  @media (min-width: 1000px) {
+    .sk-facilities {
+      grid-template-columns: 1fr 320px;
+      align-items: start;
+    }
+  }
+
+  .sk-fac-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+
+  .sk-fac {
+    border-left: 3px solid var(--green-500);
+    padding: 0.35rem 0 0.35rem 0.9rem;
+  }
+
+  .sk-fac__title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--green-800);
+    margin: 0 0 0.25rem;
+  }
+
+  .sk-fac__text {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .sk-facilities__media :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius);
+  }
+
+  /* -------------------------------------------------------------- prices */
+  .sk-prices {
+    display: grid;
+    gap: 0 2.5rem;
+  }
+
+  @media (min-width: 820px) {
+    .sk-prices {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .sk-price-col {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sk-price {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.15rem 0.75rem;
+    align-items: baseline;
+    padding: 0.7rem 0;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .sk-price__name {
+    font-family: var(--font-display);
+    color: var(--green-800);
+    font-size: 0.98rem;
+  }
+
+  .sk-price__amt {
+    font-family: var(--font-display);
+    color: var(--green-700);
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .sk-price__dur {
+    font-size: 0.78rem;
+    color: var(--muted);
+    grid-column: 1;
+  }
+
+  .sk-offer {
+    margin: 1.75rem 0 0;
+    background: var(--white);
+    border: 1px dashed var(--green-500);
+    border-radius: var(--radius);
+    padding: 1rem 1.15rem;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  /* ------------------------------------------------------------- reasons */
+  .sk-reasons {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .sk-reason {
+    background: var(--green-050);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+  }
+
+  .sk-reason__title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--green-800);
+    margin: 0 0 0.35rem;
+  }
+
+  .sk-reason__text {
+    margin: 0;
+    font-size: 0.87rem;
+    color: var(--ink-soft);
+  }
+
+  /* ------------------------------------------------------------ location */
+  .sk-details {
+    margin: 1.25rem 0 0;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .sk-details dt {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    color: var(--green-600);
+  }
+
+  .sk-details dd {
+    margin: 0.15rem 0 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+
+  .sk-map {
+    width: 100%;
+    max-width: 100%;
+    height: clamp(260px, 38vw, 420px);
+    margin-top: 1.5rem;
+    border: 0;
+    border-radius: var(--radius);
+    display: block;
+  }
+
+  /* --------------------------------------------------------------- steps */
+  .sk-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    counter-reset: none;
+  }
+
+  .sk-step {
+    border-top: 3px solid var(--green-500);
+    padding-top: 0.85rem;
+  }
+
+  .sk-step__num {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--green-100);
+    display: block;
+    line-height: 1;
+  }
+
+  .sk-step__title {
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    color: var(--green-800);
+    margin: 0.35rem 0 0.3rem;
+  }
+
+  .sk-step__text {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+</style>

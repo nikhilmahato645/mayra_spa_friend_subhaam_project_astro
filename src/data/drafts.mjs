@@ -30,12 +30,15 @@ export const draftPages = [
   '/russian-spa-in-dwarka/',
   // '/russian-spa-in-gurgaon/' was published once its page was written - it now
   // carries index,follow and appears in the sitemap.
-  '/russian-spa-in-saket/',
-  '/russian-spa-in-hauz-khas/',
+  // '/russian-spa-in-saket/' was published once its copy, photos and FAQs were
+  // written - it now carries index,follow and appears in the sitemap.
+  // '/russian-spa-in-hauz-khas/' was published once its page was written - it
+  // now carries index,follow and appears in the sitemap.
   '/russian-spa-in-green-park/',
   // '/russian-spa-in-karol-bagh/' was published once its page was written - it
   // now carries index,follow and appears in the sitemap.
-  '/russian-spa-in-noida/',
+  // '/russian-spa-in-noida/' was published once its page was written - it now
+  // carries index,follow and appears in the sitemap.
 ];
 
 /** True when the given path (or full URL) is still a draft. */

@@ -1,0 +1,1452 @@
+---
+/**
+ * LOCATION PAGE - /russian-spa-in-defence-colony/
+ *
+ * A SERVICE-AREA PAGE, NOT A BRANCH PAGE
+ *
+ * The business has one address, in Aerocity (see `site.address`). Defence
+ * Colony is a target area, so this page targets that search intent while
+ * saying plainly where we actually are. The map points at the real Google
+ * Business Profile, the address block shows the real address, and there is no
+ * second LocalBusiness in the structured data. See the header comment in
+ * src/data/defence-colony.ts for the full list of what must never appear here.
+ *
+ * HOW THE LAYOUT DIFFERS FROM THE OTHER LOCATION PAGES
+ *
+ * Aerocity and Karol Bagh open with a split hero, then run narrow prose,
+ * photographed treatment cards, a banya split-band, a facilities list beside
+ * photos, a price table, reason cards and numbered step cards. This page is
+ * built the other way round on purpose:
+ *   - a stacked hero, copy centred above a wide panoramic photo;
+ *   - the intro paired with a sticky at-a-glance card rather than run narrow;
+ *   - text-only treatment cards, numbered, in a three-column grid;
+ *   - the banya as a dark full-width band with a numbered ritual sequence;
+ *   - a preference checklist instead of more prose;
+ *   - the three local-search blocks grouped into one neighbourhood section;
+ *   - facilities as an icon grid, not a bordered list;
+ *   - prices as leader-dot rows, not a table;
+ *   - booking steps as a horizontal connected rail.
+ * Same brand colours, type and components. Different page.
+ *
+ * ALL COPY lives in src/data/defence-colony.ts. Do not write prose into this
+ * file.
+ *
+ * IMAGES: five remote Unsplash photos (hence usesUnsplash), unlike the other
+ * outlet pages which read local files. Each was checked before its alt text
+ * was written. See the images note in the data file for how to swap in the
+ * client's own photography later.
+ *
+ * STRUCTURED DATA: BaseLayout already emits DaySpa + WebSite + WebPage for
+ * every page, so this one adds only what is visible on it - breadcrumbs, the
+ * FAQ verbatim, and a Service whose areaServed is Defence Colony. No second
+ * LocalBusiness, no address for Defence Colony, no rating, no reviews.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CTA from '../../components/CTA.astro';
+import FAQ from '../../components/FAQ.astro';
+import { site, telHref } from '../../data/site';
+import {
+  defenceColonyMeta,
+  defenceColonyImages,
+  defenceColonyTreatments,
+  defenceColonyPrices,
+  defenceColonyFacilities,
+  defenceColonyPreferences,
+  defenceColonyExpectations,
+  defenceColonySteps,
+  defenceColonyFaqs,
+} from '../../data/defence-colony';
+import { srcSet } from '../../utils/image';
+import type { SiteImage } from '../../utils/image';
+import { breadcrumbTrail } from '../../utils/seo';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../utils/schema';
+import { isDraft } from '../../data/drafts.mjs';
+
+const crumbs = breadcrumbTrail([
+  { name: 'Outlets', href: '/russian-spa-in-mahipalpur/' },
+  { name: 'Russian Spa in Defence Colony', href: '/russian-spa-in-defence-colony/' },
+]);
+
+const schemas = [
+  breadcrumbSchema(crumbs),
+  faqSchema(defenceColonyFaqs),
+  serviceSchema({
+    name: 'Russian spa and body massage for Defence Colony guests',
+    description: defenceColonyMeta.description,
+    url: `${site.url}/russian-spa-in-defence-colony/`,
+    areaServed: 'Defence Colony, New Delhi',
+  }),
+];
+
+/*
+ * The same embed the contact and Aerocity pages build: the Google Business
+ * Profile addressed by its CID. No hand-written latitude or longitude
+ * anywhere, no API key in the front end, and the pin is the real address -
+ * never a Defence Colony one.
+ */
+const mapSrc = `${site.mapsUrl.replace('https://maps.google.com/?', 'https://www.google.com/maps?')}&output=embed`;
+
+/**
+ * Responsive art for a REMOTE photo.
+ *
+ * `variants()` in src/utils/image.ts only does something for a local gallery
+ * .jpg - it hands a remote URL straight back, which would leave every phone
+ * downloading the full-width file. The Unsplash CDN resizes on demand from the
+ * w= and h= query parameters the `stock()` helper already put in the URL, so
+ * asking it for a narrow copy is a matter of rewriting those two numbers.
+ *
+ * Returns the pair of URLs plus a ready-made srcset. When the client's own
+ * photography lands and these images become localImage() calls, delete this
+ * and go back to `variants()` like the other outlet pages.
+ */
+const SMALL_WIDTH = 760;
+
+function remoteArt(photo: SiteImage) {
+  const small = photo.src
+    .replace(/([?&]w=)\d+/, `$1${SMALL_WIDTH}`)
+    .replace(/([?&]h=)\d+/, `$1${Math.round((photo.height / photo.width) * SMALL_WIDTH)}`);
+  return {
+    small,
+    set: srcSet(small, photo.src, SMALL_WIDTH, photo.width),
+  };
+}
+
+/** Areas named once, in one place, rather than sprinkled through the prose. */
+const nearbyAreas = [
+  'Defence Colony',
+  'South Extension',
+  'Lajpat Nagar',
+  'Greater Kailash',
+  'Jangpura',
+  'Lodhi Road',
+  'Andrews Ganj',
+  'Kotla Mubarakpur',
+  'Hauz Khas',
+];
+
+/** Inline SVG paths for the facilities grid, keyed by `icon` in the data. */
+const facilityIcons: Record<string, string> = {
+  room: 'M4 21V9l8-6 8 6v12h-6v-7h-4v7Z',
+  shower: 'M6 22V8a4 4 0 0 1 8 0h6M9 13v1m3 2v1m3-5v1m-6 6v1m6 2v1',
+  steam: 'M7 18c0-2 2-2 2-4s-2-2-2-4 2-2 2-4m4 12c0-2 2-2 2-4s-2-2-2-4 2-2 2-4M4 21h16',
+  sauna: 'M3 20h18M5 20V9h14v11M5 13h14M9 4h2m2 0h2',
+  hammam: 'M12 3v6m-7 3h14a0 0 0 0 1 0 0 7 7 0 0 1-14 0ZM7 20l1-2m9 2-1-2',
+  jacuzzi: 'M4 12h16v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4ZM8 12V6a2 2 0 0 1 4 0M2 12h20',
+};
+
+const hero = defenceColonyImages.hero;
+const heroArt = remoteArt(hero);
+const banyaArt = remoteArt(defenceColonyImages.banya);
+const heatRoomArt = remoteArt(defenceColonyImages.heatRoom);
+const hotStoneArt = remoteArt(defenceColonyImages.hotStone);
+const loungeArt = remoteArt(defenceColonyImages.lounge);
+---
+
+<BaseLayout
+  title={defenceColonyMeta.title}
+  description={defenceColonyMeta.description}
+  schemas={schemas}
+  noindex={isDraft(Astro.url.pathname)}
+  bareTitle
+>
+  <Breadcrumbs items={crumbs} />
+
+  <!-- ===================================================== 1. HERO ====== -->
+  <!--
+    Stacked, not split: the copy is centred and the photo runs wide beneath it.
+    That photo is the Largest Contentful Paint, so it is eager with
+    fetchpriority; everything below the fold is lazy.
+  -->
+  <section class="dhero">
+    <div class="container">
+      <div class="dhero__copy">
+        <p class="dhero__eyebrow">South Delhi service area</p>
+        <h1>Russian Spa in Defence Colony</h1>
+        <p class="dhero__sub">Body Massage &amp; Spa Services in Defence Colony</p>
+        <p class="dhero__lead">
+          Looking through the massage options around Defence Colony? Read the treatments below,
+          then message or call to check what is free. Visits are by appointment, and the address
+          you come to is our Aerocity one &mdash; set out in full further down.
+        </p>
+
+        <div class="dhero__actions">
+          <CTA
+            label="Book on WhatsApp"
+            message="Hi, I am in Defence Colony and would like to book a massage appointment."
+          />
+          <a class="btn btn--outline" href="#treatments-heading">Explore Massage Services</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container container--wide">
+      <!--
+        No <picture>/<source type="image/webp"> here: the CDN carries
+        auto=format and negotiates webp or avif from the Accept header, so
+        declaring a type would be a claim about bytes we do not control.
+        A plain srcset is both accurate and enough.
+      -->
+      <img
+        class="dhero__media"
+        src={hero.src}
+        srcset={heroArt.set}
+        sizes="(min-width: 1280px) 1280px, 96vw"
+        alt={hero.alt}
+        width={hero.width}
+        height={hero.height}
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+  </section>
+
+  <!-- ============================================= 2. INTRO + GLANCE ==== -->
+  <!--
+    Prose on the left, an at-a-glance card on the right that sticks while you
+    read. The other location pages run this section as centred narrow prose.
+  -->
+  <section class="section" aria-labelledby="intro-heading">
+    <div class="container intro">
+      <div class="intro__copy">
+        <h2 id="intro-heading">Massage &amp; Spa Services in Defence Colony</h2>
+        <p>
+          Defence Colony sits in the middle of South Delhi, ringed by market streets and a good
+          deal of traffic. People searching from here usually want one of two things: an hour of
+          quiet, or firm work on a back that has spent the week at a desk. Both are on the menu.
+        </p>
+        <p>
+          The treatments fall into three groups &mdash; oil massage on a table, which covers
+          Swedish, aromatherapy, deep tissue and hot stone; clothed bodywork on a mat, where Thai
+          and shiatsu sit; and the traditional Russian banya, a heat ritual rather than a massage.
+          Sessions run from 45 minutes to two hours, so length is as much a choice as style.
+        </p>
+        <p>
+          Nothing is walk-in. Message or call, say roughly when suits you, and the team comes back
+          with the slots genuinely free.
+        </p>
+      </div>
+
+      <aside class="glance" aria-label="At a glance">
+        <h3 class="glance__title">At a glance</h3>
+        <dl class="glance__list">
+          <div>
+            <dt>Where we are</dt>
+            <dd>Aerocity, New Delhi &mdash; one address, no Defence Colony branch</dd>
+          </div>
+          <div>
+            <dt>Open</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+          <div>
+            <dt>Treatments</dt>
+            <dd>10 individual sessions plus a couple&rsquo;s package</dd>
+          </div>
+          <div>
+            <dt>Sessions from</dt>
+            <dd>45 minutes, from ₹2,200</dd>
+          </div>
+          <div>
+            <dt>Booking</dt>
+            <dd><a href={telHref}>{site.phone}</a> &mdash; call or WhatsApp</dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================================================= 3. TREATMENTS ==== -->
+  <!--
+    Text-only numbered cards. Aerocity photographs half of its treatment
+    cards; keeping these plain is deliberate, and it keeps the page fast.
+  -->
+  <section class="section section--cream" aria-labelledby="treatments-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="treatments-heading">Massage Treatments Near Defence Colony</h2>
+        <p class="muted">
+          Six of the sessions guests book most often. The rest of the menu is on the services page.
+        </p>
+      </div>
+
+      <ol class="tgrid">
+        {
+          defenceColonyTreatments.map((treatment, index) => (
+            <li class="tile">
+              <span class="tile__num" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3 class="tile__name">{treatment.name}</h3>
+              <p class="tile__meta">
+                <span class="tile__price">{treatment.price}</span>
+                <span class="tile__dot" aria-hidden="true">
+                  &middot;
+                </span>
+                <span>{treatment.duration}</span>
+              </p>
+              <p class="tile__text">{treatment.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="centre-row">
+        <a class="btn btn--outline" href="/services/">View All Massage Services</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= 4. BANYA ==== -->
+  <!--
+    A dark full-width band with the ritual broken into four stages. The other
+    location pages present the banya as a light two-column split.
+  -->
+  <section class="section section--dark banya" aria-labelledby="banya-heading">
+    <div class="container banya__grid">
+      <div class="banya__copy">
+        <h2 id="banya-heading">Traditional Russian Banya Near Defence Colony</h2>
+        <p>
+          The banya is the part of the menu that surprises people. It is not a massage, and not a
+          sauna visit either &mdash; it is a bathing ritual taken in rounds, with time out of the
+          heat built into it.
+        </p>
+        <p>
+          Where a massage is one continuous hour on a table, the banya moves you between hot and
+          cool several times over. It is also the least expensive treatment we offer, at
+          <strong>₹2,500 for 60 minutes</strong>.
+        </p>
+
+        <ol class="ritual">
+          <li>
+            <h3>Settle into the steam</h3>
+            <p>You warm up gradually. This is the stage most first-timers try to hurry.</p>
+          </li>
+          <li>
+            <h3>The birch venik</h3>
+            <p>
+              Once you are properly warm, a bundle of leafy birch branches is swept over you in
+              rhythm, carrying heat and scent across the skin.
+            </p>
+          </li>
+          <li>
+            <h3>Cool down</h3>
+            <p>
+              You step out and let your breathing settle before going back in. The break is part of
+              the ritual, not an interruption to it.
+            </p>
+          </li>
+          <li>
+            <h3>Herbal tea</h3>
+            <p>Tea at the end, unhurried, while the heat works its way back out.</p>
+          </li>
+        </ol>
+      </div>
+
+      <div class="banya__media">
+        <img
+          src={defenceColonyImages.banya.src}
+          srcset={banyaArt.set}
+          sizes="(min-width: 960px) 460px, 92vw"
+          alt={defenceColonyImages.banya.alt}
+          width={defenceColonyImages.banya.width}
+          height={defenceColonyImages.banya.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== 5. YOUR SESSION ===== -->
+  <!--
+    A checklist of things the GUEST decides. Nothing here claims anything
+    about therapist training or certification - the project verifies none.
+  -->
+  <section class="section" aria-labelledby="comfort-heading">
+    <div class="container comfort">
+      <div class="comfort__intro">
+        <h2 id="comfort-heading">A Comfortable Massage Experience</h2>
+        <p>
+          The five minutes before a session begins matter more than people expect. That is when
+          you say what you actually want &mdash; far easier than lying there hoping the pressure
+          changes. Raise any of these at the start, or partway through if something is not right.
+        </p>
+        <p class="muted small">
+          Unsure which treatment fits? Describe what is bothering you when you book and the team
+          will point you at something sensible.
+        </p>
+      </div>
+
+      <ul class="prefs">
+        {
+          defenceColonyPreferences.map((pref) => (
+            <li class="pref">
+              <h3 class="pref__title">{pref.title}</h3>
+              <p class="pref__text">{pref.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- =========================================== 6-8. NEIGHBOURHOOD ===== -->
+  <!--
+    The three local-search blocks the brief asks for, grouped into one
+    section so the page does not read as three near-identical paragraphs.
+    No distances, no travel times, no landmarks, no second branch.
+  -->
+  <section class="section section--cream" aria-labelledby="local-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="local-heading">Convenient for Defence Colony and Nearby South Delhi Areas</h2>
+      </div>
+
+      <div class="local">
+        <div class="local__main">
+          <p>
+            Defence Colony is hemmed in by a lot of Delhi at once. The market blocks and the
+            neighbourhoods either side of them all feed into the same few arterial roads, which is
+            why so many guests would rather book a time than chance a walk-in.
+          </p>
+          <p>
+            Guests travelling from these South Delhi neighbourhoods can contact us to check
+            availability, directions and appointment options. We run no branch in any of them
+            &mdash; every treatment happens at the one Aerocity address, and how long the journey
+            takes depends on your route and the hour of the day.
+          </p>
+
+          <ul class="areas" aria-label="South Delhi areas guests travel from">
+            {nearbyAreas.map((area) => <li>{area}</li>)}
+          </ul>
+        </div>
+
+        <div class="local__side">
+          <article class="note">
+            <h3>Spa Near South Extension &amp; Defence Colony</h3>
+            <p>
+              A search for a spa near Defence Colony, a body massage in South Delhi or a massage
+              near South Extension turns up a number of businesses, several genuinely based in
+              those areas. We are not one of them &mdash; we operate from a single address. The
+              quickest way to confirm a time and the route is to
+              <a href="/contact/">contact us</a> directly.
+            </p>
+          </article>
+
+          <article class="note">
+            <h3>Spa Near Delhi Airport</h3>
+            <p>
+              That same address suits a second group: anyone pairing a South Delhi trip with a
+              flight. We are in Aerocity, the hotel district beside Indira Gandhi International
+              Airport. No travel time from any terminal is published here, because it depends on
+              your terminal and the traffic &mdash; check the map below and leave yourself room.
+            </p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 9. FACILITIES ==== -->
+  <!--
+    Icon grid. The Aerocity page runs its facilities as a bordered list beside
+    two photographs; one photo and six icons is a different shape.
+  -->
+  <section class="section" aria-labelledby="facilities-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="facilities-heading">Spa Facilities</h2>
+        <p class="muted">
+          What is on site. Not every facility forms part of every treatment &mdash; the steam room
+          and jacuzzi come with certain packages &mdash; so check what your booking includes.
+        </p>
+      </div>
+
+      <div class="fac-wrap">
+        <ul class="facs">
+          {
+            defenceColonyFacilities.map((facility) => (
+              <li class="fac">
+                <span class="fac__icon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="22"
+                    height="22"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d={facilityIcons[facility.icon]} />
+                  </svg>
+                </span>
+                <h3 class="fac__name">{facility.name}</h3>
+                <p class="fac__text">{facility.body}</p>
+              </li>
+            ))
+          }
+        </ul>
+
+        <img
+          class="fac-photo"
+          src={defenceColonyImages.heatRoom.src}
+          srcset={heatRoomArt.set}
+          sizes="(min-width: 1000px) 380px, 92vw"
+          alt={defenceColonyImages.heatRoom.alt}
+          width={defenceColonyImages.heatRoom.width}
+          height={defenceColonyImages.heatRoom.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== 10. PRICES ==== -->
+  <!--
+    Leader-dot rows rather than the table the Aerocity page uses, with the one
+    photo that belongs beside a price list.
+  -->
+  <section class="section section--cream" aria-labelledby="prices-heading">
+    <div class="container prices">
+      <div class="prices__list">
+        <div class="section__head">
+          <h2 id="prices-heading">Massage Prices in Defence Colony</h2>
+          <p class="muted">
+            The full individual menu, and the same figures quoted when you book &mdash; there is no
+            separate rate by area.
+          </p>
+        </div>
+
+        <ul class="rows">
+          {
+            defenceColonyPrices.map((row) => (
+              <li class="row">
+                <span class="row__name">{row.name}</span>
+                <span class="row__rule" aria-hidden="true" />
+                <span class="row__meta">
+                  <span class="row__time">{row.duration}</span>
+                  <span class="row__price">{row.price}</span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+
+        <p class="offer-note">
+          <strong>First visit full body massage &mdash; ₹1,499.</strong> An introductory price for
+          the full body massage on a first visit only. It does not apply to the treatments above or
+          to the packages, which are charged as listed.
+        </p>
+
+        <div class="centre-row centre-row--gap">
+          <a class="btn btn--outline" href="/pricing/">View Full Pricing</a>
+          <a class="btn btn--outline" href="/gallery/">View Spa Gallery</a>
+        </div>
+      </div>
+
+      <div class="prices__media">
+        <img
+          src={defenceColonyImages.hotStone.src}
+          srcset={hotStoneArt.set}
+          sizes="(min-width: 1000px) 380px, 92vw"
+          alt={defenceColonyImages.hotStone.alt}
+          width={defenceColonyImages.hotStone.width}
+          height={defenceColonyImages.hotStone.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 11. EXPECT ====== -->
+  <section class="section" aria-labelledby="expect-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="expect-heading">What Guests Can Expect</h2>
+      </div>
+      <ul class="ticks">
+        {defenceColonyExpectations.map((point) => <li>{point}</li>)}
+      </ul>
+      <p class="muted small">
+        Nothing on this page is a ranking or an award. Read more
+        <a href="/about/">about our spa</a> if you want the background.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================================================ 12. LOCATION ====== -->
+  <section class="section section--cream" aria-labelledby="visit-heading">
+    <div class="container visit">
+      <div class="visit__media">
+        <img
+          src={defenceColonyImages.lounge.src}
+          srcset={loungeArt.set}
+          sizes="(min-width: 900px) 460px, 92vw"
+          alt={defenceColonyImages.lounge.alt}
+          width={defenceColonyImages.lounge.width}
+          height={defenceColonyImages.lounge.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      <div class="visit__copy">
+        <h2 id="visit-heading">Location &amp; Directions</h2>
+        <p>
+          Defence Colony is an area we serve, not an address we hold. This is where you actually
+          come:
+        </p>
+
+        <dl class="details">
+          <div>
+            <dt>Address</dt>
+            <dd>{site.addressLine}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd><a href={telHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>WhatsApp</dt>
+            <dd>{site.phone} &mdash; same number, message any time</dd>
+          </div>
+          <div>
+            <dt>Opening hours</dt>
+            <dd>{site.openingHoursLabel}</dd>
+          </div>
+          <div>
+            <dt>Directions</dt>
+            <dd>
+              <a href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+                Open the route in Google Maps
+              </a>
+            </dd>
+          </div>
+        </dl>
+
+        <p class="muted small">
+          Please book before you set off. Walk-ins depend entirely on what happens to be free when
+          you arrive.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 13. MAP ==== -->
+  <!--
+    Below the main content, lazy-loaded, and the text address plus the Get
+    Directions link above work whether or not the embed ever loads. The pin is
+    the real business location - there is no Defence Colony pin to place.
+  -->
+  <section class="section" aria-labelledby="map-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="map-heading">Find the Spa</h2>
+        <p class="muted">{site.addressLine}</p>
+      </div>
+
+      <div class="centre-row">
+        <a class="btn" href={site.mapsUrl} target="_blank" rel="noopener noreferrer">
+          Get Directions
+        </a>
+      </div>
+
+      <iframe
+        class="map"
+        src={mapSrc}
+        title={`Map showing ${site.name} at ${site.addressLine}`}
+        width="1040"
+        height="420"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+
+  <!-- ======================================================= 14. BOOK ==== -->
+  <section class="section section--cream" aria-labelledby="book-heading">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="book-heading">How to Book Your Massage</h2>
+        <p class="muted">
+          Five steps, no account and no deposit. Your slot is booked when the team confirms it.
+        </p>
+      </div>
+
+      <ol class="rail">
+        {
+          defenceColonySteps.map((item) => (
+            <li class="rail__item">
+              <span class="rail__num" aria-hidden="true">
+                {item.step}
+              </span>
+              <h3 class="rail__title">{item.title}</h3>
+              <p class="rail__text">{item.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="centre-row centre-row--gap">
+        <CTA
+          label="Book on WhatsApp"
+          message="Hi, I would like to check availability for a massage appointment. I am travelling from Defence Colony."
+        />
+        <a class="btn btn--outline" href={telHref}>Call {site.phone}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 15. FAQ ==== -->
+  <section class="section" aria-labelledby="faq-heading">
+    <div class="container narrow">
+      <div class="section__head">
+        <h2 id="faq-heading">Defence Colony &amp; South Delhi &mdash; Your Questions</h2>
+      </div>
+      <FAQ faqs={defenceColonyFaqs} questionTag="h3" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .narrow {
+    max-width: 860px;
+  }
+
+  .small {
+    font-size: 0.9rem;
+  }
+
+  .centre-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .centre-row--gap {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  /* ------------------------------------------------------------- 1. hero */
+  .dhero {
+    padding-top: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+  }
+
+  .dhero__copy {
+    max-width: 760px;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .dhero__eyebrow {
+    margin: 0 0 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .dhero h1 {
+    margin: 0;
+  }
+
+  .dhero__sub {
+    margin: 0.6rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
+    color: var(--green-700);
+  }
+
+  .dhero__lead {
+    margin: 1.1rem auto 0;
+    max-width: 62ch;
+  }
+
+  .dhero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.9rem;
+  }
+
+  .dhero__media {
+    display: block;
+    margin-top: clamp(1.75rem, 1.2rem + 2vw, 3rem);
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 640px) {
+    .dhero__media {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  /* --------------------------------------------------- 2. intro + glance */
+  .intro {
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
+  }
+
+  @media (min-width: 960px) {
+    .intro {
+      grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .intro__copy h2 {
+    margin-top: 0;
+  }
+
+  .intro__copy p {
+    margin: 1rem 0 0;
+    max-width: 66ch;
+  }
+
+  .glance {
+    padding: 1.5rem 1.4rem;
+    background: var(--green-050);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius);
+  }
+
+  @media (min-width: 960px) {
+    .glance {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+
+  .glance__title {
+    margin: 0 0 1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .glance__list {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+  }
+
+  .glance__list dt {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--green-700);
+  }
+
+  .glance__list dd {
+    margin: 0.15rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .glance__list a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------- 3. treatments */
+  .tgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tile {
+    position: relative;
+    padding: 1.6rem 1.35rem 1.45rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border-top: 3px solid var(--green-100);
+    transition: border-color 0.2s ease;
+  }
+
+  .tile:hover {
+    border-top-color: var(--gold);
+  }
+
+  .tile__num {
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+  }
+
+  .tile__name {
+    margin: 0.35rem 0 0;
+    font-size: 1.12rem;
+    color: var(--green-800);
+  }
+
+  .tile__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin: 0.5rem 0 0.7rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .tile__price {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--green-700);
+  }
+
+  .tile__dot {
+    color: var(--gold);
+  }
+
+  .tile__text {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.72;
+  }
+
+  /* ------------------------------------------------------------ 4. banya */
+  .banya__grid {
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2.5vw, 3.25rem);
+    align-items: start;
+  }
+
+  @media (min-width: 960px) {
+    .banya__grid {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    }
+  }
+
+  .banya__copy h2 {
+    margin-top: 0;
+  }
+
+  .banya__copy > p {
+    margin: 1rem 0 0;
+    max-width: 62ch;
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  .banya__media img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+
+  @media (max-width: 959px) {
+    .banya__media img {
+      aspect-ratio: 16 / 10;
+    }
+  }
+
+  .ritual {
+    display: grid;
+    gap: 1.1rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: ritual;
+  }
+
+  .ritual li {
+    counter-increment: ritual;
+    padding-left: 3rem;
+    position: relative;
+  }
+
+  .ritual li::before {
+    content: counter(ritual);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border: 1px solid rgba(201, 162, 74, 0.55);
+    border-radius: 50%;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--gold);
+  }
+
+  .ritual h3 {
+    margin: 0.25rem 0 0.3rem;
+    font-size: 1rem;
+  }
+
+  .ritual p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* ---------------------------------------------------------- 5. comfort */
+  .comfort {
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
+  }
+
+  @media (min-width: 960px) {
+    .comfort {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+      align-items: start;
+    }
+  }
+
+  .comfort__intro h2 {
+    margin-top: 0;
+  }
+
+  .comfort__intro p {
+    margin: 1rem 0 0;
+    max-width: 52ch;
+  }
+
+  .prefs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pref {
+    padding: 1.05rem 1.15rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+  }
+
+  .pref__title {
+    margin: 0 0 0.3rem;
+    font-size: 0.95rem;
+    color: var(--green-800);
+  }
+
+  .pref__text {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  /* ----------------------------------------------------- 6-8. local area */
+  .local {
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
+  }
+
+  @media (min-width: 1000px) {
+    .local {
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .local__main p {
+    margin: 0 0 1rem;
+    max-width: 66ch;
+  }
+
+  .areas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .areas li {
+    padding: 0.35rem 0.85rem;
+    background: var(--white);
+    border: 1px solid var(--green-100);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    color: var(--green-700);
+  }
+
+  .local__side {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .note {
+    padding: 1.3rem 1.35rem;
+    background: var(--white);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .note h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  .note p {
+    margin: 0;
+    font-size: 0.89rem;
+    line-height: 1.72;
+  }
+
+  .note a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* ------------------------------------------------------- 9. facilities */
+  .fac-wrap {
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  @media (min-width: 1000px) {
+    .fac-wrap {
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .facs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .fac {
+    padding: 1.25rem 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .fac__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: 0.7rem;
+    border-radius: 50%;
+    background: var(--green-050);
+    color: var(--green-700);
+  }
+
+  .fac__name {
+    margin: 0 0 0.3rem;
+    font-size: 0.98rem;
+    color: var(--green-800);
+  }
+
+  .fac__text {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  .fac-photo {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 999px) {
+    .fac-photo {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  /* ----------------------------------------------------------- 10. prices */
+  .prices {
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
+  }
+
+  @media (min-width: 1000px) {
+    .prices {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .prices .section__head {
+    text-align: left;
+    margin-bottom: 1.5rem;
+  }
+
+  .prices .section__head p {
+    margin-inline: 0;
+  }
+
+  .rows {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--green-100);
+  }
+
+  .row:last-child {
+    border-bottom: 0;
+  }
+
+  .row__name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--green-800);
+  }
+
+  .row__rule {
+    flex: 1;
+    min-width: 1.5rem;
+    border-bottom: 1px dotted var(--line);
+    transform: translateY(-0.25rem);
+  }
+
+  .row__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .row__time {
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .row__price {
+    font-family: var(--font-display);
+    font-size: 1.08rem;
+    color: var(--green-700);
+  }
+
+  .offer-note {
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.15rem;
+    background: var(--white);
+    border-left: 3px solid var(--green-500);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  .prices .centre-row {
+    justify-content: flex-start;
+  }
+
+  .prices__media img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 999px) {
+    .prices__media img {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  /* ----------------------------------------------------------- 11. ticks */
+  .ticks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0.7rem 1.5rem;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ticks li {
+    position: relative;
+    padding-left: 1.75rem;
+    font-size: 0.93rem;
+    line-height: 1.65;
+  }
+
+  .ticks li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45rem;
+    width: 0.55rem;
+    height: 0.3rem;
+    border-left: 2px solid var(--gold);
+    border-bottom: 2px solid var(--gold);
+    transform: rotate(-45deg);
+  }
+
+  /* -------------------------------------------------------- 12. location */
+  .visit {
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2.5vw, 3.25rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .visit {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    }
+  }
+
+  .visit__media img {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .visit__copy h2 {
+    margin-top: 0;
+  }
+
+  .visit__copy > p {
+    margin: 1rem 0 0;
+    max-width: 60ch;
+  }
+
+  .details {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 0 1.25rem;
+  }
+
+  .details dt {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .details dd {
+    margin: 0.25rem 0 0;
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .details a {
+    color: var(--green-700);
+    text-decoration: underline;
+  }
+
+  /* -------------------------------------------------------------- 13. map */
+  .map {
+    display: block;
+    width: 100%;
+    height: clamp(300px, 38vw, 420px);
+    margin-top: 2rem;
+    border: 0;
+    border-radius: var(--radius);
+  }
+
+  /* ------------------------------------------------------------- 14. rail */
+  .rail {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1.5rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rail__item {
+    position: relative;
+    padding-top: 2.6rem;
+  }
+
+  /* The connecting rail, drawn behind the numbers on wide screens only. */
+  .rail__item::after {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    left: 2.6rem;
+    right: -1.25rem;
+    height: 1px;
+    background: var(--green-100);
+  }
+
+  .rail__item:last-child::after {
+    display: none;
+  }
+
+  @media (max-width: 720px) {
+    .rail__item::after {
+      display: none;
+    }
+  }
+
+  .rail__num {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    background: var(--green-700);
+    color: var(--white);
+    border-radius: 50%;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+  }
+
+  .rail__title {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    color: var(--green-800);
+  }
+
+  .rail__text {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.68;
+    color: var(--muted);
+  }
+</style>

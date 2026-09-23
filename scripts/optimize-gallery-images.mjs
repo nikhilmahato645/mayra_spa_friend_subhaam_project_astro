@@ -38,6 +38,8 @@ const ROOTS = [
   path.join(process.cwd(), 'public', 'images', 'locations', 'vasant-kunj'),
   path.join(process.cwd(), 'public', 'images', 'locations', 'karol-bagh'),
   path.join(process.cwd(), 'public', 'images', 'locations', 'mahipalpur'),
+  path.join(process.cwd(), 'public', 'images', 'locations', 'hauz-khas'),
+  path.join(process.cwd(), 'public', 'images', 'locations', 'lajpat-nagar'),
 ];
 
 /**
