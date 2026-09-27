@@ -278,6 +278,6 @@ export const karolBaghFaqs = [
   {
     question: 'How do I make an appointment?',
     answer:
-      'WhatsApp or a phone call to +91 9599547138, any time between 9:00 AM and 11:00 PM. Give the team a treatment and a rough day, and they will come back with what is open.',
+      'WhatsApp or a phone call to +91 9599547192, any time between 9:00 AM and 11:00 PM. Give the team a treatment and a rough day, and they will come back with what is open.',
   },
 ];

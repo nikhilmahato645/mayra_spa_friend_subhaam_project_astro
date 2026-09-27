@@ -106,7 +106,10 @@ const isActive = (href: string) =>
                       <path d="M7 10l5 5 5-5z" />
                     </svg>
                   </a>
-                  <ul class="dropdown">
+                  <ul
+                    class:list={['dropdown', item.children.length > 8 && 'dropdown--split']}
+                    style={`--dropdown-rows:${Math.ceil(item.children.length / 2)}`}
+                  >
                     {item.children.map((child) => (
                       <li>
                         <a href={child.href} aria-current={path === child.href ? 'page' : undefined}>
@@ -362,6 +365,19 @@ const isActive = (href: string) =>
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  }
+
+  /* Fourteen outlets in one column would run off the bottom of the screen, so
+     a long list breaks into two columns and fills them top-to-bottom.
+     --dropdown-rows is set on the element from the number of children, so the
+     split stays even however many outlets src/data/outlets.ts grows to. */
+  .dropdown--split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+    grid-template-rows: repeat(var(--dropdown-rows, 7), auto);
+    grid-auto-flow: column;
+    max-width: min(560px, 92vw);
+    column-gap: 0.25rem;
   }
 
   .nav__item--has-children:hover .dropdown,

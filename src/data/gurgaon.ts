@@ -310,6 +310,6 @@ export const gurgaonFaqs = [
   {
     question: 'How do I book a massage?',
     answer:
-      'Message us on WhatsApp or call +91 9599547138 between 9:00 AM and 11:00 PM. Tell us the treatment and roughly when you would like to come, and the team replies with the times that are free and confirms the slot.',
+      'Message us on WhatsApp or call +91 9599547192 between 9:00 AM and 11:00 PM. Tell us the treatment and roughly when you would like to come, and the team replies with the times that are free and confirms the slot.',
   },
 ];

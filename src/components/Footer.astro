@@ -10,11 +10,11 @@ import SocialLinks from './SocialLinks.astro';
 const year = new Date().getFullYear();
 ---
 
-<!-- Areas we serve - plain text, kept above the footer as in the design. -->
+<!-- Areas we serve - one chip per outlet page, kept above the footer as in the design. -->
 <section class="areas" aria-label="Areas we serve">
   <div class="container">
     <ul class="areas__list">
-      {serviceAreas.map((area) => <li>{area}</li>)}
+      {serviceAreas.map((area) => <li><a href={area.href}>{area.label}</a></li>)}
     </ul>
   </div>
 </section>
@@ -52,7 +52,10 @@ const year = new Date().getFullYear();
         </ul>
       </nav>
 
-      <nav class="footer__col" aria-label="Our outlets">
+      <!-- Every location page, same list as the header dropdown. It is long,
+           so this column is the wide one and its links sit in two rows-worth
+           of columns rather than one tall stack. -->
+      <nav class="footer__col footer__col--outlets" aria-label="Our outlets">
         <h2 class="footer__title">Outlets</h2>
         <ul>
           {footerOutlets.map((outlet) => <li><a href={outlet.href}>{outlet.label}</a></li>)}
@@ -92,13 +95,22 @@ const year = new Date().getFullYear();
     margin: 0;
   }
 
-  .areas__list li {
+  .areas__list a {
+    display: block;
     font-size: 0.76rem;
     color: var(--muted);
+    text-decoration: none;
     background: var(--white);
     border: 1px solid var(--line);
     border-radius: 999px;
     padding: 0.35rem 0.9rem;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .areas__list a:hover,
+  .areas__list a:focus-visible {
+    color: var(--green-900);
+    border-color: var(--green-900);
   }
 
   /* ----------------------------------------------------------- footer */
@@ -121,9 +133,18 @@ const year = new Date().getFullYear();
     }
   }
 
+  /* The outlets column carries fourteen links, so it gets the extra width. */
   @media (min-width: 1000px) {
     .footer__grid {
-      grid-template-columns: 1.6fr 1fr 1fr 1.4fr;
+      grid-template-columns: 1.5fr 0.9fr 1.6fr 1.3fr;
+    }
+  }
+
+  /* Two columns of outlets from the width where the footer itself splits. */
+  @media (min-width: 560px) {
+    .footer__col--outlets ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 1.25rem;
     }
   }
 

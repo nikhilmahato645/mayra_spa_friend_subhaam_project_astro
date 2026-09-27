@@ -7,6 +7,23 @@
  * an e-mail or a social URL inside a component or a page.
  */
 
+import { outletNavItems, outlets } from './outlets';
+
+/**
+ * Origin this build is being served from, with no trailing slash.
+ *
+ * astro.config.mjs works it out (the custom domain in production, the Netlify
+ * deploy URL before a domain is pointed at the site, the real domain locally)
+ * and Astro passes it through as import.meta.env.SITE. Reading it here rather
+ * than repeating a URL means canonical tags, JSON-LD @id values, OG urls,
+ * robots.txt and the sitemap can never disagree with each other.
+ *
+ * The fallback only matters if `site` is ever removed from astro.config.mjs.
+ */
+const CANONICAL_ORIGIN: string = (
+  import.meta.env.SITE || 'https://spanearmemahipalpur.com'
+).replace(/\/+$/, '');
+
 export interface SocialProfile {
   /** Machine name, also used to pick the inline SVG icon. */
   key: 'facebook' | 'x' | 'linkedin' | 'youtube' | 'pinterest' | 'instagram';
@@ -42,8 +59,11 @@ export const site = {
     markSource: '/images/logo/logo.png',
     alt: 'Russian Spa Mahipalpur logo',
   },
-  /** Canonical origin. Must match `site` in astro.config.mjs (no trailing slash). */
-  url: 'https://spanearmemahipalpur.com',
+  /**
+   * Canonical origin, no trailing slash. Comes from `site` in
+   * astro.config.mjs - never hard-code a URL here, see CANONICAL_ORIGIN above.
+   */
+  url: CANONICAL_ORIGIN,
   /** Used as the default meta description fallback and in the footer. */
   tagline:
     'Your destination for a comfortable massage and wellness experience in Mahipalpur, Delhi.',
@@ -51,12 +71,12 @@ export const site = {
   language: 'en-IN',
 
   /* ---------------------------------------------------------------- contact */
-  phone: '+91 9599547138',
+  phone: '+91 9599547192',
   /** E.164 form used for tel: links and JSON-LD. */
-  phoneE164: '+919599547138',
+  phoneE164: '+919599547192',
   /** Digits only, used to build wa.me links. */
-  whatsappNumber: '919599547138',
-  email: 'info@spanearmemahipalpur.com',
+  whatsappNumber: '919599547192',
+  email: 'spanearmemahipalpur@gmail.com',
 
   address: {
     street: 'Block - Asset No. 6, 6, Northern Access Rd',
@@ -185,26 +205,20 @@ export interface NavItem {
   children?: NavItem[];
 }
 
-/** Main header navigation. The "Outlet" item renders as a dropdown. */
+/**
+ * Main header navigation. The "Outlet" item renders as a dropdown, and its
+ * children are EVERY location page the site has - the list lives in
+ * src/data/outlets.ts, never here, so the header, the mobile menu and the
+ * footer can never drift apart.
+ */
 export const mainNav: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'About Us', href: '/about/' },
   { label: 'Our Service', href: '/services/' },
   {
     label: 'Outlet',
-    href: '/russian-spa-in-mahipalpur/',
-    children: [
-      { label: 'Russian Spa in Mahipalpur', href: '/russian-spa-in-mahipalpur/' },
-      { label: 'Russian Spa in Aerocity', href: '/russian-spa-in-aerocity/' },
-      { label: 'Russian Spa in Vasant Kunj', href: '/russian-spa-in-vasant-kunj/' },
-      { label: 'Russian Spa in Dwarka', href: '/russian-spa-in-dwarka/' },
-      { label: 'Russian Spa in Gurgaon', href: '/russian-spa-in-gurgaon/' },
-      { label: 'Russian Spa in Saket', href: '/russian-spa-in-saket/' },
-      { label: 'Russian Spa in Hauz Khas', href: '/russian-spa-in-hauz-khas/' },
-      { label: 'Russian Spa in Green Park', href: '/russian-spa-in-green-park/' },
-      { label: 'Russian Spa in Karol Bagh', href: '/russian-spa-in-karol-bagh/' },
-      { label: 'Russian Spa in Noida', href: '/russian-spa-in-noida/' },
-    ],
+    href: `/${outlets[0].slug}/`,
+    children: outletNavItems,
   },
   { label: 'Pricings', href: '/pricing/' },
   { label: 'Gallery', href: '/gallery/' },

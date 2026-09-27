@@ -1,0 +1,50 @@
+# Netlify build settings, kept in the repo so every deploy is identical.
+#
+# WHY THIS FILE EXISTS: the live site was missing seven pages (/services/,
+# /russian-spa-in-mahipalpur/, -vasant-kunj, -saket, -noida, -malviya-nagar,
+# -lajpat-nagar) and sitemap-index.xml, while their siblings were fine. All of
+# them build correctly - that was an incomplete upload, not a broken build.
+# Letting Netlify run the build from git removes the manual upload step that
+# can drop files halfway.
+
+[build]
+  # Not `npm run build`: that also runs `npm run images`, which needs sharp and
+  # only regenerates the -sm / .webp copies that are already committed to git.
+  # Re-running it on CI costs minutes and can fail the whole deploy.
+  command = "npm run build:ci"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # No SITE_URL here on purpose. astro.config.mjs reads Netlify's own $URL /
+  # $DEPLOY_PRIME_URL, so canonical tags, JSON-LD, robots.txt and the sitemap
+  # describe whatever address this deploy is served from - the .netlify.app
+  # subdomain today, and spanearmemahipalpur.com the moment the custom domain
+  # is attached, with no code change. Set SITE_URL only to force an origin.
+
+# Astro is configured with trailingSlash: 'always', so /services resolves to
+# /services/ rather than serving the same page at two URLs (Search Console
+# reports that as duplicate content).
+# @astrojs/sitemap writes sitemap-index.xml (+ sitemap-0.xml), never
+# sitemap.xml - but that is the address people and tools try first. Serve the
+# index there too (200 = rewrite, URL stays /sitemap.xml).
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/sitemap-index.xml"
+  status = 200
+
+[[redirects]]
+  from = "/services"
+  to = "/services/"
+  status = 301
+
+[[redirects]]
+  from = "/russian-spa-in-:area"
+  to = "/russian-spa-in-:area/"
+  status = 301
+
+# Hashed assets in _astro/ are immutable - their name changes when they do.
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -313,7 +313,7 @@ export const malviyaNagarSteps = [
   {
     step: '2',
     title: 'Message or call',
-    body: 'WhatsApp or ring +91 9599547138, and mention that you are travelling from Malviya Nagar.',
+    body: 'WhatsApp or ring +91 9599547192, and mention that you are travelling from Malviya Nagar.',
   },
   {
     step: '3',
@@ -383,6 +383,6 @@ export const malviyaNagarFaqs = [
   {
     question: 'How can I book an appointment?',
     answer:
-      'Message us on WhatsApp or call +91 9599547138 any day between 9:00 AM and 11:00 PM. Say which treatment you want and roughly when, and the team replies with the times that are free.',
+      'Message us on WhatsApp or call +91 9599547192 any day between 9:00 AM and 11:00 PM. Say which treatment you want and roughly when, and the team replies with the times that are free.',
   },
 ];

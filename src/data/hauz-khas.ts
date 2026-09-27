@@ -370,6 +370,6 @@ export const hauzKhasFaqs = [
   {
     question: 'How do I make an appointment?',
     answer:
-      'Message us on WhatsApp or call +91 9599547138 between 9:00 AM and 11:00 PM, any day. Say which treatment and roughly when suits you, and the team replies with the times free. Your slot is booked once they confirm it.',
+      'Message us on WhatsApp or call +91 9599547192 between 9:00 AM and 11:00 PM, any day. Say which treatment and roughly when suits you, and the team replies with the times free. Your slot is booked once they confirm it.',
   },
 ];

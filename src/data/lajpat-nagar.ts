@@ -323,7 +323,7 @@ export const lajpatNagarSteps = [
   {
     step: '2',
     title: 'Message or call',
-    body: 'WhatsApp, or ring +91 9599547138 any day between 9:00 AM and 11:00 PM.',
+    body: 'WhatsApp, or ring +91 9599547192 any day between 9:00 AM and 11:00 PM.',
   },
   {
     step: '3',
@@ -391,6 +391,6 @@ export const lajpatNagarFaqs = [
   {
     question: 'How do I make an appointment?',
     answer:
-      'Message on WhatsApp or call +91 9599547138 between 9:00 AM and 11:00 PM, any day. Say which treatment you want and roughly when suits, and the team replies with the slots open. Nothing is confirmed until they say it is.',
+      'Message on WhatsApp or call +91 9599547192 between 9:00 AM and 11:00 PM, any day. Say which treatment you want and roughly when suits, and the team replies with the slots open. Nothing is confirmed until they say it is.',
   },
 ];

@@ -294,6 +294,6 @@ export const aerocityFaqs = [
   {
     question: 'How do I make an appointment?',
     answer:
-      'Message us on WhatsApp or call +91 9599547138 between 9:00 AM and 11:00 PM. Say which treatment and roughly when, and the team replies with the times free at Aerocity.',
+      'Message us on WhatsApp or call +91 9599547192 between 9:00 AM and 11:00 PM. Say which treatment and roughly when, and the team replies with the times free at Aerocity.',
   },
 ];

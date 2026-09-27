@@ -245,7 +245,7 @@ export const saketSteps = [
   {
     step: '02',
     title: 'Message or call',
-    body: 'WhatsApp or ring +91 9599547138 with a treatment and a rough day.',
+    body: 'WhatsApp or ring +91 9599547192 with a treatment and a rough day.',
   },
   {
     step: '03',
@@ -313,6 +313,6 @@ export const saketFaqs = [
   {
     question: 'How do I make an appointment?',
     answer:
-      'WhatsApp or call +91 9599547138 any time between 9:00 AM and 11:00 PM, any day of the week. Give the team a treatment and a rough time, and they will reply with what is actually open.',
+      'WhatsApp or call +91 9599547192 any time between 9:00 AM and 11:00 PM, any day of the week. Give the team a treatment and a rough time, and they will reply with what is actually open.',
   },
 ];

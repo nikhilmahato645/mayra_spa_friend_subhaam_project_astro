@@ -10,6 +10,7 @@
  * Sections whose copy is empty are simply not rendered.
  */
 import { site } from './site';
+import { outletFooterLinks, outletHref, outlets } from './outlets';
 
 export interface LocationFaq {
   question: string;
@@ -126,7 +127,9 @@ export const primeLocations: PrimeLocation[] = [
     name: 'Spa in Lajpat Nagar',
     description:
       'Looking for a relaxing spa in Lajpat Nagar? Take a peaceful break from the busy surroundings and enjoy Thai, Aroma and Full Body Massage therapies designed for relaxation. Our trained therapists provide personalized treatments in clean, comfortable and hygienic spa rooms, helping you unwind and feel refreshed after a busy day.',
-    href: '/contact/',
+    /* Points at the Lajpat Nagar page now that it exists - it was /contact/
+       only because the page had not been written yet. */
+    href: '/russian-spa-in-lajpat-nagar/',
     image: 'primeLajpatNagar',
   },
   {
@@ -153,30 +156,18 @@ export const primeLocations: PrimeLocation[] = [
 ];
 
 /**
- * Service-area tag cloud shown above the footer. Plain text, not links,
- * because most of these areas have no page of their own yet.
+ * Service-area chips shown above the footer - one per published location
+ * page, each linking to it. Built from src/data/outlets.ts so the strip only
+ * ever names areas that actually have a page (drafts are already left out).
  */
-export const serviceAreas = [
-  'Mahipalpur',
-  'Aerocity',
-  'New Friends Colony',
-  'Vasant Kunj',
-  'Paharganj',
-  'Vasant Vihar',
-  'Paschim Vihar',
-  'Connaught Place',
-  'Chanakyapuri',
-  'Pitampura',
-  'Laxmi Nagar',
-  'Hauz Khas',
-];
+export const serviceAreas = outlets.map((outlet) => ({
+  label: outlet.area,
+  href: outletHref(outlet),
+}));
 
-/** Footer "Outlets" column. */
-export const footerOutlets = [
-  { label: 'Spa in Mahipalpur', href: '/russian-spa-in-mahipalpur/' },
-  { label: 'Spa in Aerocity', href: '/russian-spa-in-aerocity/' },
-  { label: 'Spa in Karol Bagh', href: '/russian-spa-in-karol-bagh/' },
-  { label: 'Spa in Saket', href: '/russian-spa-in-saket/' },
-  { label: 'Spa in Noida', href: '/russian-spa-in-noida/' },
-  { label: 'Spa in Dwarka', href: '/russian-spa-in-dwarka/' },
-];
+/**
+ * Footer "Outlets" column - every location page, same list as the header
+ * dropdown. Re-exported from src/data/outlets.ts so the footer and the menu
+ * are literally the same data; add a new area there, not here.
+ */
+export const footerOutlets = outletFooterLinks;

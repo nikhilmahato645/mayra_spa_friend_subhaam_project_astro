@@ -231,7 +231,7 @@ export const connaughtPlaceSteps = [
   {
     step: '02',
     title: 'Message or ring',
-    body: 'WhatsApp or call +91 9599547138, any time between 9:00 AM and 11:00 PM.',
+    body: 'WhatsApp or call +91 9599547192, any time between 9:00 AM and 11:00 PM.',
   },
   {
     step: '03',
@@ -299,6 +299,6 @@ export const connaughtPlaceFaqs = [
   {
     question: 'How do I make an appointment?',
     answer:
-      'Message the spa on WhatsApp or call +91 9599547138 between 9:00 AM and 11:00 PM, any day. Give the team a treatment and a rough time, and they will come back with what is open. Your slot counts as booked once they confirm it.',
+      'Message the spa on WhatsApp or call +91 9599547192 between 9:00 AM and 11:00 PM, any day. Give the team a treatment and a rough time, and they will come back with what is open. Your slot counts as booked once they confirm it.',
   },
 ];

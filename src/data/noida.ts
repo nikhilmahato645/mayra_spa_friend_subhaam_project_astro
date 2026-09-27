@@ -304,7 +304,7 @@ export const noidaSteps = [
   {
     step: '2',
     title: 'Message or call',
-    body: 'WhatsApp or ring +91 9599547138 and say which treatment you want and roughly when.',
+    body: 'WhatsApp or ring +91 9599547192 and say which treatment you want and roughly when.',
   },
   {
     step: '3',
@@ -371,6 +371,6 @@ export const noidaFaqs = [
   {
     question: 'How do I book a massage appointment?',
     answer:
-      'Message us on WhatsApp or call +91 9599547138 any day between 9:00 AM and 11:00 PM. Say which treatment you want and roughly when, and the team replies with the times that are free.',
+      'Message us on WhatsApp or call +91 9599547192 any day between 9:00 AM and 11:00 PM. Say which treatment you want and roughly when, and the team replies with the times that are free.',
   },
 ];

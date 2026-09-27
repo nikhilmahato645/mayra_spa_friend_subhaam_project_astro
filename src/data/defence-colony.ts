@@ -236,7 +236,7 @@ export const defenceColonySteps = [
   {
     step: '2',
     title: 'Message or call',
-    body: 'WhatsApp or ring +91 9599547138, and say you are travelling from Defence Colony.',
+    body: 'WhatsApp or ring +91 9599547192, and say you are travelling from Defence Colony.',
   },
   {
     step: '3',
@@ -306,6 +306,6 @@ export const defenceColonyFaqs = [
   {
     question: 'How do I book an appointment?',
     answer:
-      'Message us on WhatsApp or call +91 9599547138 between 9:00 AM and 11:00 PM, any day. Say which treatment and roughly when, and the team replies with the times free.',
+      'Message us on WhatsApp or call +91 9599547192 between 9:00 AM and 11:00 PM, any day. Say which treatment and roughly when, and the team replies with the times free.',
   },
 ];
