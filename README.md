@@ -74,13 +74,13 @@ page and nothing else, so changing a home page photo can never affect another pa
 
 ## 4. Adding content to a page
 
-### A location page (e.g. `/russian-spa-in-dwarka/`)
+### A location page (e.g. `/russian-spa-in-saket/`)
 
 1. Open `src/data/locations.ts` and fill in `intro`, `sections` and `faqs` for that slug.
-2. Remove `'/russian-spa-in-dwarka/'` from `src/data/drafts.mjs`.
+2. Remove `'/russian-spa-in-saket/'` from `src/data/drafts.mjs`.
 3. `npm run build`.
 
-The page file itself (`src/pages/russian-spa-in-dwarka/index.astro`) is three lines
+The page file itself (`src/pages/russian-spa-in-saket/index.astro`) is three lines
 and never needs editing — all ten areas share `LocationLayout.astro`.
 
 ### The About page

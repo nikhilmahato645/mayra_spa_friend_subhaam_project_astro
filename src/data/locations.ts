@@ -63,11 +63,9 @@ export const locations: Location[] = [
   location('russian-spa-in-mahipalpur', 'Mahipalpur'),
   location('russian-spa-in-aerocity', 'Aerocity'),
   location('russian-spa-in-vasant-kunj', 'Vasant Kunj'),
-  location('russian-spa-in-dwarka', 'Dwarka'),
   location('russian-spa-in-gurgaon', 'Gurgaon'),
   location('russian-spa-in-saket', 'Saket'),
   location('russian-spa-in-hauz-khas', 'Hauz Khas'),
-  location('russian-spa-in-green-park', 'Green Park'),
   location('russian-spa-in-karol-bagh', 'Karol Bagh'),
   location('russian-spa-in-noida', 'Noida'),
 ];
